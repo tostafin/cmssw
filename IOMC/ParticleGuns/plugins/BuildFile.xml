@@ -1,0 +1,10 @@
+<library   name="IOMCFlatProtonLogKsiLogTGunPlugins" file="*.cc">
+	<flags   EDM_PLUGIN="1"/>
+	<flags   cxxflags="-O3 -g3 $(CUSTOM_FLAGS)"/>
+	<use   name="boost"/>
+	<use   name="FWCore/Framework"/>
+	<use   name="SimDataFormats/GeneratorProducts"/>
+	<use   name="SimGeneral/HepPDTRecord"/>
+	<use   name="hepmc"/>
+	<use   name="clhep"/>
+</library>

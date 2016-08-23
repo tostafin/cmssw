@@ -1,4 +1,4 @@
-#include "IOMC/FlatProtonLogKsiLogTGun/interface/FlatProtonLogKsiLogTGun.h"
+#include "IOMC/interface/FlatProtonLogKsiLogTGun.h"
 #include <ostream>
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 #include "FWCore/Framework/interface/Event.h"

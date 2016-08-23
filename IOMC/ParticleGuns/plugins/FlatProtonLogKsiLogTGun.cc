@@ -170,7 +170,7 @@ void FlatProtonLogKsiLogTGun::produce(edm::Event& e, const edm::EventSetup& es)
 
 
   edm::Service<edm::RandomNumberGenerator> rng;
-  long seed = (long)(rng->mySeed());
+  //long seed = (long)(rng->mySeed());
 
   fRandomEngine = &rng->getEngine(e.streamID());
   fRandomGenerator = new CLHEP::RandFlat(fRandomEngine);

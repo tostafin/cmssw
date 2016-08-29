@@ -62,7 +62,7 @@ process.source = cms.Source("EmptySource")
 process.load("Configuration.StandardSequences.Services_cff")
 #process.load("Configuration.Generator.SingleProton_cfi")
 
-process.load("Configuration.Generator.Beta90Energy6500GeV_cfi")
+process.load("Configuration.Generator.TestEnergy6500GeV_cfi")
 process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
     g4SimHits = cms.PSet(initialSeed = cms.untracked.uint32(9876)),
     SimG4Object = cms.PSet(initialSeed =cms.untracked.uint32(9876)),

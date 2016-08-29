@@ -1,12 +1,43 @@
 import FWCore.ParameterSet.Config as cms
 
-# aaa
-
 process = cms.Process("TestFlatGun")
+process.MessageLogger = cms.Service("MessageLogger",
+    destinations = cms.untracked.vstring('warnings',
+        'errors',
+        'infos',
+        'debugs'),
+    categories = cms.untracked.vstring('ForwardSim',
+        'TotemRP'),
+    debugModules = cms.untracked.vstring('*'),
+    errors = cms.untracked.PSet(
+        threshold = cms.untracked.string('ERROR')
+    ),
+    warnings = cms.untracked.PSet(
+        threshold = cms.untracked.string('WARNING')
+    ),
+    infos = cms.untracked.PSet(
+        threshold = cms.untracked.string('INFO')
+    ),
+    debugs = cms.untracked.PSet(
+        threshold = cms.untracked.string('DEBUG'),
+        INFO = cms.untracked.PSet(
+            limit = cms.untracked.int32(0)
+        ),
+        DEBUG = cms.untracked.PSet(
+            limit = cms.untracked.int32(0)
+        ),
+        TotemRP = cms.untracked.PSet(
+            limit = cms.untracked.int32(1000000)
+        ),
+        ForwardSim = cms.untracked.PSet(
+            limit = cms.untracked.int32(1000000)
+        )
+    )
+)
 
 # Specify the maximum events to simulate
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(1)
 )
 
 # Configure the output module (save the result in a file)
@@ -28,10 +59,39 @@ process.source = cms.Source("EmptySource")
 #process.load("Configuration.TotemCommon.RandomNumbers_cfi")
 
 # particle generator paramteres
-process.load('Configuration/StandardSequences/Services_cff')
-process.load("Configuration.Generator.SingleProton_cfi")
+process.load("Configuration.StandardSequences.Services_cff")
+#process.load("Configuration.Generator.SingleProton_cfi")
 
+process.load("Configuration.Generator.Beta90Energy6500GeV_cfi")
+process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
+    g4SimHits = cms.PSet(initialSeed = cms.untracked.uint32(9876)),
+    SimG4Object = cms.PSet(initialSeed =cms.untracked.uint32(9876)),
+    RPSiDetDigitizer = cms.PSet(initialSeed =cms.untracked.uint32(137137)),
+    sourceSeed = cms.PSet(initialSeed =cms.untracked.uint32(98765)),
+    generator = cms.PSet(initialSeed = cms.untracked.uint32(98766)),
+    SmearingGenerator = cms.PSet(initialSeed =cms.untracked.uint32(3849)),
+    T2Digis = cms.PSet(initialSeed =cms.untracked.uint32(98765)),
+    T2MCl = cms.PSet(initialSeed =cms.untracked.uint32(24141)),
+    RPFastStationSimulation = cms.PSet(initialSeed =cms.untracked.uint32(12)),
+    RPFastFullSimulation = cms.PSet(initialSeed =cms.untracked.uint32(13)),
+    mix = cms.PSet(initialSeed = cms.untracked.uint32(24141)),
+    LHCTransport = cms.PSet(initialSeed = cms.untracked.uint32(24143), engineName = cms.untracked.string('TRandom3')
+  )
+
+)
 ################# STEP 2 process.SmearingGenerator
+
+process.VtxSmeared = cms.EDProducer("GaussEvtVtxGenerator",
+    src   = cms.InputTag("generator", "unsmeared"),
+    MeanX = cms.double(0.0),
+    MeanY = cms.double(0.0),
+    MeanZ = cms.double(0.0),
+    SigmaX = cms.double(0.000001),
+    SigmaY = cms.double(0.000001),
+    SigmaZ = cms.double(0.000001),
+    TimeOffset = cms.double(0.0)
+)
+
 
 # declare optics parameters
 #process.load("Configuration.TotemOpticsConfiguration.OpticsConfig_6500GeV_0p8_145urad_cfi")
@@ -56,12 +116,12 @@ process.BeamOpticsParamsESSource = cms.ESSource("BeamOpticsParamsESSource",
 process.ProtonTransportFunctionsESSource = cms.ESProducer("ProtonTransportFunctionsESSource",
     opticsFile = cms.string(''), # automatic
     maySymmetrize = cms.bool(True), # this optic is assymmetric
-    verbosity = cms.untracked.uint32(1)
+    verbosity = cms.untracked.uint32(10)
 )
 
 BeamProtTransportSetup = cms.PSet(
-    Verbosity = cms.bool(False),
-    ModelRootFile = cms.string('Geometry/VeryForwardProtonTransport/data/parametrization_6500GeV_90_transp.root'),
+    Verbosity = cms.bool(True),
+    ModelRootFile = cms.string('Geometry/VeryForwardProtonTransport/data/parametrization_6500GeV_90_transp_75.root'),
     Model_IP_150_R_Name = cms.string('ip5_to_beg_150_station_lhcb1'),
     Model_IP_150_L_Name = cms.string('ip5_to_beg_150_station_lhcb1'),
 
@@ -78,7 +138,103 @@ BeamProtTransportSetup = cms.PSet(
 # ################## STEP 3 process.g4SimHits
 #
 # # Geometry - beta* specific
-process.load("Geometry.VeryForwardGeometry.geometryRP_cfi")
+# process.load("Geometry.VeryForwardGeometry.geometryRP_cfi")
+
+# DDL geometry (ideal)
+totemGeomXMLFiles = cms.vstring(
+        'Geometry/CMSCommonData/data/materials.xml',
+        'Geometry/CMSCommonData/data/rotations.xml',
+        'Geometry/CMSCommonData/data/extend/cmsextent.xml',
+        'Geometry/CMSCommonData/data/cms.xml',
+        'Geometry/CMSCommonData/data/PhaseI/beampipe.xml',
+        'Geometry/CMSCommonData/data/cmsBeam.xml',
+        'Geometry/CMSCommonData/data/cmsMother.xml',
+        'Geometry/CMSCommonData/data/mgnt.xml',
+        'Geometry/ForwardCommonData/data/forward.xml',
+        'Geometry/ForwardCommonData/data/totemRotations.xml',
+        'Geometry/ForwardCommonData/data/totemMaterials.xml',
+        'Geometry/ForwardCommonData/data/totemt1.xml',
+        'Geometry/ForwardCommonData/data/totemt2.xml',
+        'Geometry/ForwardCommonData/data/ionpump.xml',
+        'Geometry/VeryForwardData/data/RP_Box.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_000.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_001.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_002.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_003.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_004.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_005.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_020.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_021.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_022.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_023.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_024.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_025.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_100.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_101.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_102.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_103.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_104.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_105.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_120.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_121.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_122.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_123.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_124.xml',
+        'Geometry/VeryForwardData/data/RP_Box/RP_Box_125.xml',
+        'Geometry/VeryForwardData/data/RP_Hybrid.xml',
+        'Geometry/VeryForwardData/data/RP_Materials.xml',
+        'Geometry/VeryForwardData/data/RP_Transformations.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_000.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_001.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_002.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_003.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_004.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_005.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_020.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_021.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_022.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_023.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_024.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_025.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_100.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_101.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_102.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_103.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_104.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_105.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_120.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_121.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_122.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_123.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_124.xml',
+        'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_125.xml',
+        'Geometry/VeryForwardData/data/RP_Device.xml',
+        'Geometry/VeryForwardData/data/RP_Vertical_Device.xml',
+        'Geometry/VeryForwardData/data/RP_Horizontal_Device.xml',
+        'Geometry/VeryForwardData/data/RP_220_Right_Station.xml',
+        'Geometry/VeryForwardData/data/RP_220_Left_Station.xml',
+        'Geometry/VeryForwardData/data/RP_147_Right_Station.xml',
+        'Geometry/VeryForwardData/data/RP_147_Left_Station.xml',
+        'Geometry/VeryForwardData/data/RP_Stations_Assembly.xml',
+        'Geometry/VeryForwardData/data/RP_Sensitive_Dets.xml',
+        'Geometry/VeryForwardData/data/RP_Cuts_Per_Region.xml',
+        'Geometry/VeryForwardData/data/RP_Param_Beam_Region.xml')
+
+process.XMLIdealGeometryESSource = cms.ESSource("XMLIdealGeometryESSource",
+    geomXMLFiles = totemGeomXMLFiles,
+    rootNodeName = cms.string('cms:CMSE')
+)
+
+# position of RPs
+process.XMLIdealGeometryESSource.geomXMLFiles.append("Geometry/VeryForwardData/data/2016_ctpps_15sigma_margin0/RP_Dist_Beam_Cent.xml")
+
+# extended geometries
+process.TotemRPGeometryESModule = cms.ESProducer("TotemRPGeometryESModule",
+    verbosity = cms.untracked.uint32(10)
+)
+
+
 # # https://github.com/cms-sw/cmssw/blob/d40b17c22838d14956c0399f357148f05ecdb369/Geometry/VeryForwardGeometry/python/geometryRP_cfi.py
 #
 # # TODO Change to the LowBetaSettings
@@ -100,13 +256,13 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("SimG4Core.Application.g4SimHits_cfi")
 process.g4SimHits.Physics.BeamProtTransportSetup = BeamProtTransportSetup
 process.g4SimHits.Generator.HepMCProductLabel = 'generator'    # The input source for G4 module is connected to "process.source".
-process.g4SimHits.G4TrackingManagerVerbosity = cms.untracked.int32(3)
+process.g4SimHits.G4TrackingManagerVerbosity = cms.untracked.int32(10)
 #
 # # Use particle table
 process.load("SimGeneral.HepPDTESSource.pdt_cfi")
 #
 process.g4SimHits.PPSSD = cms.PSet(
-  Verbosity = cms.untracked.int32(1)
+  Verbosity = cms.untracked.int32(10)
 )
 #
 # ################## Step 3 - Magnetic field configuration
@@ -224,6 +380,7 @@ process.VolumeBasedMagneticFieldESProducer = cms.ESProducer("VolumeBasedMagnetic
 
 process.p1 = cms.Path(
 	process.generator
+#*process.VtxSmeared
 	# *process.SmearingGenerator
 	*process.g4SimHits
 	# *process.mix
@@ -236,6 +393,3 @@ process.p1 = cms.Path(
 	# *process.TotemNtuplizer
 
 )
-
-
-

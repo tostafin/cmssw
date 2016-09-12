@@ -56,9 +56,6 @@ public:
   void         Draw(){}
   void         Print();
 
-  math::XYZPoint   getEntry() const;
-  void         setEntry(double x, double y, double z)      {entry.SetCoordinates(x,y,z);}
-
   double       getEM() const;
   void         setEM (double e);
 

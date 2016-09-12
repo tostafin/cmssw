@@ -72,10 +72,10 @@ public:
   virtual void update(const BeginOfEvent *);
   virtual void update (const ::EndOfEvent*);
 
-  void SetNumberingScheme(TotemRPVDetectorOrganization* scheme);
+  void SetNumberingScheme(TotemVDetectorOrganization* scheme);
 
   TrackingSlaveSD* slave;
-  TotemRPVDetectorOrganization * numberingScheme;
+  TotemVDetectorOrganization * numberingScheme;
 
 //  int eventno;
 
@@ -89,7 +89,7 @@ private:
   void           CreateNewHitEvo(); //to delete?
   G4ThreeVector  PosizioEvo(const G4ThreeVector&,double ,double ,double, double,int&); //to delete?
   void           UpdateHit();
-  void StoreHit(Totem_RP_G4Hit*);
+  void StoreHit(TotemG4Hit*);
   void ResetForNewPrimary();
   void Summarize();
   bool IsPrimary(const G4Track * track);
@@ -106,7 +106,7 @@ private:
 
   G4String name;
   G4int hcID;
-  Totem_RP_G4HitCollection* theHC;
+  TotemG4HitCollection* theHC;
   const SimTrackManager*      theManager; //todelete?
 
   int                         tsID; 

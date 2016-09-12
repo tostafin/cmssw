@@ -1,11 +1,11 @@
 #ifndef TotemRP_TotemRP_H
 #define TotemRP_TotemRP_H
 
-#include "SimG4CMS/TotemRP/interface/Totem_RP_G4Hit.h"
-#include "SimG4CMS/TotemRP/interface/Totem_RP_G4HitCollection.h"
-#include "SimG4CMS/TotemRP/interface/TotemRPHisto.h"
-#include "SimG4CMS/TotemRP/interface/TotemRPHistoClass.h"
-#include "SimG4CMS/TotemRP/interface/TotemRPHistoManager.h"
+#include "SimG4CMS/Forward/interface/TotemG4Hit.h"
+#include "SimG4CMS/Forward/interface/TotemG4HitCollection.h"
+#include "SimG4CMS/Forward/interface/TotemRPHisto.h"
+#include "SimG4CMS/Forward/interface/TotemRPHistoClass.h"
+#include "SimG4CMS/Forward/interface/TotemRPHistoManager.h"
 
 //#include "SimG4CMS/TotemRP/interface/RPDebugEvent.h"
 //#include "SimG4CMS/TotemRP/interface/RPDebugEventManager.h"

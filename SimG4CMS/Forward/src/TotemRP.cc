@@ -12,9 +12,9 @@
 #include "SimG4Core/Notification/interface/EndOfTrack.h"
 #include "SimG4Core/Notification/interface/TrackInformation.h"
  
-#include "SimG4CMS/TotemRP/interface/TotemRP.h"
-#include "SimG4CMS/TotemRP/interface/Totem_RP_G4Hit.h"
-#include "SimG4CMS/TotemRP/interface/Totem_RP_G4HitCollection.h"
+#include "SimG4CMS/Forward/interface/TotemRP.h"
+#include "SimG4CMS/Forward/interface/TotemG4Hit.h"
+#include "SimG4CMS/Forward/interface/TotemG4HitCollection.h"
 
 //#include "SimG4CMS/TotemRP/interface/RPDebugEvent.h"
 #include "DataFormats/TotemRPDetId/interface/TotemRPDetId.h"
@@ -171,7 +171,7 @@ void TotemRP::update(const BeginOfEvent * evt)
   // access to the G4 hit collections 
   G4HCofThisEvent* allHC = (*evt)()->GetHCofThisEvent();
   int HCRPid = G4SDManager::GetSDMpointer()->GetCollectionID("TotemHitsRP");
-  Totem_RP_G4HitCollection* theHC_RP = (Totem_RP_G4HitCollection*) allHC->GetHC(HCRPid); 
+  TotemG4HitCollection* theHC_RP = (TotemG4HitCollection*) allHC->GetHC(HCRPid);
   LogDebug("ForwardSim") << "TotemTestGem :: Hit Collection for TotemHitsRP of ID " << HCRPid << " is obtained at " << theHC_RP;
   G4int nentriesRP = 0;
   if (HCRPid >= 0 && theHC_RP > 0) {
@@ -775,7 +775,7 @@ void TotemRP::update(const EndOfEvent * evt)
     }
     else
     {
-      Totem_RP_G4HitCollection* theHC_RP = (Totem_RP_G4HitCollection*) allHC->GetHC(HCRPid);
+      TotemG4HitCollection* theHC_RP = (TotemG4HitCollection*) allHC->GetHC(HCRPid);
       if(verbosity_)
         LogDebug("TotemRP") << "TotemRP :: Hit Collection for " <<names[in]
            << " of ID " << HCRPid << " is obtained at " << theHC_RP;
@@ -787,7 +787,7 @@ void TotemRP::update(const EndOfEvent * evt)
       {
         for(ihit = 0; ihit <nentriesRP; ihit++)
         {
-          Totem_RP_G4Hit* aHit = (*theHC_RP)[ihit];
+          TotemG4Hit* aHit = (*theHC_RP)[ihit];
 
           int evtnum = (*evt)()->GetEventID();
           //edm::LogInfo("TotemRP")<<"event no: "<<evtnum<<std::endl;

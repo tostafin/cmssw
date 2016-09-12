@@ -1,4 +1,4 @@
-#include "SimG4CMS/TotemRP/interface/TotemRPHisto.h"
+#include "SimG4CMS/Forward/interface/TotemRPHisto.h"
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 

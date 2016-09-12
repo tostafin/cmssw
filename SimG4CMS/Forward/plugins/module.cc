@@ -1,4 +1,5 @@
 #include "SimG4CMS/Forward/interface/CastorSD.h"
+#include "SimG4CMS/Forward/interface/TotemRP.h"
 #include "SimG4CMS/Forward/interface/TotemSD.h"
 #include "SimG4CMS/Forward/interface/ZdcSD.h"
 #include "SimG4CMS/Forward/interface/TotemTestGem.h"

@@ -16,7 +16,7 @@
 #include <cmath>
 
 // user include files
-#include "SimG4CMS/TotemRP/interface/TotemRPHistoClass.h"
+#include "SimG4CMS/Forward/interface/TotemRPHistoClass.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 //

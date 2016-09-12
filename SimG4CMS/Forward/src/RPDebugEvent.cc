@@ -1,4 +1,4 @@
-#include "SimG4CMS/TotemRP/interface/RPDebugEvent.h"
+#include "SimG4CMS/Forward/interface/RPDebugEvent.h"
 
 RPDebugEvent::RPDebugEvent()
 {

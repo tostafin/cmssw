@@ -16,8 +16,8 @@
 #include <cmath>
 
 // user include files
-#include "SimG4CMS/TotemRP/interface/RPDebugEventManager.h"
-#include "SimG4CMS/TotemRP/interface/RPDebugEvent.h"
+#include "SimG4CMS/Forward/interface/RPDebugEventManager.h"
+#include "SimG4CMS/Forward/interface/RPDebugEvent.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include "FWCore/PluginManager/interface/PluginManager.h"

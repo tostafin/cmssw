@@ -535,37 +535,37 @@ G4ThreeVector TotemSD::PosizioEvo(const G4ThreeVector& Pos, double vx, double vy
 }
  
 
-void TotemSD::UpdateHit() {
-  //
-  if (Eloss > 0.) {
-    //  currentHit->addEnergyDeposit(edepositEM,edepositHAD);
-
-#ifdef debug
-    LogDebug("ForwardSim") << "G4TotemT1SD updateHit: add eloss " << Eloss 
-			   << "\nCurrentHit=" << currentHit
-			   << ", PostStepPoint=" 
-			   << postStepPoint->GetPosition();
-#endif
-
-    currentHit->setEnergyLoss(Eloss);
-  }  
-  //  if(PostStepPoint->GetPhysicalVolume() != CurrentPV){
-  //  currentHit->setExitPoint(SetToLocal(postStepPoint->GetPosition()));
-  // Local3DPoint exit=currentHit->exitPoint();
-/*
-#ifdef debug
-  LogDebug("ForwardSim") << "G4TotemT1SD updateHit: exit point " 
-			 << exit.x() << " " << exit.y() << " " << exit.z();
-//  LogDebug("ForwardSim") << "Energy deposit in Unit " << unitID << " em " << edepositEM/MeV
-// << " hadronic " << edepositHAD/MeV << " MeV";
-#endif
-*/
-
-  // buffer for next steps:
-  tsID           = tSliceID;
-  primID         = primaryID;
-  previousUnitID = unitID;
-}
+//void TotemSD::UpdateHit() { //TODO delete?
+//  //
+//  if (Eloss > 0.) {
+//    //  currentHit->addEnergyDeposit(edepositEM,edepositHAD);
+//
+//#ifdef debug
+//    LogDebug("ForwardSim") << "G4TotemT1SD updateHit: add eloss " << Eloss
+//			   << "\nCurrentHit=" << currentHit
+//			   << ", PostStepPoint="
+//			   << postStepPoint->GetPosition();
+//#endif
+//
+//    currentHit->setEnergyLoss(Eloss);
+//  }
+//  //  if(PostStepPoint->GetPhysicalVolume() != CurrentPV){
+//  //  currentHit->setExitPoint(SetToLocal(postStepPoint->GetPosition()));
+//  // Local3DPoint exit=currentHit->exitPoint();
+///*
+//#ifdef debug
+//  LogDebug("ForwardSim") << "G4TotemT1SD updateHit: exit point "
+//			 << exit.x() << " " << exit.y() << " " << exit.z();
+////  LogDebug("ForwardSim") << "Energy deposit in Unit " << unitID << " em " << edepositEM/MeV
+//// << " hadronic " << edepositHAD/MeV << " MeV";
+//#endif
+//*/
+//
+//  // buffer for next steps:
+//  tsID           = tSliceID;
+//  primID         = primaryID;
+//  previousUnitID = unitID;
+//}
 
 void TotemSD::StoreHit(TotemG4Hit* hit)
 {

@@ -19,8 +19,9 @@
 
 #include "SimG4Core/Notification/interface/TrackInformation.h"
 #include "SimG4Core/Notification/interface/G4TrackToParticleID.h"
+#include "SimG4Core/Geometry/interface/SensitiveDetectorCatalog.h"
 #include "SimG4Core/Physics/interface/G4ProcessTypeEnumerator.h"
- 
+
 #include "SimDataFormats/TrackingHit/interface/UpdatablePSimHit.h"
 #include "SimDataFormats/SimHitMaker/interface/TrackingSlaveSD.h"
 
@@ -33,13 +34,18 @@
 #include "DataFormats/GeometryVector/interface/LocalPoint.h"
 #include "DataFormats/GeometryVector/interface/LocalVector.h"
 
+#include "CLHEP/Units/GlobalSystemOfUnits.h"
+#include "CLHEP/Units/GlobalPhysicalConstants.h"
+
 #include "G4SDManager.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4VProcess.hh"
 
-#include "G4PhysicalConstants.hh"
-#include "G4SystemOfUnits.hh"
+#include <iostream>
+#include <vector>
+#include <string>
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 
 //
@@ -101,23 +107,63 @@ TotemSD::~TotemSD() {
   if (numberingScheme) delete numberingScheme;
 }
 
-bool TotemSD::ProcessHits(G4Step * aStep, G4TouchableHistory * ) {
-
-  if (aStep == NULL) {
-    return true;
-  } else {
-    GetStepInfo(aStep);
-    if (HitExists() == false && edeposit>0.) { 
-      CreateNewHit();
-      return true;
-    }
-    if (HitExists() == false && (((unitID==1111 || unitID==2222) && 
-				  ParentId==0 && ParticleType==2212))) { 
-      CreateNewHitEvo();
-      return true;
-    }
+G4bool TotemSD::ProcessHits(G4Step * aStep, G4TouchableHistory * )
+{
+  if (aStep == NULL)
+  {
+  	return true;
   }
-  return true;
+  else
+  {
+    GetStepInfo(aStep);
+//    if(Vz>100000 && theTrack->GetDefinition()->GetParticleName()!="proton")
+//      Print_Hit_Info();
+
+	  //if(Eloss>0.0 /*&& ParticleType==2212 && Pabs > 6000. */)
+    //{
+      CreateNewHit();
+      //LogDebug("TotemRP")<<"New hit created"<<std::endl;
+	    return true;
+	  //}
+	}
+}
+
+void TotemSD::Print_Hit_Info()
+{
+  LogDebug("TotemRP") << theTrack->GetDefinition()->GetParticleName()
+       << " Totem_RP_SD CreateNewHit for"
+       << " PV "     << currentPV->GetName()
+       << " PVid = " << currentPV->GetCopyNo()
+       //<< " MVid = " << currentPV->GetMother()->GetCopyNo()
+       << " Unit "   << unitID;
+  LogDebug("TotemRP") << " primary "    << primaryID
+       << " time slice " << tSliceID
+       << " of energy " << theTrack->GetTotalEnergy()
+       << " Eloss " << Eloss
+       << " positions ";
+       printf("(%10f,%10f,%10f)",preStepPoint->GetPosition().x(),preStepPoint->GetPosition().y(),preStepPoint->GetPosition().z());
+       printf("(%10f,%10f,%10f)",postStepPoint->GetPosition().x(),postStepPoint->GetPosition().y(),postStepPoint->GetPosition().z());
+  LogDebug("TotemRP") << " positions " << "(" <<postStepPoint->GetPosition().x()<<","<<postStepPoint->GetPosition().y()<<","<<postStepPoint->GetPosition().z()<<")"
+       << " For Track  " << theTrack->GetTrackID()
+       << " which is a " << theTrack->GetDefinition()->GetParticleName();
+
+  if(theTrack->GetTrackID()==1)
+  {
+    LogDebug("TotemRP") << " primary particle ";
+  }
+  else
+  {
+    LogDebug("TotemRP") << " daughter of part. " << theTrack->GetParentID();
+  }
+
+  LogDebug("TotemRP")  << " and created by " ;
+
+  if(theTrack->GetCreatorProcess()!=NULL)
+    LogDebug("TotemRP") << theTrack->GetCreatorProcess()->GetProcessName() ;
+  else
+    LogDebug("TotemRP") << "NO process";
+
+  LogDebug("TotemRP") << std::endl;
 }
 
 uint32_t TotemSD::setDetUnitId(G4Step * aStep) { 
@@ -125,45 +171,42 @@ uint32_t TotemSD::setDetUnitId(G4Step * aStep) {
   return (numberingScheme == 0 ? 0 : numberingScheme->GetUnitID(aStep));
 }
 
-void TotemSD::Initialize(G4HCofThisEvent * HCE) { 
+void TotemSD::Initialize(G4HCofThisEvent * HCE) {
+  LogDebug("TotemRP") << "Totem_RP_SD : Initialize called for " << name;
 
-  LogDebug("ForwardSim") << "TotemSD : Initialize called for " << name;
+  theHC = new Totem_RP_G4HitCollection(name, collectionName[0]);
+  G4SDManager::GetSDMpointer()->AddNewCollection(name, collectionName[0]);
 
-  theHC = new TotemG4HitCollection(name, collectionName[0]);
-  if (hcID<0) 
-    hcID = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]);
+  if (hcID<0)
+    hcID = G4SDManager::GetSDMpointer()->GetCollectionID(theHC);
   HCE->AddHitsCollection(hcID, theHC);
-
-  tsID   = -2;
-  primID = -2;
 }
 
-void TotemSD::EndOfEvent(G4HCofThisEvent* ) {
 
+void TotemSD::EndOfEvent(G4HCofThisEvent* )
+{
   // here we loop over transient hits and make them persistent
-  for (int j=0; j<theHC->entries() && j<15000; j++) {
-    TotemG4Hit* aHit = (*theHC)[j];
-#ifdef ddebug
-    LogDebug("ForwardSim") << "HIT NUMERO " << j << "unit ID = "
-			   << aHit->getUnitID() << "\n"
-			   << "               " << "enrty z " 
-			   << aHit->getEntry().z() << "\n"
-			   << "               " << "theta   " 
-			   << aHit->getThetaAtEntry() << "\n";
-#endif
-    Local3DPoint theExitPoint(0,0,0);
-    Local3DPoint Entrata(aHit->getEntry().x(),
-			 aHit->getEntry().y(),
-			 aHit->getEntry().z());
-    slave->processHits(PSimHit(Entrata,theExitPoint,
-			       aHit->getPabs(), aHit->getTof(),
-			       aHit->getEnergyLoss(), aHit->getParticleType(),
-			       aHit->getUnitID(), aHit->getTrackID(),
-			       aHit->getThetaAtEntry(),aHit->getPhiAtEntry()));
+  for (int j=0; j<theHC->entries() && j<15000; j++)
+  {
+    Totem_RP_G4Hit* aHit = (*theHC)[j];
+    //Local3DPoint theEntrance(aHit->getEntry().x(),aHit->getEntry().y(),aHit->getEntry().z());
+    //Local3DPoint theExitPoint(aHit->getExit().x(),aHit->getExit().y(),aHit->getExit().z());
 
+    Local3DPoint Entrata(aHit->getLocalEntry().x(),
+       aHit->getLocalEntry().y(),
+       aHit->getLocalEntry().z());
+    Local3DPoint Uscita(aHit->getLocalExit().x(),
+       aHit->getLocalExit().y(),
+       aHit->getLocalExit().z());
+    slave->processHits(PSimHit(Entrata,Uscita,
+             aHit->getPabs(), aHit->getTof(),
+             aHit->getEnergyLoss(), aHit->getParticleType(),
+             aHit->getUnitID(), aHit->getTrackID(),
+             aHit->getThetaAtEntry(),aHit->getPhiAtEntry()));
   }
   Summarize();
 }
+
 
 void TotemSD::clear() {
 } 
@@ -194,6 +237,14 @@ void TotemSD::clearHits(){
   slave->Initialize();
 }
 
+void Totem_RP_SD::SetNumberingScheme(TotemRPVDetectorOrganization* scheme)
+{
+  if (numberingScheme)
+    delete numberingScheme;
+  numberingScheme = scheme;
+}
+
+
 G4ThreeVector TotemSD::SetToLocal(const G4ThreeVector& global) {
 
   G4ThreeVector       localPoint;
@@ -202,45 +253,71 @@ G4ThreeVector TotemSD::SetToLocal(const G4ThreeVector& global) {
   return localPoint;  
 }
 
-void TotemSD::GetStepInfo(G4Step* aStep) {
-  
-  preStepPoint = aStep->GetPreStepPoint(); 
-  postStepPoint= aStep->GetPostStepPoint(); 
-  theTrack     = aStep->GetTrack();   
-  //Local3DPoint theEntryPoint = SensitiveDetector::InitialStepPosition(aStep,LocalCoordinates);  
-  //Local3DPoint theExitPoint  = SensitiveDetector::FinalStepPosition(aStep,LocalCoordinates);
-  hitPoint     = preStepPoint->GetPosition();	
-  currentPV    = preStepPoint->GetPhysicalVolume();
+void TotemSD::GetStepInfo(G4Step* aStep)
+{
+  preStepPoint = aStep->GetPreStepPoint();
+  postStepPoint = aStep->GetPostStepPoint();
+  theTrack = aStep->GetTrack();
+//  theLocalEntryPoint = SensitiveDetector::InitialStepPosition(aStep,LocalCoordinates);
+//  theLocalExitPoint = SensitiveDetector::FinalStepPosition(aStep,LocalCoordinates);
+  hitPoint = preStepPoint->GetPosition();
+  exitPoint = postStepPoint->GetPosition();
+  currentPV = preStepPoint->GetPhysicalVolume();
+  theLocalEntryPoint = SetToLocal(hitPoint);
+  theLocalExitPoint = SetToLocal(exitPoint);
 
-  // double weight = 1; 
+// double weight = 1;
   G4String name = currentPV->GetName();
   name.assign(name,0,4);
+//  if(name == "EBRY" || name == "EFRY")
+//   {
+//     weight = LY_curve(name, hitPoint);
+//  }
+//  TrackInformation * trkInfo =
+//  (TrackInformation *)(theTrack->GetUserInformation());
   G4String particleType = theTrack->GetDefinition()->GetParticleName();
-  edeposit = aStep->GetTotalEnergyDeposit();
-  
-  tSlice    = (postStepPoint->GetGlobalTime() )/nanosecond;
-  tSliceID  = (int) tSlice;
-  unitID    = setDetUnitId(aStep);
-#ifdef debug
-  LogDebug("ForwardSim") << "UNITa " << unitID;
-#endif
+//  if (particleType == "e-" ||
+//    particleType == "e+" ||
+//    particleType == "gamma" ){
+  tSlice = (postStepPoint->GetGlobalTime() )/nanosecond;
+  tSliceID = (int) tSlice;
+  unitID = setDetUnitId(aStep);
+
+  if(verbosity_)
+    LogDebug("TotemRP") << "UNITa " << unitID <<std::endl;
+
   primaryID = theTrack->GetTrackID();
 
+  Pabs = (aStep->GetPreStepPoint()->GetMomentum().mag())/GeV;
+  p_x = (aStep->GetPreStepPoint()->GetMomentum().x())/GeV;
+  p_y = (aStep->GetPreStepPoint()->GetMomentum().y())/GeV;
+  p_z = (aStep->GetPreStepPoint()->GetMomentum().z())/GeV;
 
-  Posizio = hitPoint;
-  Pabs    = aStep->GetPreStepPoint()->GetMomentum().mag()/GeV;
-  Tof     = aStep->GetPostStepPoint()->GetGlobalTime()/nanosecond;
-   
-  Eloss   = aStep->GetTotalEnergyDeposit()/GeV;
-  ParticleType = theTrack->GetDefinition()->GetPDGEncoding();      
+  Tof = aStep->GetPostStepPoint()->GetGlobalTime()/nanosecond;
+  Eloss = aStep->GetTotalEnergyDeposit()/GeV;
+  ParticleType = theTrack->GetDefinition()->GetPDGEncoding();
 
-  ThetaAtEntry = aStep->GetPreStepPoint()->GetPosition().theta()/deg;
-  PhiAtEntry   = aStep->GetPreStepPoint()->GetPosition().phi()/deg;
+  //corrected phi and theta treatment
+  G4ThreeVector gmd  = aStep->GetPreStepPoint()->GetMomentumDirection();
+  // convert it to local frame
+  G4ThreeVector lmd = ((G4TouchableHistory *)(aStep->GetPreStepPoint()->GetTouchable()))->GetHistory()
+    ->GetTopTransform().TransformAxis(gmd);
+  Local3DPoint lnmd = ConvertToLocal3DPoint(lmd);
+  ThetaAtEntry = lnmd.theta();
+  PhiAtEntry = lnmd.phi();
 
-  ParentId = theTrack->GetParentID();
-  Vx = theTrack->GetVertexPosition().x();
-  Vy = theTrack->GetVertexPosition().y();
-  Vz = theTrack->GetVertexPosition().z();
+//  ThetaAtEntry     = aStep->GetPreStepPoint()->GetPosition().theta()/deg;
+//  PhiAtEntry       = aStep->GetPreStepPoint()->GetPosition().phi()/deg;
+
+//  LogDebug("TotemRP") << "UUUUUUUNNNNNNNNNNIIIIIIIIIITTTTTTTTTTTTTIIIIDDDD " <<
+//    numberingScheme->GetUnitID(aStep) << std::endl ;
+  if(IsPrimary(theTrack))
+    ParentId = 0;
+  else ParentId = theTrack->GetParentID();
+
+  Vx = theTrack->GetVertexPosition().x()/mm;
+  Vy = theTrack->GetVertexPosition().y()/mm;
+  Vz = theTrack->GetVertexPosition().z()/mm;
 }
 
 bool TotemSD::HitExists() {
@@ -285,34 +362,8 @@ bool TotemSD::HitExists() {
   }    
 }
 
-void TotemSD::CreateNewHit() {
-
-#ifdef debug
-  LogDebug("ForwardSim") << "TotemSD CreateNewHit for"
-			 << " PV "     << currentPV->GetName()
-			 << " PVid = " << currentPV->GetCopyNo()
-			 << " MVid = " << currentPV->GetMother()->GetCopyNo()
-			 << " Unit "   << unitID << "\n"
-			 << " primary "    << primaryID
-			 << " time slice " << tSliceID 
-			 << " For Track  " << theTrack->GetTrackID()
-			 << " which is a " 
-			 << theTrack->GetDefinition()->GetParticleName();
-	   
-  if (theTrack->GetTrackID()==1) {
-    LogDebug("ForwardSim") << " of energy "     << theTrack->GetTotalEnergy();
-  } else {
-    LogDebug("ForwardSim") << " daughter of part. " << theTrack->GetParentID();
-  }
-
-  cout  << " and created by " ;
-  if (theTrack->GetCreatorProcess()!=NULL)
-    LogDebug("ForwardSim") << theTrack->GetCreatorProcess()->GetProcessName() ;
-  else 
-    LogDebug("ForwardSim") << "NO process";
-#endif          
-    
-
+void Totem_RP_SD::CreateNewHit()
+{
   currentHit = new TotemG4Hit;
   currentHit->setTrackID(primaryID);
   currentHit->setTimeSlice(tSlice);
@@ -326,17 +377,25 @@ void TotemSD::CreateNewHit() {
   currentHit->setThetaAtEntry(ThetaAtEntry);
   currentHit->setPhiAtEntry(PhiAtEntry);
 
-  currentHit->setEntry(Posizio.x(),Posizio.y(),Posizio.z());
+  currentHit->setEntry(hitPoint);
+  currentHit->setExit(exitPoint);
+  currentHit->setLocalEntry(theLocalEntryPoint);
+  currentHit->setLocalExit(theLocalExitPoint);
 
   currentHit->setParentId(ParentId);
   currentHit->setVx(Vx);
   currentHit->setVy(Vy);
   currentHit->setVz(Vz);
 
-  UpdateHit();
-  
+  currentHit->set_p_x(p_x);
+  currentHit->set_p_y(p_y);
+  currentHit->set_p_z(p_z);
+
   StoreHit(currentHit);
-}	 
+// LogDebug("TotemRP") << "STORED HIT IN: " << unitID << std::endl;
+}
+
+
 
 void TotemSD::CreateNewHitEvo() {
 
@@ -505,11 +564,12 @@ void TotemSD::UpdateHit() {
   previousUnitID = unitID;
 }
 
-void TotemSD::StoreHit(TotemG4Hit* hit) {
-
-  if (primID<0) return;
-  if (hit == 0 ) {
-    edm::LogWarning("ForwardSim") << "TotemSD: hit to be stored is NULL !!";
+void TotemSD::StoreHit(Totem_RP_G4Hit* hit)
+{
+  if (hit == 0 )
+  {
+    if(verbosity_)
+      LogDebug("TotemRP") << "Totem_RP_SD: hit to be stored is NULL !!" <<std::endl;
     return;
   }
 
@@ -523,4 +583,11 @@ void TotemSD::ResetForNewPrimary() {
 }
 
 void TotemSD::Summarize() {
+}
+
+bool Totem_RP_SD::IsPrimary(const G4Track * track)
+{
+  TrackInformation* info
+    = dynamic_cast<TrackInformation*>( track->GetUserInformation() );
+  return info && info->isPrimary();
 }

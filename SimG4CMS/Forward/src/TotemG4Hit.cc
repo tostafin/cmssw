@@ -18,7 +18,7 @@
 
 #include <iostream>
 
-Totem_RP_G4Hit::Totem_RP_G4Hit():entry(0)
+TotemG4Hit::TotemG4Hit():entry(0)
 {
   theIncidentEnergy = 0.0;
   theTrackID = -1;
@@ -41,11 +41,11 @@ Totem_RP_G4Hit::Totem_RP_G4Hit():entry(0)
 
 TotemG4Hit::~TotemG4Hit() {}
 
-Totem_RP_G4Hit::~Totem_RP_G4Hit()
+TotemG4Hit::~TotemG4Hit()
 {
 }
 
-Totem_RP_G4Hit::Totem_RP_G4Hit(const Totem_RP_G4Hit &right)
+TotemG4Hit::TotemG4Hit(const TotemG4Hit &right)
 {
   theIncidentEnergy  = right.theIncidentEnergy;
   theTrackID = right.theTrackID;
@@ -69,7 +69,7 @@ Totem_RP_G4Hit::Totem_RP_G4Hit(const Totem_RP_G4Hit &right)
 }
 
 
-const Totem_RP_G4Hit& Totem_RP_G4Hit::operator=(const Totem_RP_G4Hit &right)
+const TotemG4Hit& TotemG4Hit::operator=(const TotemG4Hit &right)
 {
   theIncidentEnergy = right.theIncidentEnergy;
   theTrackID = right.theTrackID;
@@ -101,79 +101,79 @@ void Totem_RP_G4Hit::Print() {
 }
 
 
-Hep3Vector Totem_RP_G4Hit::getEntry() const {return entry;}
-void Totem_RP_G4Hit::setEntry(Hep3Vector xyz) { entry = xyz; }
+Hep3Vector TotemG4Hit::getEntry() const {return entry;}
+void TotemG4Hit::setEntry(Hep3Vector xyz) { entry = xyz; }
 
-Hep3Vector Totem_RP_G4Hit::getExit() const {return exit;}
-void Totem_RP_G4Hit::setExit(Hep3Vector xyz) { exit = xyz; }
+Hep3Vector TotemG4Hit::getExit() const {return exit;}
+void TotemG4Hit::setExit(Hep3Vector xyz) { exit = xyz; }
 
-Hep3Vector Totem_RP_G4Hit::getLocalEntry() const {return local_entry;}
-void Totem_RP_G4Hit::setLocalEntry(const Hep3Vector &xyz) { local_entry = xyz;}
-Hep3Vector Totem_RP_G4Hit::getLocalExit() const {return local_exit;}
-void Totem_RP_G4Hit::setLocalExit(const Hep3Vector &xyz) { local_exit = xyz;}
+Hep3Vector TotemG4Hit::getLocalEntry() const {return local_entry;}
+void TotemG4Hit::setLocalEntry(const Hep3Vector &xyz) { local_entry = xyz;}
+Hep3Vector TotemG4Hit::getLocalExit() const {return local_exit;}
+void TotemG4Hit::setLocalExit(const Hep3Vector &xyz) { local_exit = xyz;}
 
-double Totem_RP_G4Hit::getIncidentEnergy() const {return theIncidentEnergy; }
-void Totem_RP_G4Hit::setIncidentEnergy (double e) {theIncidentEnergy  = e; }
+double TotemG4Hit::getIncidentEnergy() const {return theIncidentEnergy; }
+void TotemG4Hit::setIncidentEnergy (double e) {theIncidentEnergy  = e; }
 
-unsigned int Totem_RP_G4Hit::getTrackID() const {return theTrackID; }
-void Totem_RP_G4Hit::setTrackID (int i) { theTrackID = i; }
+unsigned int TotemG4Hit::getTrackID() const {return theTrackID; }
+void TotemG4Hit::setTrackID (int i) { theTrackID = i; }
 
-int Totem_RP_G4Hit::getUnitID() const {return theUnitID; }
-void Totem_RP_G4Hit::setUnitID (unsigned int i) { theUnitID = i; }
+int TotemG4Hit::getUnitID() const {return theUnitID; }
+void TotemG4Hit::setUnitID (unsigned int i) { theUnitID = i; }
 
-double Totem_RP_G4Hit::getTimeSlice() const {return theTimeSlice; }
-void Totem_RP_G4Hit::setTimeSlice (double d) {theTimeSlice = d;}
-int Totem_RP_G4Hit::getTimeSliceID() const {return (int)theTimeSlice;}
+double TotemG4Hit::getTimeSlice() const {return theTimeSlice; }
+void TotemG4Hit::setTimeSlice (double d) {theTimeSlice = d;}
+int TotemG4Hit::getTimeSliceID() const {return (int)theTimeSlice;}
 
-double Totem_RP_G4Hit::getPabs() const {return thePabs;}
-double Totem_RP_G4Hit::getTof() const {return theTof;}
-double Totem_RP_G4Hit::getEnergyLoss() const {return theEnergyLoss;}
-int Totem_RP_G4Hit::getParticleType() const {return theParticleType;}
+double TotemG4Hit::getPabs() const {return thePabs;}
+double TotemG4Hit::getTof() const {return theTof;}
+double TotemG4Hit::getEnergyLoss() const {return theEnergyLoss;}
+int TotemG4Hit::getParticleType() const {return theParticleType;}
 
-void Totem_RP_G4Hit::setPabs(double e) {thePabs = e;}
-void Totem_RP_G4Hit::setTof(double e) {theTof = e;}
-void Totem_RP_G4Hit::setEnergyLoss(double e) {theEnergyLoss = e;}
-void Totem_RP_G4Hit::addEnergyLoss(double e) {theEnergyLoss += e;}
-void Totem_RP_G4Hit::setParticleType(short i) {theParticleType = i;}
+void TotemG4Hit::setPabs(double e) {thePabs = e;}
+void TotemG4Hit::setTof(double e) {theTof = e;}
+void TotemG4Hit::setEnergyLoss(double e) {theEnergyLoss = e;}
+void TotemG4Hit::addEnergyLoss(double e) {theEnergyLoss += e;}
+void TotemG4Hit::setParticleType(short i) {theParticleType = i;}
 
-double Totem_RP_G4Hit::getThetaAtEntry() const {return theThetaAtEntry;}
-double Totem_RP_G4Hit::getPhiAtEntry() const{ return thePhiAtEntry;}
+double TotemG4Hit::getThetaAtEntry() const {return theThetaAtEntry;}
+double TotemG4Hit::getPhiAtEntry() const{ return thePhiAtEntry;}
 
-void Totem_RP_G4Hit::setThetaAtEntry(double t) {theThetaAtEntry = t;}
-void Totem_RP_G4Hit::setPhiAtEntry(double f) {thePhiAtEntry = f ;}
+void TotemG4Hit::setThetaAtEntry(double t) {theThetaAtEntry = t;}
+void TotemG4Hit::setPhiAtEntry(double f) {thePhiAtEntry = f ;}
 
-double Totem_RP_G4Hit::getX() const{ return theX;}
-void Totem_RP_G4Hit::setX(double t){theX = t;}
+double TotemG4Hit::getX() const{ return theX;}
+void TotemG4Hit::setX(double t){theX = t;}
 
-double Totem_RP_G4Hit::getY() const{ return theY;}
-void Totem_RP_G4Hit::setY(double t){theY = t;}
+double TotemG4Hit::getY() const{ return theY;}
+void TotemG4Hit::setY(double t){theY = t;}
 
-double Totem_RP_G4Hit::getZ() const{ return theZ;}
-void Totem_RP_G4Hit::setZ(double t){theZ = t;}
+double TotemG4Hit::getZ() const{ return theZ;}
+void TotemG4Hit::setZ(double t){theZ = t;}
 
-int Totem_RP_G4Hit::getParentId() const {return theParentId;}
-void Totem_RP_G4Hit::setParentId(int p){theParentId = p;}
+int TotemG4Hit::getParentId() const {return theParentId;}
+void TotemG4Hit::setParentId(int p){theParentId = p;}
 
-double Totem_RP_G4Hit::getVx() const{ return theVx;}
-void Totem_RP_G4Hit::setVx(double t){theVx = t;}
+double TotemG4Hit::getVx() const{ return theVx;}
+void TotemG4Hit::setVx(double t){theVx = t;}
 
-double Totem_RP_G4Hit::getVy() const{ return theVy;}
-void Totem_RP_G4Hit::setVy(double t){theVy = t;}
+double TotemG4Hit::getVy() const{ return theVy;}
+void TotemG4Hit::setVy(double t){theVy = t;}
 
-double Totem_RP_G4Hit::getVz() const{ return theVz;}
-void Totem_RP_G4Hit::setVz(double t){theVz = t;}
+double TotemG4Hit::getVz() const{ return theVz;}
+void TotemG4Hit::setVz(double t){theVz = t;}
 
-void Totem_RP_G4Hit::set_p_x(double p) {p_x = p;}
-void Totem_RP_G4Hit::set_p_y(double p) {p_y = p;}
-void Totem_RP_G4Hit::set_p_z(double p) {p_z = p;}
+void TotemG4Hit::set_p_x(double p) {p_x = p;}
+void TotemG4Hit::set_p_y(double p) {p_y = p;}
+void TotemG4Hit::set_p_z(double p) {p_z = p;}
 
-double Totem_RP_G4Hit::get_p_x() const {return p_x;}
-double Totem_RP_G4Hit::get_p_y() const {return p_y;}
-double Totem_RP_G4Hit::get_p_z() const {return p_z;}
+double TotemG4Hit::get_p_x() const {return p_x;}
+double TotemG4Hit::get_p_y() const {return p_y;}
+double TotemG4Hit::get_p_z() const {return p_z;}
 
 
-std::ostream& operator<<(std::ostream& os, const Totem_RP_G4Hit& hit) {
-  os << " Data of this Totem_RP_G4Hit are:" << std::endl
+std::ostream& operator<<(std::ostream& os, const TotemG4Hit& hit) {
+  os << " Data of this TotemG4Hit are:" << std::endl
      << " Time slice ID: " << hit.getTimeSliceID() << std::endl
      << " EnergyDeposit = " << hit.getEnergyLoss() << std::endl
   //    << " EnergyDeposit of HD particles = " << hit.getHadr() << std::endl

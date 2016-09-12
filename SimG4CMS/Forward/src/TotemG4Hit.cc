@@ -14,16 +14,13 @@
 
 // user include files
 #include "SimG4CMS/Forward/interface/TotemG4Hit.h"
+#include <iostream>
 
 //
 // constructors and destructor
 //
 
-TotemG4Hit::TotemG4Hit(){
-
-  setEntry(0.,0.,0.);
-  theEntryPoint.SetCoordinates(0.,0.,0.);
-  theExitPoint.SetCoordinates(0.,0.,0.);
+TotemG4Hit::TotemG4Hit(): MeanPosition(0), theEntryPoint(0), theExitPoint(0) {
 
   elem              = 0.;
   hadr              = 0.;
@@ -45,13 +42,20 @@ TotemG4Hit::TotemG4Hit(){
   theVx             = 0.;
   theVy             = 0.;
   theVz             = 0.;
+  thePx             = 0;
+  thePy             = 0;
+  thePz             = 0;
+  theVPx            = 0;
+  theVPy            = 0;
+  theVPz            = 0;
 }
 
 TotemG4Hit::~TotemG4Hit() {}
 
 TotemG4Hit::TotemG4Hit(const TotemG4Hit &right) {
 
-  entry             = right.entry;
+  MeanPosition      = right.MeanPosition;
+
   elem              = right.elem;
   hadr              = right.hadr;
   theIncidentEnergy = right.theIncidentEnergy;
@@ -75,12 +79,18 @@ TotemG4Hit::TotemG4Hit(const TotemG4Hit &right) {
   theVx             = right.theVx;
   theVy             = right.theVy;
   theVz             = right.theVz;
+  thePx             = right.thePx;
+  thePy             = right.thePy;
+  thePz             = right.thePz;
+  theVPx            = right.theVPx;
+  theVPy            = right.theVPy;
+  theVPz            = right.theVPz;
 }
 
 
 const TotemG4Hit& TotemG4Hit::operator=(const TotemG4Hit &right) {
 
-  entry             = right.entry;
+  MeanPosition      = right.MeanPosition;
   elem              = right.elem;
   hadr              = right.hadr;
   theIncidentEnergy = right.theIncidentEnergy;
@@ -104,6 +114,12 @@ const TotemG4Hit& TotemG4Hit::operator=(const TotemG4Hit &right) {
   theVx             = right.theVx;
   theVy             = right.theVy;
   theVz             = right.theVz;
+  thePx             = right.thePx;
+  thePy             = right.thePy;
+  thePz             = right.thePz;
+  theVPx            = right.theVPx;
+  theVPy            = right.theVPy;
+  theVPz            = right.theVPz;
 
   return *this;
 }
@@ -120,7 +136,10 @@ void TotemG4Hit::Print() {
 }
 
 
-math::XYZPoint TotemG4Hit::getEntry() const           {return entry;}
+Hep3Vector TotemG4Hit::getEntryPoint() const           {return theEntryPoint;}
+void       TotemG4Hit::setEntryPoint(Hep3Vector xyz)   { theEntryPoint    = xyz; }
+Hep3Vector TotemG4Hit::getExitPoint() const           {return theExitPoint;}
+void       TotemG4Hit::setExitPoint(Hep3Vector xyz)   { theExitPoint    = xyz; }
 
 double     TotemG4Hit::getEM() const              {return elem; }
 void       TotemG4Hit::setEM (double e)           { elem     = e; }
@@ -149,11 +168,23 @@ float      TotemG4Hit::getPabs() const            {return thePabs;}
 float      TotemG4Hit::getTof() const             {return theTof;}
 float      TotemG4Hit::getEnergyLoss() const      {return theEnergyLoss;}
 int        TotemG4Hit::getParticleType() const    {return theParticleType;}
+float      TotemG4Hit::getPx() const {return thePx;}
+float      TotemG4Hit::getPy() const {return thePy;}
+float      TotemG4Hit::getPz() const {return thePz;}
+float      TotemG4Hit::getVPx() const {return theVPx;}
+float      TotemG4Hit::getVPy() const {return theVPy;}
+float      TotemG4Hit::getVPz() const {return theVPz;}
 
 void       TotemG4Hit::setPabs(float e)           {thePabs = e;}
 void       TotemG4Hit::setTof(float e)            {theTof = e;}
 void       TotemG4Hit::setEnergyLoss(float e)     {theEnergyLoss = e;}
 void       TotemG4Hit::setParticleType(short i)   {theParticleType = i;}
+void       TotemG4Hit::setPx(float e) {thePx = e;}
+void       TotemG4Hit::setPy(float e) {thePy = e;}
+void       TotemG4Hit::setPz(float e) {thePz = e;}
+void       TotemG4Hit::setVPx(float e) {theVPx = e;}
+void       TotemG4Hit::setVPy(float e) {theVPy = e;}
+void       TotemG4Hit::setVPz(float e) {theVPz = e;}
 
 float      TotemG4Hit::getThetaAtEntry() const    {return theThetaAtEntry;}   
 float      TotemG4Hit::getPhiAtEntry() const      {return thePhiAtEntry;}
@@ -183,14 +214,16 @@ float      TotemG4Hit::getVz() const              {return theVz;}
 void       TotemG4Hit::setVz(float t)             {theVz = t;}
 
 std::ostream& operator<<(std::ostream& os, const TotemG4Hit& hit) {
-  os << " Data of this TotemG4Hit are:\n" 
-     << " Time slice ID: " << hit.getTimeSliceID() << "\n"
-     << " EnergyDeposit = " << hit.getEnergyLoss() << "\n"
-     << " Energy of primary particle (ID = " << hit.getTrackID()
-     << ") = " << hit.getIncidentEnergy() << " (MeV)" << "\n"
-     << " Entry point in Totem unit number " << hit.getUnitID()
-     << " is: " << hit.getEntry() << " (mm)" << "\n"
-     << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+  os << " Data of this TotemG4Hit are:\n"
+  << " Time slice ID: " << hit.getTimeSliceID() << "\n"
+  << " EnergyDeposit = " << hit.getEnergyLoss() << "\n"
+  << " Energy of primary particle (ID = " << hit.getTrackID()
+  << ") = " << hit.getIncidentEnergy() << " (MeV)" << "\n"
+  << " Local entry and exit points in Totem unit number " << hit.getUnitID()
+  << " are: " << hit.getEntryPoint() << " (mm)" << hit.getExitPoint() << " (mm)" <<"\n"
+  << " Global posizion in Totem unit number " << hit.getUnitID()
+  << " are: " << hit.getMeanPosition() << " (mm)" <<"\n"
+  << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
   return os;
 }
 

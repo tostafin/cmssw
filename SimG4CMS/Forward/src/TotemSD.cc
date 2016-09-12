@@ -131,7 +131,7 @@ G4bool TotemSD::ProcessHits(G4Step * aStep, G4TouchableHistory * )
 void TotemSD::Print_Hit_Info()
 {
   LogDebug("TotemRP") << theTrack->GetDefinition()->GetParticleName()
-       << " Totem_RP_SD CreateNewHit for"
+       << " TotemSD CreateNewHit for"
        << " PV "     << currentPV->GetName()
        << " PVid = " << currentPV->GetCopyNo()
        //<< " MVid = " << currentPV->GetMother()->GetCopyNo()
@@ -172,9 +172,9 @@ uint32_t TotemSD::setDetUnitId(G4Step * aStep) {
 }
 
 void TotemSD::Initialize(G4HCofThisEvent * HCE) {
-  LogDebug("TotemRP") << "Totem_RP_SD : Initialize called for " << name;
+  LogDebug("TotemRP") << "TotemSD : Initialize called for " << name;
 
-  theHC = new Totem_RP_G4HitCollection(name, collectionName[0]);
+  theHC = new TotemG4HitCollection(name, collectionName[0]);
   G4SDManager::GetSDMpointer()->AddNewCollection(name, collectionName[0]);
 
   if (hcID<0)
@@ -188,7 +188,7 @@ void TotemSD::EndOfEvent(G4HCofThisEvent* )
   // here we loop over transient hits and make them persistent
   for (int j=0; j<theHC->entries() && j<15000; j++)
   {
-    Totem_RP_G4Hit* aHit = (*theHC)[j];
+    TotemG4Hit* aHit = (*theHC)[j];
     //Local3DPoint theEntrance(aHit->getEntry().x(),aHit->getEntry().y(),aHit->getEntry().z());
     //Local3DPoint theExitPoint(aHit->getExit().x(),aHit->getExit().y(),aHit->getExit().z());
 
@@ -237,7 +237,7 @@ void TotemSD::clearHits(){
   slave->Initialize();
 }
 
-void Totem_RP_SD::SetNumberingScheme(TotemRPVDetectorOrganization* scheme)
+void TotemSD::SetNumberingScheme(TotemRPVDetectorOrganization* scheme)
 {
   if (numberingScheme)
     delete numberingScheme;
@@ -245,13 +245,15 @@ void Totem_RP_SD::SetNumberingScheme(TotemRPVDetectorOrganization* scheme)
 }
 
 
-G4ThreeVector TotemSD::SetToLocal(const G4ThreeVector& global) {
-
-  G4ThreeVector       localPoint;
+G4ThreeVector TotemSD::SetToLocal(G4ThreeVector global)
+{
+  G4ThreeVector localPoint;
   const G4VTouchable* touch= preStepPoint->GetTouchable();
   localPoint = touch->GetHistory()->GetTopTransform().TransformPoint(global);
-  return localPoint;  
+
+  return localPoint;
 }
+
 
 void TotemSD::GetStepInfo(G4Step* aStep)
 {
@@ -362,7 +364,7 @@ bool TotemSD::HitExists() {
   }    
 }
 
-void Totem_RP_SD::CreateNewHit()
+void TotemSD::CreateNewHit()
 {
   currentHit = new TotemG4Hit;
   currentHit->setTrackID(primaryID);
@@ -426,7 +428,8 @@ void TotemSD::CreateNewHitEvo() {
   _PosizioEvo=PosizioEvo(Posizio,Vx,Vy,Vz,Pabs,flagAcc);
 
   if(flagAcc==1){
-    currentHit->setEntry(_PosizioEvo.x(),_PosizioEvo.y(),_PosizioEvo.z());
+  Hep3Vector* vector = new Hep3Vector(_PosizioEvo.x(),_PosizioEvo.y(),_PosizioEvo.z());
+    currentHit->setEntry(vector);
 
     // if(flagAcc==1)
     UpdateHit();
@@ -564,12 +567,12 @@ void TotemSD::UpdateHit() {
   previousUnitID = unitID;
 }
 
-void TotemSD::StoreHit(Totem_RP_G4Hit* hit)
+void TotemSD::StoreHit(TotemG4Hit* hit)
 {
   if (hit == 0 )
   {
     if(verbosity_)
-      LogDebug("TotemRP") << "Totem_RP_SD: hit to be stored is NULL !!" <<std::endl;
+      LogDebug("TotemRP") << "TotemSD: hit to be stored is NULL !!" <<std::endl;
     return;
   }
 
@@ -585,7 +588,7 @@ void TotemSD::ResetForNewPrimary() {
 void TotemSD::Summarize() {
 }
 
-bool Totem_RP_SD::IsPrimary(const G4Track * track)
+bool TotemSD::IsPrimary(const G4Track * track)
 {
   TrackInformation* info
     = dynamic_cast<TrackInformation*>( track->GetUserInformation() );

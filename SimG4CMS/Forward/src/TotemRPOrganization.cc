@@ -72,5 +72,5 @@ G4VPhysicalVolume* physVol;
   }
 
 //  return UNITA;
-  return TotRPDetId(arm, station, roman_pot, detector).rawId();
+  return TotemRPDetId(arm, station, roman_pot, detector).rawId();
 }

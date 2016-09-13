@@ -5,6 +5,7 @@
 <use   name="SimG4Core/Application"/>
 <use   name="SimG4CMS/Calo"/>
 <use   name="DataFormats/ForwardDetId"/>
+<use   name="DataFormats/TotemRPDetId"/>
 <use   name="DataFormats/Math"/>
 <use   name="SimDataFormats/SimHitMaker"/>
 <use   name="SimDataFormats/CaloHit"/>

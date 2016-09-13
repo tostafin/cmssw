@@ -91,6 +91,9 @@ const TotemG4Hit& TotemG4Hit::operator=(const TotemG4Hit &right)
 }
 
 void TotemG4Hit::addEnergyDeposit(const TotemG4Hit& aHit) {
+  elem += aHit.getEM();
+  hadr += aHit.getHadr();
+}
 
 void TotemG4Hit::Print() {
   edm::LogInfo("TotemRP") << (*this);

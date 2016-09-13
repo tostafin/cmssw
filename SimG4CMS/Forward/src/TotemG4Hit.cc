@@ -41,10 +41,6 @@ TotemG4Hit::TotemG4Hit():entry(0)
 
 TotemG4Hit::~TotemG4Hit() {}
 
-TotemG4Hit::~TotemG4Hit()
-{
-}
-
 TotemG4Hit::TotemG4Hit(const TotemG4Hit &right)
 {
   theIncidentEnergy  = right.theIncidentEnergy;
@@ -96,7 +92,7 @@ const TotemG4Hit& TotemG4Hit::operator=(const TotemG4Hit &right)
 
 void TotemG4Hit::addEnergyDeposit(const TotemG4Hit& aHit) {
 
-void Totem_RP_G4Hit::Print() {
+void TotemG4Hit::Print() {
   edm::LogInfo("TotemRP") << (*this);
 }
 

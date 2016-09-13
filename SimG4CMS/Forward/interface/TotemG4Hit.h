@@ -76,10 +76,10 @@ public:
   double       getIncidentEnergy() const;
   void         setIncidentEnergy (double e);
   
-  int          getTrackID() const;
+  unsigned int          getTrackID() const;
   void         setTrackID (int i);
   
-  uint32_t     getUnitID() const;
+  int     getUnitID() const;
   void         setUnitID (unsigned int i);
   
   double       getTimeSlice() const;     

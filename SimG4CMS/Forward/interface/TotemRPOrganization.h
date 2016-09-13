@@ -52,7 +52,7 @@ private:
 
 };
 
-inline myTotemRPOrganization :: myTotemRPOrganization()
+inline TotemRPOrganization :: TotemRPOrganization()
 {}
 
 #endif

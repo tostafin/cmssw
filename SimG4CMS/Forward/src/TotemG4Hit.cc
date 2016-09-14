@@ -90,11 +90,6 @@ const TotemG4Hit& TotemG4Hit::operator=(const TotemG4Hit &right)
   return *this;
 }
 
-//void TotemG4Hit::addEnergyDeposit(const TotemG4Hit& aHit) {//TODO delete?
-//  elem += aHit.getEM();
-//  hadr += aHit.getHadr();
-//}
-
 void TotemG4Hit::Print() {
   edm::LogInfo("TotemRP") << (*this);
 }
@@ -175,7 +170,6 @@ std::ostream& operator<<(std::ostream& os, const TotemG4Hit& hit) {
   os << " Data of this TotemG4Hit are:" << std::endl
      << " Time slice ID: " << hit.getTimeSliceID() << std::endl
      << " EnergyDeposit = " << hit.getEnergyLoss() << std::endl
-  //    << " EnergyDeposit of HD particles = " << hit.getHadr() << std::endl
      << " Energy of primary particle (ID = " << hit.getTrackID()
      << ") = " << hit.getIncidentEnergy() << " (MeV)"<<std::endl
      << " Entry point in Totem unit number " << hit.getUnitID()

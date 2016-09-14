@@ -48,8 +48,8 @@ public:
   TotemG4Hit(const TotemG4Hit &right);
 
   // ---------- operators ----------------------------------
-  const TotemG4Hit& operator=(const TotemG4Hit &right); //to delete?
-  int operator==(const TotemG4Hit &){return 0;} //to delete?
+  const TotemG4Hit& operator=(const TotemG4Hit &right);
+  int operator==(const TotemG4Hit &){return 0;}
 
 
   // ---------- member functions ---------------------------
@@ -84,13 +84,8 @@ public:
   
   double       getTimeSlice() const;     
   void         setTimeSlice(double d);
-  int          getTimeSliceID() const;     
-  
-  void         addEnergyDeposit(double em, double hd);
-  void         addEnergyDeposit(const TotemG4Hit& aHit);
-  
-  double       getEnergyDeposit() const;
-  
+  int          getTimeSliceID() const;
+
   double        getPabs() const;
   double        getTof() const;
   double        getEnergyLoss() const;

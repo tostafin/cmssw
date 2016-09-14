@@ -84,11 +84,8 @@ private:
 
   G4ThreeVector SetToLocal(G4ThreeVector globalPoint);
   void GetStepInfo(G4Step* aStep);
-  G4bool HitExists(); //TODO delete?
   void CreateNewHit();
-  void           CreateNewHitEvo(); //TODO delete?
-  G4ThreeVector  PosizioEvo(const G4ThreeVector&,double ,double ,double, double,int&); //to delete?
-  void           UpdateHit();
+  G4ThreeVector  PosizioEvo(const G4ThreeVector&,double ,double ,double, double,int&);
   void StoreHit(TotemG4Hit*);
   void ResetForNewPrimary();
   void Summarize();

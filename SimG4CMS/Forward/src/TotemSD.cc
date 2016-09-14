@@ -322,48 +322,6 @@ void TotemSD::GetStepInfo(G4Step* aStep)
   Vz = theTrack->GetVertexPosition().z()/mm;
 }
 
-//bool TotemSD::HitExists() { TODO to delete?
-//
-//  if (primaryID<1) {
-//    edm::LogWarning("ForwardSim") << "***** TotemSD error: primaryID = "
-//				  << primaryID
-//				  << " maybe detector name changed";
-//  }
-//
-//  // Update if in the same detector, time-slice and for same track
-//  //  if (primaryID == primID && tSliceID == tsID && unitID==previousUnitID) {
-//  if (tSliceID == tsID && unitID==previousUnitID) {
-//    UpdateHit();
-//    return true;
-//  }
-//
-//  // Reset entry point for new primary
-//  if (primaryID != primID)
-//    ResetForNewPrimary();
-//
-//  //look in the HitContainer whether a hit with the same primID, unitID,
-//  //tSliceID already exists:
-//
-//  bool found = false;
-//
-//  for (int j=0; j<theHC->entries()&&!found; j++) {
-//    TotemG4Hit* aPreviousHit = (*theHC)[j];
-//    if (aPreviousHit->getTrackID()     == primaryID &&
-//	aPreviousHit->getTimeSliceID() == tSliceID  &&
-//	aPreviousHit->getUnitID()      == unitID       ) {
-//      currentHit = aPreviousHit;
-//      found      = true;
-//    }
-//  }
-//
-//  if (found) {
-//    UpdateHit();
-//    return true;
-//  } else {
-//    return false;
-//  }
-//}
-
 void TotemSD::CreateNewHit()
 {
   currentHit = new TotemG4Hit;
@@ -396,48 +354,6 @@ void TotemSD::CreateNewHit()
   StoreHit(currentHit);
 // LogDebug("TotemRP") << "STORED HIT IN: " << unitID << std::endl;
 }
-
-
-
-//void TotemSD::CreateNewHitEvo() { //TODO to delete?
-//
-//// LogDebug("ForwardSim") << "INSIDE CREATE NEW HIT EVO ";
-//
-//  currentHit = new TotemG4Hit;
-//  currentHit->setTrackID(primaryID);
-//  currentHit->setTimeSlice(tSlice);
-//  currentHit->setUnitID(unitID);
-//  currentHit->setIncidentEnergy(incidentEnergy);
-//
-//  currentHit->setPabs(Pabs);
-//  currentHit->setTof(Tof);
-//  currentHit->setEnergyLoss(Eloss);
-//  currentHit->setParticleType(ParticleType);
-//  currentHit->setThetaAtEntry(ThetaAtEntry);
-//  currentHit->setPhiAtEntry(PhiAtEntry);
-//
-//  //  LogDebug("ForwardSim") << Posizio.x() << " " << Posizio.y() << " " << Posizio.z();
-//
-//  currentHit->setParentId(ParentId);
-//  currentHit->setVx(Vx);
-//  currentHit->setVy(Vy);
-//  currentHit->setVz(Vz);
-//
-//  G4ThreeVector _PosizioEvo;
-//  int flagAcc=0;
-//  _PosizioEvo=PosizioEvo(Posizio,Vx,Vy,Vz,Pabs,flagAcc);
-//
-//  if(flagAcc==1){
-//  Hep3Vector* vector = new Hep3Vector(_PosizioEvo.x(),_PosizioEvo.y(),_PosizioEvo.z());
-//    currentHit->setEntry(vector);
-//
-//    // if(flagAcc==1)
-//    UpdateHit();
-//
-//    StoreHit(currentHit);
-//  }
-//  // LogDebug("ForwardSim") << "STORED HIT IN: " << unitID;
-//}
  
 G4ThreeVector TotemSD::PosizioEvo(const G4ThreeVector& Pos, double vx, double vy,
 				  double vz, double pabs, int& accettanza) {
@@ -533,39 +449,6 @@ G4ThreeVector TotemSD::PosizioEvo(const G4ThreeVector& Pos, double vx, double vy
 // --------------
   return PosEvo;
 }
- 
-
-//void TotemSD::UpdateHit() { //TODO delete?
-//  //
-//  if (Eloss > 0.) {
-//    //  currentHit->addEnergyDeposit(edepositEM,edepositHAD);
-//
-//#ifdef debug
-//    LogDebug("ForwardSim") << "G4TotemT1SD updateHit: add eloss " << Eloss
-//			   << "\nCurrentHit=" << currentHit
-//			   << ", PostStepPoint="
-//			   << postStepPoint->GetPosition();
-//#endif
-//
-//    currentHit->setEnergyLoss(Eloss);
-//  }
-//  //  if(PostStepPoint->GetPhysicalVolume() != CurrentPV){
-//  //  currentHit->setExitPoint(SetToLocal(postStepPoint->GetPosition()));
-//  // Local3DPoint exit=currentHit->exitPoint();
-///*
-//#ifdef debug
-//  LogDebug("ForwardSim") << "G4TotemT1SD updateHit: exit point "
-//			 << exit.x() << " " << exit.y() << " " << exit.z();
-////  LogDebug("ForwardSim") << "Energy deposit in Unit " << unitID << " em " << edepositEM/MeV
-//// << " hadronic " << edepositHAD/MeV << " MeV";
-//#endif
-//*/
-//
-//  // buffer for next steps:
-//  tsID           = tSliceID;
-//  primID         = primaryID;
-//  previousUnitID = unitID;
-//}
 
 void TotemSD::StoreHit(TotemG4Hit* hit)
 {

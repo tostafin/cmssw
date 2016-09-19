@@ -4,10 +4,6 @@
 * Authors:
 *   Jan Kašpar (jan.kaspar@gmail.com)
 *
-* $$RCSfile: ProtonTransportFunctionsESSource.cc,v $: $
-* $Revision: 1.1.2.4 $
-* $Date: 2009/11/16 16:54:05 $
-*
 ****************************************************************************/
 
 #include "FWCore/Framework/interface/MakerMacros.h"

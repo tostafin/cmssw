@@ -5,10 +5,6 @@
 *    Hubert Niewiadomski
 *    Jan Kašpar (jan.kaspar@gmail.com)
 *
-* $$RCSfile: TotemRPProtonTransportSetup.h,v $: $
-* $Revision: 1.1.1.1.6.2 $
-* $Date: 2009/11/16 16:55:54 $
-*
 ****************************************************************************/
 
 #ifndef SimG4Core_Application_TotemRPProtonTransportSetup_h_

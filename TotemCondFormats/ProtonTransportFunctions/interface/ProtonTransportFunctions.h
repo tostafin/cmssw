@@ -4,10 +4,6 @@
 * Authors:
 *   Jan Kašpar (jan.kaspar@gmail.com)
 *
-* $$RCSfile: ProtonTransportFunctions.h,v $: $
-* $Revision: 1.1.2.2 $
-* $Date: 2009/11/03 10:37:15 $
-*
 ****************************************************************************/
 
 

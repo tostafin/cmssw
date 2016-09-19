@@ -1,9 +1,3 @@
-/*********************************************************
-* $Id: FitData.cc,v 1.2 2008/04/10 14:54:19 lgrzanka Exp $
-* $Revision: 1.2 $
-* $Date: 2008/04/10 14:54:19 $
-**********************************************************/
-
 #include "SimG4Core/TotemRPProtonTransportParametrization/interface/FitData.h"
 
 FitData::FitData(){

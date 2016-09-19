@@ -1,9 +1,3 @@
-/*********************************************************
-* $Id: FitData.h,v 1.1.1.1 2007/05/16 15:44:49 hniewiad Exp $
-* $Revision: 1.1.1.1 $
-* $Date: 2007/05/16 15:44:49 $
-**********************************************************/
-
 #ifndef SimG4Core_TotemRPProtonTransportParametrization_FitData_h
 #define SimG4Core_TotemRPProtonTransportParametrization_FitData_h
 

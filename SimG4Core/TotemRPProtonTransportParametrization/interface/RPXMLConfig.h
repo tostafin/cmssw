@@ -1,9 +1,3 @@
-/*********************************************************
-* $Id: RPXMLConfig.h,v 1.1.1.1 2007/05/16 15:44:50 hniewiad Exp $
-* $Revision: 1.1.1.1 $
-* $Date: 2007/05/16 15:44:50 $
-**********************************************************/
-
 #ifndef SimG4Core_TotemRPProtonTransportParametrization_RPXMLConfig_H
 #define SimG4Core_TotemRPProtonTransportParametrization_RPXMLConfig_H
 

@@ -157,6 +157,7 @@ private:
   double theVy;
   double theVz;
 
+  double p_x, p_y, p_z;
 };
 
 std::ostream& operator<<(std::ostream&, const TotemG4Hit&);

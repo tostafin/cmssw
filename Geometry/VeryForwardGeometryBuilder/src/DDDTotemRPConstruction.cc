@@ -73,10 +73,10 @@ void DDDTotemRPContruction::buildDetGeomDesc(DDFilteredView *fv, DetGeomDesc *gd
       const unsigned int station = (A % 100) / 10;
       const unsigned int rp = A % 10;
       const unsigned int detector = cN[cN.size() - 1];
-      cout<<"arm:"<<arm<<", station:"<<station<<", rp:"<<rp<<", detector:"<<detector<<std::endl;
-      cout<<"TotemRPDetId(arm, station, rp, detector) "<<TotemRPDetId(arm, station, rp, detector).detectorDecId()<<", "<<TotemRPDetId(arm, station, rp, detector).decToRawId(TotemRPDetId(arm, station, rp, detector).detectorDecId())<<std::endl;
+      //cout<<"arm:"<<arm<<", station:"<<station<<", rp:"<<rp<<", detector:"<<detector<<std::endl;
+      //cout<<"TotemRPDetId(arm, station, rp, detector) "<<TotemRPDetId(arm, station, rp, detector).detectorDecId()<<", "<<TotemRPDetId(arm, station, rp, detector).decToRawId(TotemRPDetId(arm, station, rp, detector).detectorDecId())<<std::endl;
       newGD->setGeographicalID(TotemRPDetId(arm, station, rp, detector));
-	  cout << "A = " << A << "; arm = " << arm << " st = " << station << " rp = " << rp << " det = " << detector << " --> "<< gd->geographicalID().rawId() << endl;
+	  //cout << "A = " << A << "; arm = " << arm << " st = " << station << " rp = " << rp << " det = " << detector << " --> "<< gd->geographicalID().rawId() << endl;
     }
 
     if (fv->logicalPart().name().name().compare(DDD_TOTEM_RP_PRIMARY_VACUUM_NAME) == 0)

@@ -41,7 +41,6 @@
 class G4Step;
 class G4HCofThisEvent;
 class TrackingSlaveSD;
-//class FrameRotation;
 class TotemTestHitHBNtuple;
 
 class TotemSD : public SensitiveTkDetector,
@@ -77,8 +76,6 @@ public:
   TrackingSlaveSD* slave;
   TotemVDetectorOrganization * numberingScheme;
 
-//  int eventno;
-
 private:
   int verbosity_;
 
@@ -104,13 +101,13 @@ private:
   G4String name;
   G4int hcID;
   TotemG4HitCollection* theHC;
-  const SimTrackManager*      theManager; //todelete?
+  const SimTrackManager*      theManager;
 
   int                         tsID; 
   TotemG4Hit*                 currentHit;
   G4Track*                    theTrack;
   G4VPhysicalVolume*          currentPV;
-  unsigned int                    unitID, previousUnitID;//2nd to delete?
+  unsigned int                    unitID, previousUnitID;
   int                         primaryID, tSliceID;  
   double                      tSlice;
 

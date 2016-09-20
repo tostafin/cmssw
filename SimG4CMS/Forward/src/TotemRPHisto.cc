@@ -6,8 +6,6 @@
 #include <string>
 #include <cmath>
 
-//#define IT_DEBUG
-
 TotemRPHisto::TotemRPHisto()
 {
   TotemRPHisto("RPDefaultOldFile.root");

@@ -16,7 +16,6 @@
 #include "SimG4CMS/Forward/interface/TotemG4Hit.h"
 #include "SimG4CMS/Forward/interface/TotemG4HitCollection.h"
 
-//#include "SimG4CMS/TotemRP/interface/RPDebugEvent.h"
 #include "DataFormats/TotemRPDetId/interface/TotemRPDetId.h"
 
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -38,8 +37,6 @@
 #include "G4ThreeVector.hh"
 #include "TString.h"
 
-//#include <cassert>
-
 TotemRP::TotemRP(const edm::ParameterSet &p)
  : primary_proton_id_code(-1),  
  particle_leaving_220_right_station_id_code(-2),
@@ -51,13 +48,11 @@ TotemRP::TotemRP(const edm::ParameterSet &p)
  particle_leaving_front_wall_of_RP_id_code(-9),
  primary_proton_inelastic_event_in_RP_station(-5), 
  particle_entering_station_id_code(-10)//, 
- //histos(0), tuplesManager(0)
 {
   edm::ParameterSet m_Anal = p.getParameter<edm::ParameterSet>("TotemRP");
   verbosity_ = m_Anal.getParameter<bool>("Verbosity");
   fileName = m_Anal.getParameter<std::string>("FileName");
-  //RP_debugfileName = m_Anal.getParameter<std::string>("RPDebugFileName");
-  
+
   nomeFile = m_Anal.getParameter<std::string>("FileNameOLD");
   names = m_Anal.getParameter<std::vector<std::string> >("Names");
   
@@ -865,18 +860,11 @@ void TotemRP::update(const EndOfEvent * evt)
           tuples->fillHit(UID, Ptype, TID, PID, ELoss, PABS, p_x, p_y, p_z, vx, vy, vz,
           x, y, z, lx, ly, lz, x_ex, y_ex, z_ex, lx_ex, ly_ex, lz_ex, prim_vert_id);
 
-    //  void fillHit(int UID_, int Ptype_, int TID_, int PID_, double ELoss_, double PABS_,
-    //    double p_x_, double p_y_, double p_z_, double vx_, double vy_, double vz_, double x_,
-    //    double y_, double z_, double lx_, double ly_, double lz_,
-    //    double x_ex_, double y_ex_, double z_ex_, double lx_ex_, double ly_ex_, double lz_ex_
-    //    int prim_vert_id_);
         }
       }
     }
   }
-  tuplesManager->fillTree(tuples); // (no need to delete it...)
-  //debugManager->fillTree(debug_event); // (no need to delete it...)
-//  tuples = 0; // but avoid to reuse it...
+  tuplesManager->fillTree(tuples);
 
   if(verbosity_)
     LogDebug("TotemRP") << "TotemRP:: --- after fillTree";

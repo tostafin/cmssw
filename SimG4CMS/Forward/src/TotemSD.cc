@@ -116,15 +116,9 @@ G4bool TotemSD::ProcessHits(G4Step * aStep, G4TouchableHistory * )
   else
   {
     GetStepInfo(aStep);
-//    if(Vz>100000 && theTrack->GetDefinition()->GetParticleName()!="proton")
-//      Print_Hit_Info();
-
-	  //if(Eloss>0.0 /*&& ParticleType==2212 && Pabs > 6000. */)
-    //{
       CreateNewHit();
       //LogDebug("TotemRP")<<"New hit created"<<std::endl;
 	    return true;
-	  //}
 	}
 }
 
@@ -134,7 +128,6 @@ void TotemSD::Print_Hit_Info()
        << " TotemSD CreateNewHit for"
        << " PV "     << currentPV->GetName()
        << " PVid = " << currentPV->GetCopyNo()
-       //<< " MVid = " << currentPV->GetMother()->GetCopyNo()
        << " Unit "   << unitID;
   LogDebug("TotemRP") << " primary "    << primaryID
        << " time slice " << tSliceID
@@ -189,8 +182,6 @@ void TotemSD::EndOfEvent(G4HCofThisEvent* )
   for (int j=0; j<theHC->entries() && j<15000; j++)
   {
     TotemG4Hit* aHit = (*theHC)[j];
-    //Local3DPoint theEntrance(aHit->getEntry().x(),aHit->getEntry().y(),aHit->getEntry().z());
-    //Local3DPoint theExitPoint(aHit->getExit().x(),aHit->getExit().y(),aHit->getExit().z());
 
     Local3DPoint Entrata(aHit->getLocalEntry().x(),
        aHit->getLocalEntry().y(),
@@ -206,7 +197,6 @@ void TotemSD::EndOfEvent(G4HCofThisEvent* )
   }
   Summarize();
 }
-
 
 void TotemSD::clear() {
 } 
@@ -260,27 +250,17 @@ void TotemSD::GetStepInfo(G4Step* aStep)
   preStepPoint = aStep->GetPreStepPoint();
   postStepPoint = aStep->GetPostStepPoint();
   theTrack = aStep->GetTrack();
-//  theLocalEntryPoint = SensitiveDetector::InitialStepPosition(aStep,LocalCoordinates);
-//  theLocalExitPoint = SensitiveDetector::FinalStepPosition(aStep,LocalCoordinates);
   hitPoint = preStepPoint->GetPosition();
   exitPoint = postStepPoint->GetPosition();
   currentPV = preStepPoint->GetPhysicalVolume();
   theLocalEntryPoint = SetToLocal(hitPoint);
   theLocalExitPoint = SetToLocal(exitPoint);
 
-// double weight = 1;
   G4String name = currentPV->GetName();
   name.assign(name,0,4);
-//  if(name == "EBRY" || name == "EFRY")
-//   {
-//     weight = LY_curve(name, hitPoint);
-//  }
-//  TrackInformation * trkInfo =
-//  (TrackInformation *)(theTrack->GetUserInformation());
+
   G4String particleType = theTrack->GetDefinition()->GetParticleName();
-//  if (particleType == "e-" ||
-//    particleType == "e+" ||
-//    particleType == "gamma" ){
+
   tSlice = (postStepPoint->GetGlobalTime() )/nanosecond;
   tSliceID = (int) tSlice;
   unitID = setDetUnitId(aStep);
@@ -308,8 +288,6 @@ void TotemSD::GetStepInfo(G4Step* aStep)
   ThetaAtEntry = lnmd.theta();
   PhiAtEntry = lnmd.phi();
 
-//  ThetaAtEntry     = aStep->GetPreStepPoint()->GetPosition().theta()/deg;
-//  PhiAtEntry       = aStep->GetPreStepPoint()->GetPosition().phi()/deg;
 
 //  LogDebug("TotemRP") << "UUUUUUUNNNNNNNNNNIIIIIIIIIITTTTTTTTTTTTTIIIIDDDD " <<
 //    numberingScheme->GetUnitID(aStep) << std::endl ;
@@ -358,17 +336,11 @@ void TotemSD::CreateNewHit()
 G4ThreeVector TotemSD::PosizioEvo(const G4ThreeVector& Pos, double vx, double vy,
 				  double vz, double pabs, int& accettanza) {
   accettanza=0;
-  //Pos.xyz() in mm
-  G4ThreeVector PosEvo; 
+  G4ThreeVector PosEvo;
   double ThetaX=atan((Pos.x()-vx)/(Pos.z()-vz));                 
   double ThetaY=atan((Pos.y()-vy)/(Pos.z()-vz));                
   double X_at_0 =(vx-((Pos.x()-vx)/(Pos.z()-vz))*vz)/1000.;   
-  double Y_at_0 =(vy-((Pos.y()-vy)/(Pos.z()-vz))*vz)/1000.;  
-  
-  //  double temp_evo_X;
-  //  double temp_evo_Y;
-  //  double temp_evo_Z;
-  //  temp_evo_Z = fabs(Pos.z())/Pos.z()*220000.; 
+  double Y_at_0 =(vy-((Pos.y()-vy)/(Pos.z()-vz))*vz)/1000.;
  
   //csi=-dp/d
   double csi = fabs((7000.-pabs)/7000.);

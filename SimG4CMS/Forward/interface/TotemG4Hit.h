@@ -51,7 +51,6 @@ public:
   const TotemG4Hit& operator=(const TotemG4Hit &right);
   int operator==(const TotemG4Hit &){return 0;}
 
-
   // ---------- member functions ---------------------------
   void         Draw(){}
   void         Print();
@@ -158,7 +157,6 @@ private:
   double theVy;
   double theVz;
 
-  double p_x, p_y, p_z;
 };
 
 std::ostream& operator<<(std::ostream&, const TotemG4Hit&);

@@ -40,9 +40,9 @@ common_UseLuminosity = cms.PSet(
 
 g4SimHits = cms.EDProducer("OscarMTProducer",
     NonBeamEvent = cms.bool(False),
-    G4EventManagerVerbosity = cms.untracked.int32(5),
-    G4StackManagerVerbosity = cms.untracked.int32(5),
-    G4TrackingManagerVerbosity = cms.untracked.int32(5),
+    G4EventManagerVerbosity = cms.untracked.int32(0),
+    G4StackManagerVerbosity = cms.untracked.int32(0),
+    G4TrackingManagerVerbosity = cms.untracked.int32(0),
     UseMagneticField = cms.bool(True),
     OverrideUserStackingAction = cms.bool(True),   # HINT: TOTEM specific
     StoreRndmSeeds = cms.bool(False),
@@ -62,7 +62,7 @@ g4SimHits = cms.EDProducer("OscarMTProducer",
         NodeNames = cms.vstring('World')
     ),
     G4Commands = cms.vstring(),
-    SteppingVerbosity = cms.int32(5),
+    SteppingVerbosity = cms.int32(0),
     StepVerboseThreshold = cms.double(0.1), # in GeV
     VerboseEvents = cms.vint32(),
     VerboseTracks = cms.vint32(),
@@ -126,7 +126,7 @@ g4SimHits = cms.EDProducer("OscarMTProducer",
         DummyEMPhysics = cms.bool(False),
         CutsPerRegion = cms.bool(True),
         CutsOnProton  = cms.untracked.bool(True),
-        DefaultCutValue = cms.double(100.0), # HINT: TOTEM uses 100.0cm, CMS uses 1.0cm
+        DefaultCutValue = cms.double(1.0), # HINT: TOTEM uses 100.0cm, CMS uses 1.0cm
         G4BremsstrahlungThreshold = cms.double(0.5), ## cut in GeV
         Verbosity = cms.untracked.int32(0),
         # 1 will print cuts as they get set from DD

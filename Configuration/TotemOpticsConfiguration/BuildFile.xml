@@ -6,6 +6,6 @@
 <use   name="root"/>
 
 <use   name="TotemCondFormats/ProtonTransportFunctions"/>
-<use   name="DataFormats/TotemRPDataTypes"/>
+<use   name="DataFormats/CTPPSReco"/>
 <use   name="SimG4Core/TotemRPProtonTransportParametrization"/>
 <flags   EDM_PLUGIN="1"/>

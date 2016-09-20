@@ -4,7 +4,6 @@
 #include <memory>
 #include "boost/shared_ptr.hpp"
 
-
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/Framework/interface/EventSetupRecordIntervalFinder.h"
@@ -17,9 +16,7 @@ class BeamOpticsParamsESSource : public edm::ESProducer, public edm::EventSetupR
   public:
   BeamOpticsParamsESSource(const edm::ParameterSet &);
   ~BeamOpticsParamsESSource();
-  
-  //      typedef edm::ESProducts<> ReturnType;
-  
+
   virtual std::unique_ptr<BeamOpticsParams> produce(const BeamOpticsParamsRcd &);
   
   protected:
@@ -29,7 +26,5 @@ class BeamOpticsParamsESSource : public edm::ESProducer, public edm::EventSetupR
   private:
     edm::ParameterSet conf_;
 };
-
-
 
 #endif

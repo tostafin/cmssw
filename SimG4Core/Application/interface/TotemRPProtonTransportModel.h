@@ -10,8 +10,6 @@
 #ifndef SimG4Core_Application_TotemRPProtonTransportModel_h_
 #define SimG4Core_Application_TotemRPProtonTransportModel_h_
 
-//#define G4V7
-
 #include "G4VFastSimulationModel.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4TwoVector.hh"
@@ -29,7 +27,6 @@ public:
         BEAM_IP_150_R, BEAM_IP_150_L, NOT_DEF
     };
 
-    /// Constructor
     TotemRPProtonTransportModel(G4String ModelVolumeName, G4Envelope *envelope,
                                 const LHCOpticsApproximator &approx, double zin, double zout,
                                 bool verbosity);

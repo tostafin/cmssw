@@ -10,8 +10,6 @@
 #ifndef SimG4Core_Application_TotemRPProtonTransportSetup_h_
 #define SimG4Core_Application_TotemRPProtonTransportSetup_h_
 
-//#define G4V7
-
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "SimG4Core/Application/interface/TotemRPProtonTransportModel.h"
 #include "FWCore/Framework/interface/ESWatcher.h"
@@ -77,4 +75,3 @@ private:
 
 
 #endif  //SimG4Core_Application_TotemRPProtonTransportSetup_h_
-

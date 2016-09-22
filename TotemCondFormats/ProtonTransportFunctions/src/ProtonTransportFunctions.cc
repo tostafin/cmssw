@@ -29,21 +29,7 @@ ProtonTransportFunctions::~ProtonTransportFunctions()
 //  printf(">> ProtonTransportFunctions::~ProtonTransportFunctions\n");
 }
 
-/*
-//----------------------------------------------------------------------------------------------------
 
-LHCOpticsApproximator* ProtonTransportFunctions::GetFunction(const std::string &name) const
-{
-  for (vector<LHCOpticsApproximator *>::const_iterator it = functions.begin(); it != functions.end(); ++it)
-    if (!name.compare((*it)->GetName())) return (*it);
-
-  throw cms::Exception("ProtonTransportFunctions::GetFunction") << "Optical function `" << name << "' has not been found." << endl;
-  return NULL;
-}
-
-
-//----------------------------------------------------------------------------------------------------
-*/
 void ProtonTransportFunctions::InitFunction(unsigned int RPId, LHCOpticsApproximator *of)
 {
   functionMap[RPId].ideal = of;

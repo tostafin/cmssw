@@ -147,7 +147,7 @@ void RunManagerMT::initG4(const DDCompactView *pDD, const MagneticField *pMF,
   // step limiters on top of any Physics Lists
   phys->RegisterPhysics(new ParametrisedEMPhysics("EMoptions",m_pPhysics));
 
-  //Adding Totem proton transport
+  //Adding fast proton transport to Roman Pot stations
   if(m_TransportParticlesThroughWholeBeampipe)
     phys->RegisterPhysics(new TotemRPProtonTransportPhysics("totem_parametrised_prot_transp", m_pPhysics));
 

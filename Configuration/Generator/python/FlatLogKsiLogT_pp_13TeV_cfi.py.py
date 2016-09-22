@@ -7,7 +7,7 @@ generator = cms.EDProducer("FlatProtonLogKsiLogTGun",
 
     RightArm = cms.untracked.bool(True),
     LeftArm = cms.untracked.bool(True),
-    NominalEnergy = cms.untracked.double(6500.0), # [GeV]
+    NominalEnergy = cms.untracked.double(6500.0), # center of mass energy is 13 TeV and nominal energy is 6.5 TeV
     MinT = cms.untracked.double(-0.0001),
     MaxT = cms.untracked.double(-3),
     MinPhi = cms.untracked.double(-3.141592654),

@@ -1,4 +1,4 @@
-<library   name="IOMCFlatProtonLogKsiLogTGunPlugins" file="*.cc">
+<library   name="IOMCParticleGunsFlatProtonLogKsiLogTGunPlugins" file="*.cc">
 	<flags   EDM_PLUGIN="1"/>
 	<flags   cxxflags="-O3 -g3 $(CUSTOM_FLAGS)"/>
 	<use   name="boost"/>

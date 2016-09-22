@@ -36,10 +36,6 @@ FlatProtonLogKsiLogTGun::FlatProtonLogKsiLogTGun(const edm::ParameterSet& pset)
 
   produces<edm::HepMCProduct>();
 
-//  std::cout << "Internal FlatRandomEGun is initialized" << std::endl ;
-  
-
-  
   log10_t_min_ = TMath::Log10( TMath::Abs(min_t_) );
   log10_t_max_ = TMath::Log10( TMath::Abs(max_t_) );
   log10_ksi_min_ = TMath::Log10( TMath::Abs(min_ksi_) );
@@ -170,8 +166,6 @@ void FlatProtonLogKsiLogTGun::produce(edm::Event& e, const edm::EventSetup& es)
 
 
   edm::Service<edm::RandomNumberGenerator> rng;
-  //long seed = (long)(rng->mySeed());
-
   fRandomEngine = &rng->getEngine(e.streamID());
   fRandomGenerator = new CLHEP::RandFlat(fRandomEngine);
 

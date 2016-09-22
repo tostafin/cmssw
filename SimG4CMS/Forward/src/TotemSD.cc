@@ -179,8 +179,7 @@ void TotemSD::Initialize(G4HCofThisEvent * HCE) {
 void TotemSD::EndOfEvent(G4HCofThisEvent* )
 {
   // here we loop over transient hits and make them persistent
-  for (int j=0; j<theHC->entries() && j<15000; j++)
-  {
+  for (int j=0; j<theHC->entries() && j<15000; j++) {
     TotemG4Hit* aHit = (*theHC)[j];
 
     Local3DPoint Entrata(aHit->getLocalEntry().x(),

@@ -80,12 +80,12 @@ private:
   int verbosity_;
 
   G4ThreeVector SetToLocal(G4ThreeVector globalPoint);
-  void GetStepInfo(G4Step* aStep);
-  void CreateNewHit();
+  void           GetStepInfo(G4Step* aStep);
+  void           CreateNewHit();
   G4ThreeVector  PosizioEvo(const G4ThreeVector&,double ,double ,double, double,int&);
-  void StoreHit(TotemG4Hit*);
-  void ResetForNewPrimary();
-  void Summarize();
+  void           StoreHit(TotemG4Hit*);
+  void           ResetForNewPrimary();
+  void           Summarize();
   bool IsPrimary(const G4Track * track);
 
 private:
@@ -95,12 +95,12 @@ private:
   // One shower is made of several hits which differ by the
   // unit ID (cristal/fiber/scintillator) and the Time slice ID.
 
-  G4ThreeVector entrancePoint;
-  double incidentEnergy;
+  G4ThreeVector               entrancePoint;
+  double                       incidentEnergy;
 
   G4String name;
-  G4int hcID;
-  TotemG4HitCollection* theHC;
+  G4int                       hcID;
+  TotemG4HitCollection*       theHC;
   const SimTrackManager*      theManager;
 
   int                         tsID; 
@@ -111,8 +111,8 @@ private:
   int                         primaryID, tSliceID;  
   double                      tSlice;
 
-  G4StepPoint* preStepPoint;
-  G4StepPoint* postStepPoint;
+  G4StepPoint*                preStepPoint;
+  G4StepPoint*                postStepPoint;
   G4ThreeVector hitPoint;
   G4ThreeVector exitPoint;
   G4ThreeVector theLocalEntryPoint;
@@ -135,7 +135,7 @@ private:
   // Hist
   //
   static TotemTestHitHBNtuple* theNtuple;
-  int eventno;
+  int                         eventno;
 };
 
 #endif

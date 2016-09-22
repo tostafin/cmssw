@@ -1,23 +1,17 @@
-#ifndef TotemRP_TotemRPHistoManager_h
-#define TotemRP_TotemRPHistoManager_h 1
+#ifndef SimG4CMS_Forward_TotemRPHistoManager_H
+#define SimG4CMS_Forward_TotemRPHistoManager_H 1
 // -*- C++ -*-
 //
 // Package:     Forward
 // Class  :     TotemRPHistoManager
 //
-/**\class TotemRPHistoManager TotemRPHistoManager.h SimG4CMS/TotemRP/interface/TotemRPHistoManager.h
- 
+/**
  Description: Manages Root file creation for Totem RP Tests
  
  Usage:
     Used in testing Totem RP simulation
  
 */
-//
-// Original Author: 
-//         Created:  Tue May 16 10:14:34 CEST 2006
-// $Id: TotemRPHistoManager.h,v 1.1.1.1 2007/05/16 15:44:39 hniewiad Exp $
-//
  
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"

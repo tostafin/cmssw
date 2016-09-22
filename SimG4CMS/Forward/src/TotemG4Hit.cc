@@ -25,13 +25,14 @@ TotemG4Hit::TotemG4Hit():entry(0)
   theUnitID  =  0;
   theTimeSlice = 0.0;
 
-  thePabs =0.0;
-  theTof=0.0;
-  theEnergyLoss=0.0;
-  theParticleType=0;
-  theX = 0.0;
-  theY = 0.0;
-  theZ = 0.0;
+
+  theX              = 0.;
+  theY              = 0.;
+  theZ              = 0.;
+  thePabs           = 0.;
+  theTof            = 0.;
+  theEnergyLoss     = 0.;
+  theParticleType   = 0;
   theParentId=0;
   theVx = 0.0;
   theVy = 0.0;
@@ -67,19 +68,21 @@ TotemG4Hit::TotemG4Hit(const TotemG4Hit &right)
 
 const TotemG4Hit& TotemG4Hit::operator=(const TotemG4Hit &right)
 {
+
+  entry             = right.entry;
   theIncidentEnergy = right.theIncidentEnergy;
-  theTrackID = right.theTrackID;
-  theUnitID = right.theUnitID;
-  theTimeSlice = right.theTimeSlice;
-  entry = right.entry;
- 
-  thePabs =right.thePabs;
-  theTof=right.theTof ;
-  theEnergyLoss=right.theEnergyLoss   ;
-  theParticleType=right.theParticleType ;
-  theX = right.theX;
-  theY = right.theY;
-  theZ = right.theZ;
+  theTrackID        = right.theTrackID;
+  theUnitID         = right.theUnitID;
+  theTimeSlice      = right.theTimeSlice;
+
+  theX              = right.theX;
+  theY              = right.theY;
+  theZ              = right.theZ;
+  thePabs           = right.thePabs;
+  theTof            = right.theTof ;
+  theEnergyLoss     = right.theEnergyLoss   ;
+  theParticleType   = right.theParticleType ;
+
 
   theVx = right.theVx;
   theVy = right.theVy;
@@ -106,18 +109,18 @@ void TotemG4Hit::setLocalEntry(const Hep3Vector &xyz) { local_entry = xyz;}
 Hep3Vector TotemG4Hit::getLocalExit() const {return local_exit;}
 void TotemG4Hit::setLocalExit(const Hep3Vector &xyz) { local_exit = xyz;}
 
-double TotemG4Hit::getIncidentEnergy() const {return theIncidentEnergy; }
-void TotemG4Hit::setIncidentEnergy (double e) {theIncidentEnergy  = e; }
+double     TotemG4Hit::getIncidentEnergy() const  {return theIncidentEnergy; }
+void       TotemG4Hit::setIncidentEnergy(double e) {theIncidentEnergy  = e; }
 
 unsigned int TotemG4Hit::getTrackID() const {return theTrackID; }
-void TotemG4Hit::setTrackID (int i) { theTrackID = i; }
+void       TotemG4Hit::setTrackID (int i)         { theTrackID = i; }
 
 int TotemG4Hit::getUnitID() const {return theUnitID; }
 void TotemG4Hit::setUnitID (unsigned int i) { theUnitID = i; }
 
-double TotemG4Hit::getTimeSlice() const {return theTimeSlice; }
-void TotemG4Hit::setTimeSlice (double d) {theTimeSlice = d;}
-int TotemG4Hit::getTimeSliceID() const {return (int)theTimeSlice;}
+double     TotemG4Hit::getTimeSlice() const       {return theTimeSlice; }
+void       TotemG4Hit::setTimeSlice (double d)    { theTimeSlice = d; }
+int        TotemG4Hit::getTimeSliceID() const     {return (int)theTimeSlice;}
 
 double TotemG4Hit::getPabs() const {return thePabs;}
 double TotemG4Hit::getTof() const {return theTof;}

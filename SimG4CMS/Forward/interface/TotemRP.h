@@ -1,14 +1,11 @@
-#ifndef TotemRP_TotemRP_H
-#define TotemRP_TotemRP_H
+#ifndef SimG4CMS_Forward_TotemRP_H
+#define SimG4CMS_Forward_TotemRP_H
 
 #include "SimG4CMS/Forward/interface/TotemG4Hit.h"
 #include "SimG4CMS/Forward/interface/TotemG4HitCollection.h"
 #include "SimG4CMS/Forward/interface/TotemRPHisto.h"
 #include "SimG4CMS/Forward/interface/TotemRPHistoClass.h"
 #include "SimG4CMS/Forward/interface/TotemRPHistoManager.h"
-
-//#include "SimG4CMS/TotemRP/interface/RPDebugEvent.h"
-//#include "SimG4CMS/TotemRP/interface/RPDebugEventManager.h"
 
 #include "SimG4Core/Notification/interface/Observer.h"
 #include "SimG4Core/Notification/interface/BeginOfJob.h"
@@ -29,7 +26,6 @@
 #include <memory>
 #include <vector>
 #include <string>
-//#include "hash_map"
 #include <map>
 
 class G4Step;
@@ -38,24 +34,6 @@ class BeginOfJob;
 class BeginOfTrack;
 class EndOfEvent;
 class EndOfTrack;
-
-
-//struct eqstr
-//{
-//  bool operator()(const char* s1, const char* s2) const
-//  {
-//    return strcmp(s1, s2) == 0;
-//  }
-//};
-
-//class BeginOfRun;
-//class EndOfRun;
-//class BeginOfEvent;
-//class EndOfEvent;
-//class BeginOfTrack;
-//class EndOfTrack;
-//class G4Step;
-
 
 class TotemRP : public SimWatcher,
     public Observer<const BeginOfJob *>,
@@ -105,7 +83,6 @@ class TotemRP : public SimWatcher,
   
   TotemRPHisto * histos;
   int event_no;
-  //hash_map<const char*, int, hash<const char*>, eqstr> PhysicalDetMap;
   std::map<std::string, int> PhysicalDetMap;
   
   //Keep parameters to instantiate TotemRPHistoManager later
@@ -116,10 +93,6 @@ class TotemRP : public SimWatcher,
   std::string RP_debugfileName;
   std::auto_ptr<TotemRPHistoManager>    tuplesManager;
   TotemRPHistoClass *                   tuples;
-  
-  //Debug RP hits
-  //std::auto_ptr<RPDebugEventManager> debugManager;
-  //RPDebugEvent *debug_event;
 
   std::string nomeFile;
   bool verbosity_;

@@ -1,5 +1,5 @@
-#ifndef TotemRP_TotemRPHisto_H
-#define TotemRP_TotemRPHisto_H
+#ifndef SimG4CMS_Forward_TotemRPHisto_H
+#define SimG4CMS_Forward_TotemRPHisto_H
 
 
 #include "TROOT.h"

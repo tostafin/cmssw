@@ -6,10 +6,6 @@
 // Implementation:
 //     <Notes on implementation>
 //
-// Original Author: 
-//         Created:  Tue May 16 10:14:34 CEST 2006
-// $Id: TotemRPHistoClass.cc,v 1.1.1.1 2007/05/16 15:44:39 hniewiad Exp $
-//
 
 // system include files
 #include <iostream>

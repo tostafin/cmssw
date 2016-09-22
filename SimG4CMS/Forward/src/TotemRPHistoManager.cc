@@ -6,10 +6,6 @@
 // Implementation:
 //     <Notes on implementation>
 //
-// Original Author: 
-//         Created:  Tue May 16 10:14:34 CEST 2006
-// $Id: TotemRPHistoManager.cc,v 1.1.1.1.6.1 2009/07/13 14:37:06 jkaspar Exp $
-//
 
 // system include files
 #include <iostream>

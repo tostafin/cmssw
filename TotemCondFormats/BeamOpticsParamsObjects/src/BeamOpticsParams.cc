@@ -409,13 +409,13 @@ std::string BeamOpticsParams::GetTagString() const
 void BeamOpticsParams::GetStdRecoGeometryFile(std::string &fileName) const
 {
   char *cmsswPath = getenv("CMSSW_BASE");
-  fileName = std::string(cmsswPath) + "/src/Geometry/TotemRPOptics/data/parametrization_" + GetTagString() + "_reco.root";
+  fileName = std::string(cmsswPath) + "/src/Geometry/VeryForwardProtonTransport/data/parametrization_" + GetTagString() + "_reco.root";
 }
 
 
 void BeamOpticsParams::GetStdSimGeometryFile(std::string &fileName) const
 {
   char *cmsswPath = getenv("CMSSW_BASE");
-  fileName = std::string(cmsswPath) + "/src/Geometry/TotemRPOptics/data/parametrization_" + GetTagString() + "_transp.root";
+  fileName = std::string(cmsswPath) + "/src/Geometry/VeryForwardProtonTransport/data/parametrization_" + GetTagString() + "_transp.root";
 }
 

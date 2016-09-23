@@ -5,6 +5,7 @@ In order to run CTPPS simulation in CMSSW_8_1_0 follow these steps in terminal:
 * cmsenv
 * git cms-merge-topic ziaber:simulation
 * scram b -j 4
+* cd Configuration/Test
 * cmsRun test.py
 
 

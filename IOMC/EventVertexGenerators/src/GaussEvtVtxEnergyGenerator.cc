@@ -168,8 +168,6 @@ void GaussEvtVtxEnergyGenerator::applyBeamSmearing(const HepMC::GenEvent *evt, C
 
     if (verbosity > 5) {
         cout << ">> SmearingGenerator::ApplyMomentumSmearing" << endl;
-        //cout << "transformation:" << endl;
-        //cout << "\tdir = " << boost.Unit() << "\n\tbeta = " << beta << "\n\taxis = " << axis << "\n\tangle " << angle << endl;
     }
 
     // apply transform to all particles

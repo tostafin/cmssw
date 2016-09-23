@@ -274,8 +274,7 @@ process.g4SimHits.HepMCProductLabel = cms.InputTag("generator")
 process.g4SimHits.Physics.DefaultCutValue = cms.double(100.0)
 process.g4SimHits.Generator = cms.PSet(
     HectorEtaCut,
-    # string HepMCProductLabel = "generatorSmeared"
-    HepMCProductLabel=cms.string('generator'),
+    HepMCProductLabel=cms.string('SmearingGenerator'),
     ApplyPCuts=cms.bool(False),
     ApplyPtransCut=cms.bool(False),
     MinPCut=cms.double(0.04),  ## the cut is in GeV

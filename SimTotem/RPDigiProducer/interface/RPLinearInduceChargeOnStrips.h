@@ -20,11 +20,6 @@ class RPLinearInduceChargeOnStrips
     double sqrt_2;
     int no_of_strips_;
     int verbosity_;
-
-    //double sigmas_no_;
-    //double active_edge_smearing_;
-    //double bottom_edge_smearing_;
-    //double top_edge_smearing_;
 };
 
 #endif

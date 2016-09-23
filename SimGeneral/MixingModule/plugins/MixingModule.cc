@@ -181,6 +181,7 @@ namespace edm {
               if (tags.size()==1) tag=tags[0];
               else if(tags.size()>1) tag=tags[ii];
               std::string label;
+
               branchesActivate(TypeID(typeid(std::vector<PSimHit>)).friendlyClassName(),subdets[ii],tag,label);
               adjustersObjects_.push_back(new Adjuster<std::vector<PSimHit> >(tag, consumesCollector()));
               if(binary_search_all(crossingFrames, tag.instance())) {

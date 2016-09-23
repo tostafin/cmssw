@@ -15,8 +15,6 @@
 using namespace std;
 using namespace edm;
 
-//#define DEBUG 1
-
 
 RPDisplacementGenerator::RPDisplacementGenerator(const edm::ParameterSet &ps, RPDetId _detId, const edm::EventSetup &iSetup) : detId(_detId)
 {
@@ -67,14 +65,9 @@ RPDisplacementGenerator::RPDisplacementGenerator(const edm::ParameterSet &ps, RP
 Local3DPoint RPDisplacementGenerator::DisplacePoint(const Local3DPoint &p)
 {
   /// input is in mm, shifts are in mm too
-  
-  //printf("DisplacePoint:\n");
-  //printf("\t%E\t%E\t%E\n", p.x(), p.y(), p.z());
 
   DDTranslation v(p.x(), p.y(), p.z());
   v = rotation * v - shift;
-
-  //printf("\t%E\t%E\t%E\n", v.x(), v.y(), v.z());
 
   return Local3DPoint(v.x(), v.y(), v.z());
 }

@@ -6,7 +6,6 @@
 #include <string>
 
 
-//#include "SimGeneral/HepPDT/interface/HepPDTable.h"
 #include "SimTracker/Common/interface/SiG4UniversalFluctuation.h"
 #include "SimGeneral/NoiseGenerators/interface/GaussianTailNoiseGenerator.h"
 

@@ -14,8 +14,7 @@ class RPLinearChargeCollectionDrifter
   
   private:
     SimRP::charge_induced_on_surface _temp;
-//    double charge_cloud_sigma_;
-    std::vector<double> charge_cloud_sigmas_vect_; 
+    std::vector<double> charge_cloud_sigmas_vect_;
     double GeV_per_electron_;
     int verbosity_;
     double det_thickness_;

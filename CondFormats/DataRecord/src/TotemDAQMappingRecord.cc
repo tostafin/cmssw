@@ -3,9 +3,7 @@
 * This is a part of TOTEM offline software.
 * Authors: 
 *   Maciej Wróbel (wroblisko@gmail.com)
-*    
-* $Revision$
-* $Date$
+*
 *
 ****************************************************************************/
 #include "CondFormats/DataRecord/interface/TotemDAQMappingRecord.h"

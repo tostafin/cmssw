@@ -5,9 +5,6 @@
 *   Hubert Niewiadomski
 *   Jan Kašpar (jan.kaspar@gmail.com)
 *
-* $Id: StraightTrackAlignment.cc 3363 2010-09-14 19:12:36Z jkaspar $
-* $Revision: 1.5.2.2 $
-* $Date: 2009/08/06 08:09:12 $
 *
 ****************************************************************************/
 

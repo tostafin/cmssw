@@ -26,8 +26,7 @@ namespace {
     edm::Wrapper<edm::DetSetVector<RPRecoHit> > w_dsv_rp_reco_hit;
 	std::vector<RPRecoHit> sv_rp_reco_hit;
 	std::vector<const RPRecoHit*> sv_cp_rp_reco_hit;
-    
-	// TODO: these needed?
+
     std::pair<__gnu_cxx::__normal_iterator<const RPRecoHit*,std::vector<RPRecoHit> >,__gnu_cxx::__normal_iterator<const RPRecoHit*,std::vector<RPRecoHit> > > pni;
     __gnu_cxx::__normal_iterator<const RPRecoHit*,std::vector<RPRecoHit> > d1;
     

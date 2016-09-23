@@ -5,21 +5,7 @@
 //
 // Package:    RPDigiProducer
 // Class:      RPDigiProducer
-// 
-/**\class RPDigiProducer RPDigiProducer.cc SimTotem/RPDigiProducer/src/RPDigiProducer.cc
-
- Description: <one line class summary>
-
- Implementation:
-     <Notes on implementation>
-*/
 //
-// Original Author:  Hubert NIEWIADOMSKI
-//         Created:  Tue Mar 27 11:57:03 CEST 2007
-// $Id: RPDigiProducer.h,v 1.6 2008/09/12 17:26:25 lgrzanka Exp $
-//
-//
-
 #include "boost/shared_ptr.hpp"
 
 // system include files

@@ -7,7 +7,6 @@ RPLinearChargeCollectionDrifter::RPLinearChargeCollectionDrifter
       (const edm::ParameterSet &params, RPDetId det_id)
 {
   verbosity_ = params.getParameter<int>("RPVerbosity");
-  //charge_cloud_sigma_ = params.getParameter<double>("RPInterStripSmearing");
   GeV_per_electron_ = params.getParameter<double>("RPGeVPerElectron");
   charge_cloud_sigmas_vect_ = params.getParameter< std::vector<double> >("RPInterStripSmearing");
   det_thickness_ = RPTopology().DetThickness();

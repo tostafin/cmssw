@@ -83,6 +83,7 @@ private:
   edm::ParameterSet m_pTrackingAction;
   edm::ParameterSet m_pSteppingAction;
   edm::ParameterSet m_pCustomUIsession;
+  bool m_useMeasuredGeom;
   edm::ParameterSet m_p;
 
   struct TLSData;

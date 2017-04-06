@@ -1,10 +1,11 @@
 /****************************************************************************
 *
-* This is a part of TOTEM offline software.
-* Authors:
-*  Jan Kašpar (jan.kaspar@gmail.com)
+* Offline analyzer for writing CTPPS DAQ Mapping sqlite file 
+* H. Malbouisson
+* based on TOTEM code from  Jan Kašpar (jan.kaspar@gmail.com)
 *
 ****************************************************************************/
+
 
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"

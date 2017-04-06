@@ -1,8 +1,8 @@
 /****************************************************************************
 *
-* This is a part of TOTEM offline software.
-* Authors:
-*  Jan Kašpar (jan.kaspar@gmail.com)
+* Offline analyzer for writing CTPPS Analysis Mask sqlite file 
+* H. Malbouisson
+* based on TOTEM code from  Jan Kašpar (jan.kaspar@gmail.com)
 *
 ****************************************************************************/
 

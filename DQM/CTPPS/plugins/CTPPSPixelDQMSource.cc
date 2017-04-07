@@ -1,12 +1,11 @@
-/****************************************************************************
+/******************************************
 *
 * This is a part of CTPPSDQM software.
 * Authors:
-*   Jan Kaspar (jan.kaspar@gmail.com)
 *   F.Ferro INFN Genova
 *   Vladimir Popov (vladimir.popov@cern.ch)
 *
-****************************************************************************/
+*******************************************/
 
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -22,22 +21,18 @@
 #include "DataFormats/Common/interface/DetSetVector.h"
 
 #include "DataFormats/CTPPSDetId/interface/CTPPSDetId.h"
-//#include "DataFormats/CTPPSDetId/interface/CTPPSPixelDetId.h"
 #include "DataFormats/CTPPSDigi/interface/CTPPSPixelDigi.h"
-#include "DataFormats/CTPPSReco/interface/CTPPSPixelCluster.h"
 #include "CondFormats/CTPPSReadoutObjects/interface/CTPPSPixelIndices.h"
-//#include "DataFormats/CTPPSReco/interface/RPixCluster.h"
-//#include "DataFormats/CTPPSDigi/interface/CTPPSTrackerDigi.h"
 
 #include <string>
 
 //-----------------------------------------------------------------------------
  
-class RPixDQMSource: public DQMEDAnalyzer
+class CTPPSPixelDQMSource: public DQMEDAnalyzer
 {
  public:
-   RPixDQMSource(const edm::ParameterSet& ps);
-   virtual ~RPixDQMSource();
+   CTPPSPixelDQMSource(const edm::ParameterSet& ps);
+   virtual ~CTPPSPixelDQMSource();
   
  protected:
    void dqmBeginRun(edm::Run const &, edm::EventSetup const &) override;
@@ -50,17 +45,17 @@ class RPixDQMSource: public DQMEDAnalyzer
  private:
    unsigned int verbosity;
 
-//  edm::EDGetTokenT<edm::DetSetVector<RPixDigi>> RPixDigiInputTagToken_;
-  edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelDigi>> RPixDigiToken;
-  edm::EDGetTokenT< edm::DetSetVector<CTPPSPixelCluster> > tokenCluster;
-//  edm::EDGetTokenT< edm::DetSetVector<RPixCluster> > tokenCluster;
+  edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelDigi>> tokenDigi;
+//  edm::EDGetTokenT< edm::DetSetVector<CTPPSPixelCluster> > tokenCluster;
 
- #define NRPotsMAX 6
- #define NplaneMAX 6
- #define NROCsMAX 6
+ #define NArms 2
+ #define NStationMAX 3  // in an arm
+ #define NRPotsMAX 6	// per station
+ #define NplaneMAX 6	// per RPot
+ #define NROCsMAX 6	// per plane
  const int hitMultMAX = 300;
- const int ClusMultMAX = 90;
- const int CluSizeMAX = 25;
+ const int ClusMultMAX = 90; // tuned
+ const int CluSizeMAX = 25;  // tuned
 
  CTPPSPixelIndices *ctppsInd;
  int pixRowMAX = 160;  // defaultDetSizeInX, CMS Y-axis
@@ -75,26 +70,29 @@ class RPixDQMSource: public DQMEDAnalyzer
 
   MonitorElement *hBX, *hBXshort;
 
-  MonitorElement *h2RPotActive[2];
+  MonitorElement *h2RPotActive[NArms];
 
-  MonitorElement *hp2HitsOcc[2][3];
-  MonitorElement *h2HitsMultipl[2][3];
-  MonitorElement *h2PlaneActive[2][3];
-  MonitorElement *h2ClusMultipl[2][3];
-  MonitorElement *h2CluSize[2][3];
+  MonitorElement *hp2HitsOcc[NArms][NStationMAX];
+  MonitorElement *h2HitsMultipl[NArms][NStationMAX];
+  MonitorElement *h2PlaneActive[NArms][NStationMAX];
+  MonitorElement *h2ClusMultipl[NArms][NStationMAX];
+  MonitorElement *h2CluSize[NArms][NStationMAX];
 
-  int	          RPindexValid[2*3*NRPotsMAX];
-  MonitorElement *hRPotActivPlanes[2*3*NRPotsMAX];
-  MonitorElement *hRPotActivBX[2*3*NRPotsMAX];
-  MonitorElement *hRPotActivBXroc[2*3*NRPotsMAX];
-  MonitorElement *hRPotActivROCs[2*3*NRPotsMAX];
-  MonitorElement *hRPotActivROCsMax[2*3*NRPotsMAX];
-  MonitorElement   *hHitsMult[2*3*NRPotsMAX][NplaneMAX];
-  MonitorElement    *h2xyHits[2*3*NRPotsMAX][NplaneMAX];
-  MonitorElement    *hp2xyADC[2*3*NRPotsMAX][NplaneMAX];
-  MonitorElement *h2xyROCHits[2*3*NRPotsMAX*NplaneMAX][NROCsMAX];
-  int		  HitsMultROC[2*3*NRPotsMAX*NplaneMAX][NROCsMAX];
-  int           HitsMultPlane[2*3*NRPotsMAX][NplaneMAX];
+  #define RPotsTotalNumber NArms*NStationMAX*NRPotsMAX
+
+  int	          RPindexValid[RPotsTotalNumber];
+  MonitorElement *hRPotActivPlanes[RPotsTotalNumber];
+  MonitorElement *hRPotActivBX[RPotsTotalNumber];
+  MonitorElement *hRPotActivBXroc[RPotsTotalNumber];
+  MonitorElement *h2HitsMultROC[RPotsTotalNumber];
+  MonitorElement *hRPotActivROCs[RPotsTotalNumber];
+  MonitorElement *hRPotActivROCsMax[RPotsTotalNumber];
+  MonitorElement   *hHitsMult[RPotsTotalNumber][NplaneMAX];
+  MonitorElement    *h2xyHits[RPotsTotalNumber][NplaneMAX];
+  MonitorElement    *hp2xyADC[RPotsTotalNumber][NplaneMAX];
+  MonitorElement *h2xyROCHits[RPotsTotalNumber*NplaneMAX][NROCsMAX];
+  int		  HitsMultROC[RPotsTotalNumber*NplaneMAX][NROCsMAX];
+  int           HitsMultPlane[RPotsTotalNumber][NplaneMAX];
 
 
   unsigned int rpStatusWord = 0x8000; // 220 fr_hr (stn2rp3)
@@ -116,17 +114,22 @@ class RPixDQMSource: public DQMEDAnalyzer
     return(rc*NplaneMAX + plane);
   }
 
-  int prIndex(int rp, int plane) {return(rp*NplaneMAX + plane);}
-  int getDet(int id) { return (id>>28)&0xF; }
-  int getPixPlane(int id) { return ((id>>16)&0x7); }
-  int getSubdet(int id) { return ((id>>25)&0x7); }
-  int getHitRow(uint32_t pkdata) {return (pkdata >> row_shift) & row_mask;}
+  int prIndex(int rp, int plane) // plane index in station
+	{return(rp*NplaneMAX + plane);}
+  int getDet(int id) 
+	{ return (id>>28)&0xF; }
+  int getPixPlane(int id) 
+	{ return ((id>>16)&0x7); }
+  int getSubdet(int id) 
+	{ return ((id>>25)&0x7); }
+  int getHitRow(uint32_t pkdata) 
+	{return (pkdata >> row_shift) & row_mask;}
  int getHitColumn(uint32_t pkdata) const  
 	{return (pkdata >> column_shift) & column_mask;}
  unsigned short getHitADC(uint32_t pkdata) const 
 	{return (pkdata >> adc_shift) & adc_mask;}
 
- int multHits, multClus, cluSizeMaxData; // tuning
+ int multHits, multClus, cluSizeMaxData; // for tuning
 
 };
 
@@ -137,28 +140,33 @@ using namespace edm;
 
 //-------------------------------------------------------------------------------
 
-RPixDQMSource::RPixDQMSource(const edm::ParameterSet& ps) :
+CTPPSPixelDQMSource::CTPPSPixelDQMSource(const edm::ParameterSet& ps) :
   verbosity(ps.getUntrackedParameter<unsigned int>("verbosity", 0)),
   rpStatusWord(ps.getUntrackedParameter<unsigned int>("RPStatusWord",0x8000))
 {
- RPixDigiToken = consumes<DetSetVector<CTPPSPixelDigi> >(ps.getParameter<edm::InputTag>("tagRPixDigi"));
- tokenCluster= 
-consumes<DetSetVector<CTPPSPixelCluster>>(ps.getParameter<edm::InputTag>("tagRPixCluster"));
-//consumes<DetSetVector<RPixCluster>>(ps.getParameter<edm::InputTag>("tagRPixCluster"));
+// RPixDigiToken = consumes<DetSetVector<CTPPSPixelDigi> >(ps.getParameter<edm::InputTag>("tagRPixDigi"));
+ tokenDigi = consumes<DetSetVector<CTPPSPixelDigi> >(ps.getParameter<edm::InputTag>("tagRPixDigi"));
+// tokenCluster=consumes<DetSetVector<CTPPSPixelCluster>>(ps.getParameter<edm::InputTag>("tagRPixCluster"));
 
 }
 
 //----------------------------------------------------------------------------------
 
-RPixDQMSource::~RPixDQMSource()
+CTPPSPixelDQMSource::~CTPPSPixelDQMSource()
 {
 }
 
 //--------------------------------------------------------------------------
 
-void RPixDQMSource::dqmBeginRun(edm::Run const &run, edm::EventSetup const &)
+void CTPPSPixelDQMSource::dqmBeginRun(edm::Run const &run, edm::EventSetup const &)
 {
- nEvents = 0;
+  nEvents = 0;
+
+  ctppsInd = new CTPPSPixelIndices();
+  pixRowMAX = ctppsInd->getDefaultRowDetSize();
+  pixColMAX = ctppsInd->getDefaultColDetSize();
+  ROCSizeInX = pixRowMAX/2;  // ROC row size in pixels = 80
+  ROCSizeInY = pixColMAX/3;
 
  unsigned int rpSts = rpStatusWord<<1;
  for(int stn=0; stn<3; stn++) {
@@ -177,17 +185,9 @@ void RPixDQMSource::dqmBeginRun(edm::Run const &run, edm::EventSetup const &)
 
 //-------------------------------------------------------------------------------------
 
-void RPixDQMSource::bookHistograms(DQMStore::IBooker &ibooker, edm::Run const &, edm::EventSetup const &)
+void CTPPSPixelDQMSource::bookHistograms(DQMStore::IBooker &ibooker, edm::Run const &, 
+edm::EventSetup const &)
 {
-  ctppsInd = new CTPPSPixelIndices();
-  pixRowMAX = ctppsInd->getDefaultRowDetSize();
-  pixColMAX = ctppsInd->getDefaultColDetSize();
-
-  ROCSizeInX = pixRowMAX/2;  // ROC row size in pixels = 80
-  ROCSizeInY = pixColMAX/3;
-  if(verbosity) printf("bookHistograms: sizeX/Y=%d/%d ROCSizeInX/Y=%d/%d\n",
-	pixColMAX,pixRowMAX,ROCSizeInX,ROCSizeInY);
-
   ibooker.cd();
   ibooker.setCurrentFolder("CTPPS/TrackingPixel");
   char s[50];
@@ -197,13 +197,12 @@ void RPixDQMSource::bookHistograms(DQMStore::IBooker &ibooker, edm::Run const &,
  for(int arm=0; arm<2; arm++) {
    CTPPSDetId ID(CTPPSDetId::sdTrackingPixel,arm,0);
    string sd, armTitle;
-   CTPPSDetId(ID.getArmId()).armName(sd, CTPPSDetId::nPath);
-   CTPPSDetId(ID.getArmId()).armName(armTitle, CTPPSDetId::nFull);
+   ID.armName(sd, CTPPSDetId::nPath);
+   ID.armName(armTitle, CTPPSDetId::nFull);
 
    ibooker.setCurrentFolder(sd);
 
    string  st = "RPots activity";
-//  h2RPotActive[arm] = ibooker.book2DD(st,st+": "+armTitle, NRPotsMAX,0,NRPotsMAX,3,0,3);
   h2RPotActive[arm] = ibooker.book2DD(st,st+": "+armTitle, 2,2,4, 3,0,3);
   TH2D *h6 = h2RPotActive[arm]->getTH2D();
    h6->SetOption("colz");
@@ -227,10 +226,9 @@ void RPixDQMSource::bookHistograms(DQMStore::IBooker &ibooker, edm::Run const &,
    string st = "planes activity";
    string st2 = ": " + stnTitle;
 
-  h2PlaneActive[arm][stn] = ibooker.book2DD(st,st+st2+";Plane #",
+   h2PlaneActive[arm][stn] = ibooker.book2DD(st,st+st2+";Plane #",
 		NplaneMAX,0,NplaneMAX, 2, 2,4);
-//		NplaneMAX,0,NplaneMAX, NRPotsMAX, 0,NRPotsMAX);
-  TH2D *h = h2PlaneActive[arm][stn]->getTH2D();
+   TH2D *h = h2PlaneActive[arm][stn]->getTH2D();
    h->SetOption("colz");
    TAxis *yah = h->GetYaxis();
    
@@ -238,7 +236,6 @@ void RPixDQMSource::bookHistograms(DQMStore::IBooker &ibooker, edm::Run const &,
 
    hp2HitsOcc[arm][stn]= ibooker.bookProfile2D(st,st+st2+";Plane #",
      NplaneMAX, 0, NplaneMAX, 2,2,4,0,20000);
-//     NplaneMAX, 0, NplaneMAX, NRPotsMAX,0,NRPotsMAX,0,20000); //MAXSPAN^2
    TProfile2D *h2 = hp2HitsOcc[arm][stn]->getTProfile2D();
    h2->SetOption("textcolz");
    TAxis *yah2 = h2->GetYaxis();
@@ -265,81 +262,83 @@ void RPixDQMSource::bookHistograms(DQMStore::IBooker &ibooker, edm::Run const &,
 
 //--------- Hits ---
    int pixBinW = 4;
-   for(int rp=0; rp<NRPotsMAX; rp++) {
-    ID.setRP(rp);
-    string rpd, rpTitle;
-    CTPPSDetId(ID.getRPId()).rpName(rpTitle, CTPPSDetId::nShort);
-    char *cstr2 = new char [rpTitle.length()+1];
-    strcpy(cstr2, rpTitle.c_str());   
-    if(rp==2 || rp==3) { xa->SetBinLabel(rp-1, cstr2); // h6
-			yah->SetBinLabel(rp-1, cstr2); // h
-		       yah2->SetBinLabel(rp-1, cstr2); } //h2
+//   for(int rp=0; rp<NRPotsMAX; rp++) {
+     for(int rp=2; rp<4; rp++) { // only pixel pots
+       ID.setRP(rp);
+       string rpd, rpTitle;
+       CTPPSDetId(ID.getRPId()).rpName(rpTitle, CTPPSDetId::nShort);
+       char *cstr2 = new char [rpTitle.length()+1];
+       strcpy(cstr2, rpTitle.c_str());   
+	xa->SetBinLabel(rp-1, cstr2); // h6
+	yah->SetBinLabel(rp-1, cstr2); // h
+       yah2->SetBinLabel(rp-1, cstr2); //h2
 
-    if(RPstatus[stn][rp]==0) continue;
-    int indexP = getRPindex(arm,stn,rp);
-    RPindexValid[indexP] = 1;
+       if(RPstatus[stn][rp]==0) continue;
+       int indexP = getRPindex(arm,stn,rp);
+       RPindexValid[indexP] = 1;
 
-    CTPPSDetId(ID.getRPId()).rpName(rpTitle, CTPPSDetId::nFull);
-    CTPPSDetId(ID.getRPId()).rpName(rpd, CTPPSDetId::nPath);
+       CTPPSDetId(ID.getRPId()).rpName(rpTitle, CTPPSDetId::nFull);
+       CTPPSDetId(ID.getRPId()).rpName(rpd, CTPPSDetId::nPath);
 
-    ibooker.setCurrentFolder(rpd);
+       ibooker.setCurrentFolder(rpd);
 
-    hRPotActivPlanes[indexP] = 
-     ibooker.book1D("number of fired planes per event", rpTitle+";nPlanes",
+       hRPotActivPlanes[indexP] = 
+        ibooker.book1D("number of fired planes per event", rpTitle+";nPlanes",
 	 NplaneMAX, -0.5, NplaneMAX+0.5);
-    hRPotActivBX[indexP] = 
-  ibooker.book1D("5 fired planes per BX", rpTitle+";Event.BX", 4002, -1.5, 4000.+0.5);
-    hRPotActivBXroc[indexP] = 
-     ibooker.book1D("4 fired ROCs per BX", rpTitle+";Event.BX", 4002, -1.5, 4000.+0.5);
+       hRPotActivBX[indexP] = 
+        ibooker.book1D("5 fired planes per BX", rpTitle+";Event.BX", 4002, -1.5, 4000.+0.5);
+       hRPotActivBXroc[indexP] = 
+        ibooker.book1D("4 fired ROCs per BX", rpTitle+";Event.BX", 4002, -1.5, 4000.+0.5);
 
-    hRPotActivROCs[indexP] = ibooker.book2D("number of fired aligned_ROCs per event",
-	rpTitle+";ROC ID;number of fired ROCs", NROCsMAX,-0.5,NROCsMAX-0.5, 7,-0.5,6.5);
-    hRPotActivROCs[indexP]->getTH2F()->SetOption("colz");
+       h2HitsMultROC[indexP] = ibooker.bookProfile2D("ROCs hits multiplicity per event",
+       rpTitle+";plane # ;ROC #", NplaneMAX,-0.5,NplaneMAX-0.5, NROCsMAX,-0.5,NROCsMAX-0.5, 100,0,1.e3);
 
-    hRPotActivROCsMax[indexP]= ibooker.book2D("max number of fired aligned_ROCs per event",
-	rpTitle+";ROC ID;number of fired ROCs", NROCsMAX,-0.5,NROCsMAX-0.5, 7,-0.5,6.5);
-    hRPotActivROCsMax[indexP]->getTH2F()->SetOption("colz");
+       h2HitsMultROC[indexP]->getTProfile2D()->SetOption("colztext");
+       h2HitsMultROC[indexP]->getTProfile2D()->SetMinimum(1.e-10);
 
-//    hRPotActivROCsMax[indexP] = 
-//     ibooker.book1D("number of fired aligned_ROCs per event (max)", rpTitle+";nROCs", 
-//	NROCsMAX+1,-0.5,NROCsMAX+0.5);
+       hRPotActivROCs[indexP] = ibooker.book2D("number of fired aligned_ROCs per event",
+ 	 rpTitle+";ROC ID;number of fired ROCs", NROCsMAX,-0.5,NROCsMAX-0.5, 7,-0.5,6.5);
+       hRPotActivROCs[indexP]->getTH2F()->SetOption("colz");
 
-    int nbins = pixRowMAX/pixBinW;
+       hRPotActivROCsMax[indexP]= ibooker.book2D("max number of fired aligned_ROCs per event",
+	 rpTitle+";ROC ID;number of fired ROCs", NROCsMAX,-0.5,NROCsMAX-0.5, 7,-0.5,6.5);
+       hRPotActivROCsMax[indexP]->getTH2F()->SetOption("colz");
 
-    for(int p=0; p<NplaneMAX; p++) {
-       sprintf(s,"plane_%d",p);
-       string pd = rpd+"/"+string(s);
-       ibooker.setCurrentFolder(pd);
-       string st1 = ": "+rpTitle+"_"+string(s);
-       st = "hits position";
-       h2xyHits[indexP][p]=ibooker.book2DD(st,st1+";pix col;pix row", 
-	nbins,0,pixRowMAX,nbins,0,pixRowMAX);
-	h2xyHits[indexP][p]->getTH2D()->SetOption("colz");
+       int nbins = pixRowMAX/pixBinW;
 
-	st = "adc average value";
-//	hp2xyADC[indexP][p]=ibooker.bookProfile2D(st,st+st1,
-	hp2xyADC[indexP][p]=ibooker.bookProfile2D(st,st1+";pix col;pix row",
-	  nbins,0,pixRowMAX,nbins,0,pixRowMAX,100,0,1.e10,"");
-	hp2xyADC[indexP][p]->getTProfile2D()->SetOption("colz");
+       for(int p=0; p<NplaneMAX; p++) {
+         sprintf(s,"plane_%d",p);
+         string pd = rpd+"/"+string(s);
+         ibooker.setCurrentFolder(pd);
+         string st1 = ": "+rpTitle+"_"+string(s);
+         st = "hits position";
+         h2xyHits[indexP][p]=ibooker.book2DD(st,st1+";pix col;pix row", 
+	   nbins,0,pixRowMAX,nbins,0,pixRowMAX);
+	 h2xyHits[indexP][p]->getTH2D()->SetOption("colz");
 
-     st = "hits multiplicity";
-     hHitsMult[indexP][p]=ibooker.book1DD(st,st1+";number of hits;N / 1 hit",
-	hitMultMAX,0,hitMultMAX);
+ 	 st = "adc average value";
+	 hp2xyADC[indexP][p]=ibooker.bookProfile2D(st,st1+";pix col;pix row",
+	   nbins,0,pixRowMAX,nbins,0,pixRowMAX,100,0,1.e10,"");
+	 hp2xyADC[indexP][p]->getTProfile2D()->SetOption("colz");
 
-     ibooker.setCurrentFolder(pd + "/ROCs");
-     int index = getPlaneIndex(arm,stn,rp,p);
+         st = "hits multiplicity";
+         hHitsMult[indexP][p]=ibooker.book1DD(st,st1+";number of hits;N / 1 hit",
+	   hitMultMAX,0,hitMultMAX);
 
-     for(int roc=0; roc<6; roc++) {
-      sprintf(s,"hits in ROC_%d",roc);
-      string st = string(s);
+         ibooker.setCurrentFolder(pd + "/ROCs");
+         int index = getPlaneIndex(arm,stn,rp,p);
 
-      h2xyROCHits[index][roc]=	ibooker.book2DD(st,st+st1+";pix row;pix col",
+         for(int roc=0; roc<6; roc++) {
+           sprintf(s,"hits in ROC_%d",roc);
+           string st = string(s);
+
+           h2xyROCHits[index][roc]=ibooker.book2DD(st,st+st1+";pix row;pix col",
 		ROCSizeInX,0,ROCSizeInX,ROCSizeInY,0,ROCSizeInY);
-       h2xyROCHits[index][roc]->getTH2D()->SetOption("colz");
-     }
-    }// end of for(int p=0; p<NplaneMAX;..
+           h2xyROCHits[index][roc]->getTH2D()->SetOption("colz");
+         }
+       } // end of for(int p=0; p<NplaneMAX;..
 
-   } // end for(int rp=0; rp<NRPotsMAX;...
+     } // end for(int rp=0; rp<NRPotsMAX;...
   } // end of for(int stn=0; stn<2; stn++
   } //end of for(int arm=0; arm<2;...
 
@@ -347,13 +346,13 @@ void RPixDQMSource::bookHistograms(DQMStore::IBooker &ibooker, edm::Run const &,
 }
 
 //-------------------------------------------------------------------------------
-void RPixDQMSource::beginLuminosityBlock(edm::LuminosityBlock const& lumiSeg, 
+void CTPPSPixelDQMSource::beginLuminosityBlock(edm::LuminosityBlock const& lumiSeg, 
                                             edm::EventSetup const& context) 
 {
 }
 //---------------------------------------------------------------------------------
 
-void RPixDQMSource::analyze(edm::Event const& event, edm::EventSetup const& eventSetup)
+void CTPPSPixelDQMSource::analyze(edm::Event const& event, edm::EventSetup const& eventSetup)
 {
   ++nEvents;
  for(int ind=0; ind<2*3*NRPotsMAX; ind++) 
@@ -366,16 +365,8 @@ void RPixDQMSource::analyze(edm::Event const& event, edm::EventSetup const& even
 
 //  Handle< DetSetVector<RPixDigi> > pixDigi;
   Handle< DetSetVector<CTPPSPixelDigi> > pixDigi;
-  event.getByToken(RPixDigiToken, pixDigi);
-
-//  Handle< DetSetVector<RPixCluster> > Clus;
-  Handle< DetSetVector<CTPPSPixelCluster> > Clus;
-  event.getByToken(tokenCluster, Clus);
-
-  bool valid = true;
-  valid &= pixDigi.isValid();
-  valid &= Clus.isValid();
-//  valid &= hits.isValid();
+  event.getByToken(tokenDigi, pixDigi);
+//  event.getByToken(RPixDigiToken, pixDigi);
 
   hBX->Fill(event.bunchCrossing());
   hBXshort->Fill(event.bunchCrossing());
@@ -385,7 +376,7 @@ if(pixDigi.isValid())
   {
    int idet = getDet(ds_digi.id);
    if(idet != DetId::VeryForward) {
-     if(verbosity>1) printf("not CTPPS: ds_digi.id=0x%x\n",ds_digi.id);
+     if(verbosity>1) LogPrint("CTPPSPixelDQMSource") <<"not CTPPS: ds_digi.id"<<ds_digi.id;
      continue;
    }
 //   int subdet = getSubdet(ds_digi.id);
@@ -450,6 +441,7 @@ if(pixDigi.isValid())
     for(int p=0; p<NplaneMAX; p++) {
       int indp = getPlaneIndex(arm,stn,rp,p);
       for(int r=0; r<NROCsMAX; r++) if(HitsMultROC[indp][r] > 0) ++rocf[r];
+      for(int r=0; r<NROCsMAX; r++) h2HitsMultROC[index]->Fill(p,r,HitsMultROC[indp][r]);
     }
     int max = 0, rmax=-2;
     for(int r=0; r<NROCsMAX; r++) if(max < rocf[r]) 
@@ -459,6 +451,9 @@ if(pixDigi.isValid())
     if(max > 4) hRPotActivBXroc[index]->Fill(event.bunchCrossing());
   }
 
+/*
+  Handle< DetSetVector<CTPPSPixelCluster> > Clus;
+  event.getByToken(tokenCluster, Clus);
  if(Clus.isValid())
   for(const auto &ds : *Clus)
   {
@@ -469,7 +464,6 @@ if(pixDigi.isValid())
    int plane = getPixPlane(ds.id);
    int arm = CTPPSDetId(ds.id).arm()&0x1;
    int rpot = CTPPSDetId(ds.id).rp();
-
    if(StationStatus[station]) {
     h2ClusMultipl[arm][station]->Fill(prIndex(rpot,plane),ds.data.size());
     if(multClus < (int)ds.data.size()) multClus = ds.data.size();
@@ -480,27 +474,27 @@ if(pixDigi.isValid())
     }
    } // end if(StationStatus[station]) 
   } // end 'for(const auto &ds : *Clus)'
-
-  if((nEvents % 50)) return;
-  if(verbosity) printf("RPixAnalyser::analyze event= %d\n",(int)nEvents);
+*/
+  if((nEvents % 100)) return;
+  if(verbosity) LogPrint("CTPPSPixelDQMSource")<<"analyze event "<<nEvents;
 }
 
 //--------------------------------------------------------------
-void RPixDQMSource::endLuminosityBlock(edm::LuminosityBlock const& lumiSeg, edm::EventSetup const& eSetup) 
+void CTPPSPixelDQMSource::endLuminosityBlock(edm::LuminosityBlock const& lumiSeg, edm::EventSetup const& eSetup) 
 {
 }
 
 //-----------------------------------------------------------------------------
-void RPixDQMSource::endRun(edm::Run const& run, edm::EventSetup const& eSetup)
+void CTPPSPixelDQMSource::endRun(edm::Run const& run, edm::EventSetup const& eSetup)
 {
+ delete ctppsInd;
  if(!verbosity) return; 
-  printf("end of Run %d: %d events\n",run.run(),(int)nEvents);
-  printf("mult Hits/Clus: %d / %d\n",multHits,multClus);
-  printf("cluSizeMaxData=%d\n",cluSizeMaxData);
-  printf("---------- end of Run -------\n");
+ LogPrint("CTPPSPixelDQMSource") 
+  <<"end of Run "<<run.run()<<": "<<nEvents<<" events\n"
+  <<"mult Hits/Clus: "<<multHits<<" / "<<multClus
+  <<"   cluSizeMaxData= "<<cluSizeMaxData;
 }
 
-
 //---------------------------------------------------------------------------
-DEFINE_FWK_MODULE(RPixDQMSource);
+DEFINE_FWK_MODULE(CTPPSPixelDQMSource);
 

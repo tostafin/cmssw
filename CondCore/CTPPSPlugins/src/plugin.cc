@@ -3,7 +3,6 @@
 #include "CondFormats/DataRecord/interface/CTPPSPixelDAQMappingRcd.h"
 #include "CondFormats/CTPPSReadoutObjects/interface/CTPPSPixelAnalysisMask.h"
 #include "CondFormats/DataRecord/interface/CTPPSPixelAnalysisMaskRcd.h"
-
  
 REGISTER_PLUGIN(CTPPSPixelDAQMappingRcd,CTPPSPixelDAQMapping);
 REGISTER_PLUGIN(CTPPSPixelAnalysisMaskRcd,CTPPSPixelAnalysisMask);

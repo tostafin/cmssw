@@ -96,14 +96,14 @@ class CTPPSPixelDQMSource: public DQMEDAnalyzer
 
 
   unsigned int rpStatusWord = 0x8000; // 220 fr_hr (stn2rp3)
-  int RPstatus[3][NRPotsMAX]; // symmetric in both arms
-  int StationStatus[3]; // symmetric in both arms
+  int RPstatus[NStationMAX][NRPotsMAX]; // symmetric in both arms
+  int StationStatus[NStationMAX]; // symmetric in both arms
   const int IndexNotValid = 0;
 
   int getRPindex(int arm, int station, int rp) {
 	if(arm<0 || station<0 || rp<0) return(IndexNotValid);
-	if(arm>1 || station>2 || rp>=NRPotsMAX) return(IndexNotValid);
-	int rc = (arm*3+station)*NRPotsMAX + rp;
+	if(arm>1 || station>=NStationMAX || rp>=NRPotsMAX) return(IndexNotValid);
+	int rc = (arm*NStationMAX+station)*NRPotsMAX + rp;
 	return(rc);
   }
 
@@ -144,7 +144,6 @@ CTPPSPixelDQMSource::CTPPSPixelDQMSource(const edm::ParameterSet& ps) :
   verbosity(ps.getUntrackedParameter<unsigned int>("verbosity", 0)),
   rpStatusWord(ps.getUntrackedParameter<unsigned int>("RPStatusWord",0x8000))
 {
-// RPixDigiToken = consumes<DetSetVector<CTPPSPixelDigi> >(ps.getParameter<edm::InputTag>("tagRPixDigi"));
  tokenDigi = consumes<DetSetVector<CTPPSPixelDigi> >(ps.getParameter<edm::InputTag>("tagRPixDigi"));
 // tokenCluster=consumes<DetSetVector<CTPPSPixelCluster>>(ps.getParameter<edm::InputTag>("tagRPixCluster"));
 
@@ -209,7 +208,7 @@ edm::EventSetup const &)
    TAxis *ya = h6->GetYaxis();
    TAxis *xa = h6->GetXaxis();
 
- for(int stn=0; stn<3; stn++) {
+ for(int stn=0; stn<NStationMAX; stn++) {
    ID.setStation(stn);
    string stnd, stnTitle;
    CTPPSDetId(ID.getStationId()).stationName(stnTitle, CTPPSDetId::nShort);
@@ -332,14 +331,14 @@ edm::EventSetup const &)
            sprintf(s,"hits in ROC_%d",roc);
            string st = string(s);
 
-           h2xyROCHits[index][roc]=ibooker.book2DD(st,st+st1+";pix row;pix col",
+           h2xyROCHits[index][roc]=ibooker.book2DD(st,st1+";pix row;pix col",
 		ROCSizeInX,0,ROCSizeInX,ROCSizeInY,0,ROCSizeInY);
            h2xyROCHits[index][roc]->getTH2D()->SetOption("colz");
          }
        } // end of for(int p=0; p<NplaneMAX;..
 
      } // end for(int rp=0; rp<NRPotsMAX;...
-  } // end of for(int stn=0; stn<2; stn++
+   } // end of for(int stn=0; stn<
   } //end of for(int arm=0; arm<2;...
 
  return;
@@ -361,12 +360,8 @@ void CTPPSPixelDQMSource::analyze(edm::Event const& event, edm::EventSetup const
  for(int ind=0; ind<2*3*NRPotsMAX*NplaneMAX; ind++) 
    for(int rp=0; rp<NROCsMAX; rp++) HitsMultROC[ind][rp] = 0;
 
-//  if(verbosity>2) printf("irun=%d\n",event.id().run());
-
-//  Handle< DetSetVector<RPixDigi> > pixDigi;
   Handle< DetSetVector<CTPPSPixelDigi> > pixDigi;
   event.getByToken(tokenDigi, pixDigi);
-//  event.getByToken(RPixDigiToken, pixDigi);
 
   hBX->Fill(event.bunchCrossing());
   hBXshort->Fill(event.bunchCrossing());
@@ -427,7 +422,7 @@ if(pixDigi.isValid())
   } // end  if(StationStatus[station]) {
  } // end for(const auto &ds_digi : *pixDigi)
 
- for(int arm=0; arm<2; arm++) for(int stn=0; stn<3; stn++) 
+ for(int arm=0; arm<2; arm++) for(int stn=0; stn<NStationMAX; stn++) 
   for(int rp=0; rp<NRPotsMAX; rp++) {
     int index = getRPindex(arm,stn,rp);
     if(RPindexValid[index]==0) continue;
@@ -451,30 +446,6 @@ if(pixDigi.isValid())
     if(max > 4) hRPotActivBXroc[index]->Fill(event.bunchCrossing());
   }
 
-/*
-  Handle< DetSetVector<CTPPSPixelCluster> > Clus;
-  event.getByToken(tokenCluster, Clus);
- if(Clus.isValid())
-  for(const auto &ds : *Clus)
-  {
-//   int idet = getDet(ds.id);
-//   int subdet = getSubdet(ds.id);
-   int station = CTPPSDetId(ds.id).station();
-
-   int plane = getPixPlane(ds.id);
-   int arm = CTPPSDetId(ds.id).arm()&0x1;
-   int rpot = CTPPSDetId(ds.id).rp();
-   if(StationStatus[station]) {
-    h2ClusMultipl[arm][station]->Fill(prIndex(rpot,plane),ds.data.size());
-    if(multClus < (int)ds.data.size()) multClus = ds.data.size();
-    for (const auto &p : ds) {
-//     int isize = p.size();
-      h2CluSize[arm][station]->Fill(prIndex(rpot,plane),p.size());
-      if(cluSizeMaxData < p.size()) cluSizeMaxData = p.size(); //tuning
-    }
-   } // end if(StationStatus[station]) 
-  } // end 'for(const auto &ds : *Clus)'
-*/
   if((nEvents % 100)) return;
   if(verbosity) LogPrint("CTPPSPixelDQMSource")<<"analyze event "<<nEvents;
 }

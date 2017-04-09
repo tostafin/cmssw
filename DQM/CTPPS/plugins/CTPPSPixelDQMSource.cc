@@ -53,6 +53,7 @@ class CTPPSPixelDQMSource: public DQMEDAnalyzer
  #define NRPotsMAX 6	// per station
  #define NplaneMAX 6	// per RPot
  #define NROCsMAX 6	// per plane
+ const int RPn_first = 3, RPn_last = 4;
  const int hitMultMAX = 300;
  const int ClusMultMAX = 90; // tuned
  const int CluSizeMAX = 25;  // tuned
@@ -69,8 +70,6 @@ class CTPPSPixelDQMSource: public DQMEDAnalyzer
  const uint32_t adc_shift = 22, adc_mask = 0x3FF;
 
   MonitorElement *hBX, *hBXshort;
-
-  MonitorElement *h2RPotActive[NArms];
 
   MonitorElement *hp2HitsOcc[NArms][NStationMAX];
   MonitorElement *h2HitsMultipl[NArms][NStationMAX];
@@ -115,7 +114,7 @@ class CTPPSPixelDQMSource: public DQMEDAnalyzer
   }
 
   int prIndex(int rp, int plane) // plane index in station
-	{return(rp*NplaneMAX + plane);}
+	{return((rp - RPn_first)*NplaneMAX + plane);}
   int getDet(int id) 
 	{ return (id>>28)&0xF; }
   int getPixPlane(int id) 
@@ -159,6 +158,7 @@ CTPPSPixelDQMSource::~CTPPSPixelDQMSource()
 
 void CTPPSPixelDQMSource::dqmBeginRun(edm::Run const &run, edm::EventSetup const &)
 {
+  if(verbosity) LogPrint("CTPPSPixelDQMSource") <<"RPstatusWord= "<<rpStatusWord;
   nEvents = 0;
 
   ctppsInd = new CTPPSPixelIndices();
@@ -201,21 +201,10 @@ edm::EventSetup const &)
 
    ibooker.setCurrentFolder(sd);
 
-   string  st = "RPots activity";
-  h2RPotActive[arm] = ibooker.book2DD(st,st+": "+armTitle, 2,2,4, 3,0,3);
-  TH2D *h6 = h2RPotActive[arm]->getTH2D();
-   h6->SetOption("colz");
-   TAxis *ya = h6->GetYaxis();
-   TAxis *xa = h6->GetXaxis();
-
- for(int stn=0; stn<NStationMAX; stn++) {
+ for(int stn=2; stn<NStationMAX; stn++) {
+   if(StationStatus[stn]==0) continue;
    ID.setStation(stn);
    string stnd, stnTitle;
-   CTPPSDetId(ID.getStationId()).stationName(stnTitle, CTPPSDetId::nShort);
-   char *cstr = new char [stnTitle.length()+1];
-   strcpy(cstr, stnTitle.c_str());
-   ya->SetBinLabel(stn+1, cstr);
-   if(StationStatus[stn]==0) continue;
 
    CTPPSDetId(ID.getStationId()).stationName(stnd, CTPPSDetId::nPath);
    CTPPSDetId(ID.getStationId()).stationName(stnTitle, CTPPSDetId::nFull);
@@ -225,8 +214,10 @@ edm::EventSetup const &)
    string st = "planes activity";
    string st2 = ": " + stnTitle;
 
+   int rpnbins = RPn_last-RPn_first; 
+  
    h2PlaneActive[arm][stn] = ibooker.book2DD(st,st+st2+";Plane #",
-		NplaneMAX,0,NplaneMAX, 2, 2,4);
+		NplaneMAX,0,NplaneMAX, rpnbins, RPn_first,RPn_last);
    TH2D *h = h2PlaneActive[arm][stn]->getTH2D();
    h->SetOption("colz");
    TAxis *yah = h->GetYaxis();
@@ -234,43 +225,40 @@ edm::EventSetup const &)
    st = "hit average multiplicity in planes";
 
    hp2HitsOcc[arm][stn]= ibooker.bookProfile2D(st,st+st2+";Plane #",
-     NplaneMAX, 0, NplaneMAX, 2,2,4,0,20000);
+     NplaneMAX, 0, NplaneMAX, rpnbins, RPn_first,RPn_last,0,20000);
    TProfile2D *h2 = hp2HitsOcc[arm][stn]->getTProfile2D();
    h2->SetOption("textcolz");
    TAxis *yah2 = h2->GetYaxis();
 
-   int xmin = NplaneMAX*2;
-   int xmax = (int)NplaneMAX*4;
-   int multbins = xmax - xmin;
+   int xmax = NplaneMAX*rpnbins;
 
    st = "hit multiplicity in planes";
-   string st3 = ";PlaneIndex(=rpot*PlaneMAX + plane)";
+   string st3 = ";PlaneIndex(=pixelPot*PlaneMAX + plane)";
    h2HitsMultipl[arm][stn]= ibooker.book2DD(st,st+st2+st3+";multiplicity",
-	multbins,xmin,xmax,hitMultMAX,0,hitMultMAX);
+	xmax,0,xmax,hitMultMAX,0,hitMultMAX);
    h2HitsMultipl[arm][stn]->getTH2D()->SetOption("colz");
 
    st = "cluster multiplicity in planes";
    h2ClusMultipl[arm][stn] = ibooker.book2DD(st,st+st2+st3+";multiplicity",
-	multbins,xmin,xmax, ClusMultMAX,0,ClusMultMAX);
+	xmax,0,xmax, ClusMultMAX,0,ClusMultMAX);
    h2ClusMultipl[arm][stn]->getTH2D()->SetOption("colz");
 
    st = "cluster size in planes";
   h2CluSize[arm][stn] = ibooker.book2D(st,st+st2+st3+";Cluster size",
-	multbins,xmin,xmax, CluSizeMAX,0,CluSizeMAX);
+	xmax,0,xmax, CluSizeMAX,0,CluSizeMAX);
    h2CluSize[arm][stn]->getTH2F()->SetOption("colz");
 
 //--------- Hits ---
    int pixBinW = 4;
 //   for(int rp=0; rp<NRPotsMAX; rp++) {
-     for(int rp=2; rp<4; rp++) { // only pixel pots
+     for(int rp=RPn_first; rp<RPn_last; rp++) { // only installed pixel pots
        ID.setRP(rp);
        string rpd, rpTitle;
        CTPPSDetId(ID.getRPId()).rpName(rpTitle, CTPPSDetId::nShort);
        char *cstr2 = new char [rpTitle.length()+1];
        strcpy(cstr2, rpTitle.c_str());   
-	xa->SetBinLabel(rp-1, cstr2); // h6
-	yah->SetBinLabel(rp-1, cstr2); // h
-       yah2->SetBinLabel(rp-1, cstr2); //h2
+	yah->SetBinLabel(rp - RPn_first +1, cstr2); // h
+       yah2->SetBinLabel(rp - RPn_first +1, cstr2); //h2
 
        if(RPstatus[stn][rp]==0) continue;
        int indexP = getRPindex(arm,stn,rp);
@@ -366,6 +354,12 @@ void CTPPSPixelDQMSource::analyze(edm::Event const& event, edm::EventSetup const
   hBX->Fill(event.bunchCrossing());
   hBXshort->Fill(event.bunchCrossing());
 
+  bool valid = false;
+  valid |= pixDigi.isValid();
+//  valid |= Clus.isValid();
+
+ if(!valid && verbosity) LogPrint("CTPPSPixelDQMSource") <<"No valid data in Event "<<nEvents;
+
 if(pixDigi.isValid())
   for(const auto &ds_digi : *pixDigi)
   {
@@ -381,15 +375,13 @@ if(pixDigi.isValid())
    int station = CTPPSDetId(ds_digi.id).station();
    int rpot = CTPPSDetId(ds_digi.id).rp();
 
-   h2RPotActive[arm]->Fill(rpot,station);
 
- if(StationStatus[station]) {
+ if(StationStatus[station] && RPstatus[station][rpot]) {
 
    hp2HitsOcc[arm][station]->Fill(plane,rpot,(int)ds_digi.data.size());
    h2HitsMultipl[arm][station]->Fill(prIndex(rpot,plane),ds_digi.data.size());
    h2PlaneActive[arm][station]->Fill(plane,rpot);
 
-   if(RPstatus[station][rpot]) {
     int index = getRPindex(arm,station,rpot);
     HitsMultPlane[index][plane] += ds_digi.data.size();
     if(RPindexValid[index])
@@ -416,7 +408,6 @@ if(pixDigi.isValid())
         }
       } //end if(RPindexValid[index]) {
      }
-   } // end  if(RPstatus[station][rpot]) {
 
    if(int(ds_digi.data.size()) > multHits) multHits = ds_digi.data.size();
   } // end  if(StationStatus[station]) {

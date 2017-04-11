@@ -1,6 +1,8 @@
 #ifndef Utilities_CondFormats_h
 #define Utilities_CondFormats_h
 //
+#include "CondFormats/CTPPSReadoutObjects/interface/CTPPSPixelDAQMapping.h"
+#include "CondFormats/CTPPSReadoutObjects/interface/CTPPSPixelAnalysisMask.h"
 #include "CondFormats/HLTObjects/interface/AlCaRecoTriggerBits.h"
 #include "CondFormats/Alignment/interface/AlignmentErrors.h"
 #include "CondFormats/Alignment/interface/AlignmentErrorsExtended.h"

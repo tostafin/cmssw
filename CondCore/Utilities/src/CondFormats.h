@@ -26,6 +26,8 @@
 #include "CondFormats/CSCObjects/interface/CSCDBPedestals.h"
 #include "CondFormats/CSCObjects/interface/CSCDDUMap.h"
 #include "CondFormats/CSCObjects/interface/CSCL1TPParameters.h"
+#include "CondFormats/CTPPSReadoutObjects/interface/CTPPSPixelDAQMapping.h"
+#include "CondFormats/CTPPSReadoutObjects/interface/CTPPSPixelAnalysisMask.h"
 #include "CondFormats/DTObjects/interface/DTCCBConfig.h"
 #include "CondFormats/DTObjects/interface/DTDeadFlag.h"
 #include "CondFormats/DTObjects/interface/DTHVStatus.h"
@@ -249,6 +251,7 @@
 #include "CondFormats/SiStripObjects/interface/SiStripPedestals.h"
 #include "CondFormats/BTauObjects/interface/TrackProbabilityCalibration.h"
 #include "CondFormats/MFObjects/interface/MagFieldConfig.h"
+#include "CondFormats/PCLConfig/interface/AlignPCLThresholds.h"
 
 #include "CondFormats/Common/interface/BaseKeyed.h"
 

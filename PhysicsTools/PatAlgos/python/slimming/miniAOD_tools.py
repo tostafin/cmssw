@@ -174,36 +174,10 @@ def miniAOD_customizeCommon(process):
     process.patJets.userData.userFunctionLabels = cms.vstring('vtxMass','vtxNtracks','vtx3DVal','vtx3DSig','vtxPx','vtxPy','vtxPz','vtxPosX','vtxPosY','vtxPosZ')
     process.patJets.tagInfoSources = cms.VInputTag(cms.InputTag("pfSecondaryVertexTagInfos"))
     process.patJets.addTagInfos = cms.bool(True)
-
-    ## Legacy tight b-tag track selection
-    ## (this will run below-specified taggers with the tight b-tag track selection enabled
-    ## and will add an extra set of b-tag discriminators to 'selectedPatJets'
-    ## with the 'tight' prefix added to the usual discriminator names)
-    from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-    updateJetCollection(
-        process,
-        jetSource = cms.InputTag('selectedPatJets'),
-        ## updateJetCollection defaults to MiniAOD inputs. Here, this needs to be changed to RECO/AOD inputs
-        pvSource = cms.InputTag('offlinePrimaryVertices'),
-        pfCandidates = cms.InputTag('particleFlow'),
-        svSource = cms.InputTag('inclusiveCandidateSecondaryVertices'),
-        muSource = cms.InputTag('muons'),
-        elSource = cms.InputTag('gedGsfElectrons'),
-        ##
-        jetCorrections = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], ''),
-        btagDiscriminators = ["pfCombinedSecondaryVertexV2BJetTags", "pfCombinedInclusiveSecondaryVertexV2BJetTags",
-                              "pfCombinedCvsLJetTags", "pfCombinedCvsBJetTags"],
-        runIVF = True,
-        tightBTagNTkHits = True,
-        btagPrefix = 'tight',
-        postfix = 'BTAG' # added to avoid problems with unrunnable schedule
-    )
     #
     ## PU JetID
     process.load("RecoJets.JetProducers.PileupJetID_cfi")
-    task.add(process.pileupJetId)
-    task.add(process.pileupJetIdCalculator)
-    task.add(process.pileupJetIdEvaluator)
+    task.add(process.pileUpJetIDTask)
 
     process.patJets.userData.userFloats.src = [ cms.InputTag("pileupJetId:fullDiscriminant"), ]
     process.patJets.userData.userInts.src = [ cms.InputTag("pileupJetId:fullId"), ]
@@ -277,9 +251,10 @@ def miniAOD_customizeCommon(process):
     #---------------------------------------------------------------------------
 
     # Adding puppi jets
-    process.load('RecoJets.JetProducers.ak4PFJetsPuppi_cfi')
-    task.add(process.ak4PFJets)
-    task.add(process.ak4PFJetsPuppi)
+    if not hasattr(process, 'ak4PFJetsPuppi'): #MM: avoid confilct with substructure call
+        process.load('RecoJets.JetProducers.ak4PFJetsPuppi_cfi')
+        task.add(process.ak4PFJets)
+        task.add(process.ak4PFJetsPuppi)
     process.ak4PFJetsPuppi.doAreaFastjet = True # even for standard ak4PFJets this is overwritten in RecoJets/Configuration/python/RecoPFJets_cff
 
     from RecoJets.JetAssociationProducers.j2tParametersVX_cfi import j2tParametersVX

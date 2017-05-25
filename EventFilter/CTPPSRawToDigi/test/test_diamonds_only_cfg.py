@@ -10,10 +10,10 @@ process.MessageLogger = cms.Service("MessageLogger",
 )
 
 # raw data source
-process.source = cms.Source("PoolSource",
+process.source = cms.Source("NewEventStreamFileReader",
   fileNames = cms.untracked.vstring(
     #'file:/afs/cern.ch/user/j/jkaspar/public/run273062_ls0001-2_stream.root'
-    '/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/283/877/00000/4EE44B0E-2499-E611-A155-02163E011938.root'
+        '/store/t0streamer/Data/Physics/000/294/737/run294737_ls0011_streamPhysics_StorageManager.dat'
   )
 )
 

@@ -1,5 +1,0 @@
-Monitoring file not found, disabling.
-02-Jun-2017 01:38:06 CEST  Initiating request to open file root://eoscms.cern.ch//eos/cms/store/t0streamer/Minidaq/A/000/295/869/run295869_ls0001_streamA_StorageManager.dat
-02-Jun-2017 01:38:08 CEST  Successfully opened file root://eoscms.cern.ch//eos/cms/store/t0streamer/Minidaq/A/000/295/869/run295869_ls0001_streamA_StorageManager.dat
-02-Jun-2017 01:38:27 CEST  Writing DQM Root file: DQM_V0001_CTPPS_R000295869.root
-02-Jun-2017 01:38:28 CEST  Closed file root://eoscms.cern.ch//eos/cms/store/t0streamer/Minidaq/A/000/295/869/run295869_ls0001_streamA_StorageManager.dat

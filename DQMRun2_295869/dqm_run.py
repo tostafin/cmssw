@@ -4,7 +4,7 @@ import string
 process = cms.Process('RECODQM')
 
 process.maxEvents = cms.untracked.PSet(
-input = cms.untracked.int32(-1)
+input = cms.untracked.int32(10000)
 )
 
 process.verbosity = cms.untracked.PSet(
@@ -48,20 +48,14 @@ process.dqmSaver.path = ""
 process.dqmSaver.tag = "CTPPS"
 
 
-# raw data source
 process.source = cms.Source("NewEventStreamFileReader",
-  fileNames = cms.untracked.vstring(
-    #'file:/afs/cern.ch/user/j/jkaspar/public/run273062_ls0001-2_stream.root'
-        #'/store/t0streamer/Minidaq/A/000/295/488/run295488_ls0001_streamA_StorageManager.dat',
-        #'/store/t0streamer/Minidaq/A/000/295/487/run295487_ls0002_streamA_StorageManager.dat',
-        #'/store/t0streamer/Minidaq/A/000/295/487/run295487_ls0003_streamA_StorageManager.dat',
-        #'/store/t0streamer/Minidaq/A/000/295/487/run295487_ls0004_streamA_StorageManager.dat',
-        #'/store/t0streamer/Minidaq/A/000/295/487/run295487_ls0005_streamA_StorageManager.dat',
-        #'/store/t0streamer/Data/Physics/000/294/737/run294737_ls0030_streamPhysics_StorageManager.dat',
-        '/store/t0streamer/Minidaq/A/000/295/626/run295626_ls0001_streamA_StorageManager.dat',
-  )
+    fileNames = cms.untracked.vstring(
+      *(
+'/store/t0streamer/Minidaq/A/000/295/869/run295869_ls0001_streamA_StorageManager.dat',
 )
 
+    )
+)
 
 # raw-to-digi conversion
 process.load("EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff")
@@ -75,7 +69,10 @@ process.load('RecoCTPPS.TotemRPLocal.ctppsDiamondRecHits_cfi')
 
 # local tracks fitter
 process.load('RecoCTPPS.TotemRPLocal.ctppsDiamondLocalTracks_cfi')
-
+#process.ctppsDiamondLocalTracks.trackingAlgorithmParams.threshold = cms.double(1.5)
+#process.ctppsDiamondLocalTracks.trackingAlgorithmParams.sigma = cms.double(0.1)
+#process.ctppsDiamondLocalTracks.trackingAlgorithmParams.resolution = cms.double(0.05) # in mm
+#process.ctppsDiamondLocalTracks.trackingAlgorithmParams.pixel_efficiency_function = cms.string("(TMath::Erf((x-[0]+0.5*[1])/([2]/4)+2)+1)*TMath::Erfc((x-[0]-0.5*[1])/([2]/4)-2)/4")
 
 # CTPPS DQM modules
 process.load("DQM.CTPPS.ctppsDQM_cff")
@@ -99,3 +96,17 @@ process.schedule = cms.Schedule(
   process.path,
   process.end_path
 )
+
+
+## output configuration
+#process.output = cms.OutputModule("PoolOutputModule",
+  #fileName = cms.untracked.string("file:./reco_digi.root"),
+  #outputCommands = cms.untracked.vstring(
+    #'drop *',
+    #'keep *_*RawToDigi_*_*',
+  #)
+#)
+
+#process.outpath = cms.EndPath(process.output)
+
+

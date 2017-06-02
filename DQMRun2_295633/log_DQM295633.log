@@ -1,0 +1,65 @@
+Sender: LSF System <lsfadmin@b688a88ba0.cern.ch>
+Subject: Job 33421532: <DQM295633> in cluster <batch> Exited
+
+Job <DQM295633> was submitted from host <lxplus018.cern.ch> by user <nminafra> in cluster <batch>.
+Job was executed on host(s) <b688a88ba0.cern.ch>, in queue <1nd>, as user <nminafra> in cluster <batch>.
+</afs/cern.ch/user/n/nminafra> was used as the home directory.
+</afs/cern.ch/user/n/nminafra/Work/CMSSW/DQM/CMSSW_9_2_0_patch2/src/DQMRun2_295633> was used as the working directory.
+Started at Thu Jun  1 20:05:19 2017
+Results reported on Thu Jun  1 21:32:52 2017
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+export SCRAM_ARCH=slc6_amd64_gcc530
+export BUILD_ARCH=slc5_amd64_gcc462
+export VO_CMS_SW_DIR=/afs/cern.ch/cms
+source /afs/cern.ch/cms/cmsset_default.sh
+cd /afs/cern.ch/work/n/nminafra/CMSSW/DQM/CMSSW_9_2_0_patch2/src
+eval `scramv1 runtime -sh`
+cd -
+cmsRun /afs/cern.ch/user/n/nminafra/Work/CMSSW/DQM/CMSSW_9_2_0_patch2/src/DQMRun2_295633/dqm_run.py
+mv DQM_V*.root /afs/cern.ch/user/n/nminafra/Work/public/DQMOut/Selected2/
+------------------------------------------------------------
+
+TERM_OWNER: job killed by owner.
+Exited with signal termination: Alarm clock.
+
+Resource usage summary:
+
+    CPU time :                                   380.90 sec.
+    Max Memory :                                 317.57 MB
+    Average Memory :                             302.38 MB
+    Total Requested Memory :                     -
+    Delta Memory :                               -
+    Max Swap :                                   860 MB
+    Max Processes :                              8
+    Max Threads :                                16
+    Run time :                                   5250 sec.
+    Turnaround time :                            5259 sec.
+
+The output (if any) follows:
+
+@(#)CERN job starter $Date: 2010/06/23 14:22:16 $
+Working directory is </pool/lsf/nminafra/33421532> on <b688a88ba0.cern.ch>
+
+/pool/lsf/nminafra/33421532
+Loaded configuration file from: []
+dqmRunConfig: cms.PSet(
+    collectorHost = cms.untracked.string('dqm-c2d07-29.cms'),
+    collectorPort = cms.untracked.int32(9190),
+    type = cms.untracked.string('userarea')
+)
+
+Job finished at Thu Jun  1 21:31:54 CEST 2017 on node 
+ under linux version Scientific Linux CERN SLC release 6.9 (Carbon)
+
+CERN statistics: This process used approximately : 0:16:09 KSI2K hours (969 KSI2K seconds)
+                 This process corresponds to     : 1:03:02 HS06  hours (3782 HS06  seconds)
+
+
+PS:
+
+Read file <err_DQM295633.log> for stderr output of this job.
+

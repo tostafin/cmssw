@@ -832,6 +832,7 @@ CTPPSDiamondDQMSource::analyze( const edm::Event& event, const edm::EventSetup& 
     detId_plane.setChannel( 0 );
     for ( const auto& rechit : rechits ) {
       if ( excludeMultipleHits_ && rechit.getMultipleHits() > 0 ) continue;
+      if ( rechit.getToT() == 0 ) continue;
       if ( planePlots_.find( detId_plane ) != planePlots_.end() ) {
         if ( rechit.getOOTIndex() == centralOOT_ ) {
           TH1F *hitHistoTmp = planePlots_[detId_plane].hitProfile->getTH1F();

@@ -21,12 +21,19 @@ class DiamondVFATFrame : public VFATFrame
 {
   private:
     enum { UNDEFINED, FULL, COMPACT } mode_ = UNDEFINED;
-    enum {VFAT_11_HEADER=0xA000, VFAT_10_HEADER=0xC000, VFAT_9_HEADER=0xE000};
+    enum {VFAT_2_HEADER_FULL=0x7800, VFAT_3_HEADER_FULL=0x7000, VFAT_5_HEADER_FULL=0x6800, VFAT_1_HEADER_COMPACT=0x7800, VFAT_2_HEADER_COMPACT=0x6800, VFAT_4_HEADER_COMPACT=0x6000};
     
     void checkmode() {
-      if ( ( (data[11]&0xf000) == VFAT_11_HEADER ) && ( (data[10]&0xf000) == VFAT_10_HEADER) && ( (data[9]&0xf000) == VFAT_9_HEADER) )
+      if ( ( (data[2]&0xf800) == VFAT_2_HEADER_FULL ) && ( (data[3]&0xf800) == VFAT_3_HEADER_FULL) && ( (data[5]&0xf800) == VFAT_5_HEADER_FULL) ) {
         mode_ = FULL;
-      else mode_ = COMPACT;
+//         std::cout<<"Full mode!"<<std::endl;
+//         std::cout<<std::hex<<(data[1]&0xf800)<<"   "<<(data[2]&0xf800)<<"   "<<(data[4]&0xf800)<<"   "<<std::endl;
+      }
+      else if ( ( (data[1]&0xf800) == VFAT_1_HEADER_COMPACT ) && ( (data[2]&0xf800) == VFAT_2_HEADER_COMPACT) && ( (data[4]&0xf800) == VFAT_4_HEADER_COMPACT) ) {
+        mode_ = COMPACT;
+//         std::cout<<"Compact mode!"<<std::endl;
+      }
+      else std::cout<<"ERROR! Compact or Full??    "<<std::hex<<(data[2]&0xf800)<<"   "<<(data[3]&0xf800)<<"   "<<(data[5]&0xf800)<<std::endl;
     }
     
   public:
@@ -39,6 +46,7 @@ class DiamondVFATFrame : public VFATFrame
       setData(copy.data);
       checkmode();
     }
+
     virtual ~DiamondVFATFrame() {}
 
     /// get timing infromation

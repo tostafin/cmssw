@@ -47,6 +47,11 @@ int RawDataUnpacker::ProcessOptoRxFrame(const word *buf, unsigned int frameSize,
   // get OptoRx metadata
   unsigned long long head = buf[0];
   unsigned long long foot = buf[frameSize-1];
+  
+//   for (uint i=0; i<frameSize; i+=1) {
+//     std::cout<<"OptoRxFrame:      "<< (unsigned long long) buf[i] /*<< "    " << (uint) buf[i+1] << "    " << (uint) buf[i+2] << "    " << (uint) buf[i+3]*/ << std::endl;
+//   }
+//   std::cout<<"OptoRxFrame:      " << std::endl;
 
   fedInfo.setHeader(head);
   fedInfo.setFooter(foot);
@@ -83,8 +88,10 @@ int RawDataUnpacker::ProcessOptoRxFrame(const word *buf, unsigned int frameSize,
   if (FOV == 1)
     return ProcessOptoRxFrameSerial(buf, frameSize, fc);
 
-  if (FOV == 2)
+  if (FOV == 2 || FOV == 3) {
+//     std::cout<< "FOV: "<< FOV<<std::endl;
     return ProcessOptoRxFrameParallel(buf, frameSize, fedInfo, fc);
+  }
 
   if (verbosity)
     LogWarning("Totem") << "Error in RawDataUnpacker::ProcessOptoRxFrame > " << "Unknown FOV = " << FOV << endl;
@@ -211,6 +218,7 @@ int RawDataUnpacker::ProcessVFATDataParallel(const uint16_t *buf, unsigned int O
 {
   // start counting processed words
   unsigned int wordsProcessed = 1;
+//   bool verbosity=true;
 
   // padding word? skip it
   if (buf[0] == 0xFFFF)
@@ -218,7 +226,7 @@ int RawDataUnpacker::ProcessVFATDataParallel(const uint16_t *buf, unsigned int O
 
   // check header flag
   unsigned int hFlag = (buf[0] >> 8) & 0xFF;
-  if (hFlag != vmCluster && hFlag != vmRaw)
+  if (hFlag != vmCluster && hFlag != vmRaw && hFlag != vmDiamondCompact)
   {
     if (verbosity)
       LogWarning("Totem") << "Error in RawDataUnpacker::ProcessVFATDataParallel > "
@@ -275,6 +283,17 @@ int RawDataUnpacker::ProcessVFATDataParallel(const uint16_t *buf, unsigned int O
 
   if (hFlag == vmRaw)
     wordsProcessed += 9;
+  
+  if (hFlag == vmDiamondCompact)
+  {
+    wordsProcessed--;
+    while ( (buf[wordsProcessed] >> 12)!= 0xF ) {
+//       std::cout<<"DiamFrame ###       "<<std::hex<<(uint) buf[wordsProcessed]<<std::endl;
+      wordsProcessed++;
+    }
+
+//     std::cout<<"DiamFrame ### Word processed: "<<wordsProcessed<<"     "<<std::hex<<(uint) buf[wordsProcessed]<<std::endl;
+  }
 
   // process trailer
   unsigned int tSig = buf[wordsProcessed] >> 12;
@@ -378,6 +397,8 @@ int RawDataUnpacker::ProcessVFATDataParallel(const uint16_t *buf, unsigned int O
   // save frame to output
   f.setPresenceFlags(presenceFlags);
   fc->Insert(fp, f);
+
+//     f.Print();
 
   return wordsProcessed;
 }

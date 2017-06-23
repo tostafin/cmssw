@@ -108,8 +108,18 @@ ctppsDiamondGeomXMLFiles = cms.vstring(
         'Geometry/VeryForwardData/data/CTPPS_Diamond_Detector_Assembly.xml',
 )
 
+ctppsUFSDGeomXMLFiles = cms.vstring(
+        # UFSDetectors
+        'Geometry/VeryForwardData/data/CTPPS_UFSD_Parameters.xml',
+        'Geometry/VeryForwardData/data/CTPPS_UFSD_Segments/CTPPS_UFSD_Pattern1.xml',
+        'Geometry/VeryForwardData/data/CTPPS_UFSD_Segments/CTPPS_UFSD_Pattern2_SegmentA.xml',
+        'Geometry/VeryForwardData/data/CTPPS_UFSD_Segments/CTPPS_UFSD_Pattern2_SegmentB.xml',
+        'Geometry/VeryForwardData/data/CTPPS_UFSD_Planes/CTPPS_UFSD_Plane4.xml',
+        #'Geometry/VeryForwardData/data/CTPPS_UFSD_Detector_Assembly.xml',
+)
+
 XMLIdealGeometryESSource_CTPPS = cms.ESSource("XMLIdealGeometryESSource",
-    geomXMLFiles = totemGeomXMLFiles+ctppsDiamondGeomXMLFiles,
+    geomXMLFiles = totemGeomXMLFiles+ctppsDiamondGeomXMLFiles+ctppsUFSDGeomXMLFiles,
     rootNodeName = cms.string('cms:CMSE')
 )
 

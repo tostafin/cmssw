@@ -159,6 +159,8 @@ class CTPPSDiamondDQMSource : public DQMEDAnalyzer
       MonitorElement* LeadingTrailingCorrelationPerChannel = NULL;
       MonitorElement* leadingWithoutTrailing = NULL;
       MonitorElement* stripTomography_far = NULL;
+      MonitorElement* stripTomographyAll_far = NULL;
+      MonitorElement* stripTomography1D_far = NULL;
       MonitorElement* hit_rate = NULL;
       MonitorElement* ECCheckPerChannel = NULL;
       unsigned long hitsCounterPerLumisection;
@@ -308,7 +310,9 @@ CTPPSDiamondDQMSource::ChannelPlots::ChannelPlots( DQMStore::IBooker& ibooker, u
 
   ECCheckPerChannel = ibooker.book1D("optorxEC(8bit) - vfatEC vs optorxEC", title+" EC Error;optorxEC-vfatEC", 512, -256, 256 );
 
-  stripTomography_far = ibooker.book2D( "tomography far", "tomography with strips far;x + 25 OOT (mm);y (mm)", 150, -50, 100, 24, -2, 10 );
+  stripTomography_far = ibooker.book2D( "tomography far 2D OOT", "tomography with strips far;x + 25 OOT (mm);y (mm)", 150, -50, 100, 24, -2, 10 );
+  stripTomographyAll_far = ibooker.book2D( "tomography far 2D", "tomography with strips far;x(mm);y (mm)", 150, -50, 100, 24, -2, 10 );
+  stripTomography1D_far = ibooker.book1D( "tomography far 1D", "tomography with strips far;x", 150, -50, 100 );
 
   hit_rate = ibooker.book1D( "hit rate", title+"hit rate;rate (Hz)", 10, 0, 100 );
 }
@@ -437,7 +441,7 @@ CTPPSDiamondDQMSource::analyze( const edm::Event& event, const edm::EventSetup& 
   // RP Plots
   //------------------------------  
 
-  //   if (event.bunchCrossing() > 100) return;
+//     if (event.bunchCrossing() > 100) return;
 
   //------------------------------
   // Correlation Plots
@@ -912,6 +916,8 @@ CTPPSDiamondDQMSource::analyze( const edm::Event& event, const edm::EventSetup& 
             if ( striplt.getTx() < minimumStripAngleForTomography_ || striplt.getTy() < minimumStripAngleForTomography_) continue;
             if ( stripId.rp() == CTPPS_FAR_RP_ID ) {
               channelPlots_[detId].stripTomography_far->Fill( striplt.getX0() + 25*(rechit.getOOTIndex() - ( ( centralOOT_ != -999 ) ? centralOOT_ : 0 ) +1), striplt.getY0() );
+              channelPlots_[detId].stripTomographyAll_far->Fill( striplt.getX0(), striplt.getY0() );
+              channelPlots_[detId].stripTomography1D_far->Fill( striplt.getX0() );
             }
           }
         }

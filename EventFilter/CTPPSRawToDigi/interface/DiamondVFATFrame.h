@@ -28,14 +28,22 @@ class DiamondVFATFrame : public VFATFrame
     /// get timing infromation
     uint32_t getLeadingEdgeTime() const
     {
-      uint32_t time = ((data[5]&0x1f)<<16)+data[6];
+      uint32_t time=0;
+      if ( ( ( getChipID() & 0x0F00 ) == 0x0200 ) or ( ( getChipID() & 0x0F00 ) == 0x0300 ) ) 
+        time = ((data[5]&0x1f)<<16)+data[6];
+      else
+        time = ((data[7]&0x1f)<<16)+data[8];
       time = (time & 0xFFE7FFFF) << 2 | (time & 0x00180000) >> 19;    //HPTDC inperpolation bits are MSB but should be LSB.... ask HPTDC designers...
       return time;     
     }
 
     uint32_t getTrailingEdgeTime() const
     {
-      uint32_t time = ((data[7]&0x1f)<<16)+data[8];
+      uint32_t time=0;
+      if ( ( ( getChipID() & 0x0F00 ) == 0x0200 ) or ( ( getChipID() & 0x0F00 ) == 0x0300 ) ) 
+        time = ((data[7]&0x1f)<<16)+data[8];
+      else
+        time = ((data[5]&0x1f)<<16)+data[6];
       time = (time & 0xFFE7FFFF) << 2 | (time & 0x00180000) >> 19;   //HPTDC inperpolation bits are MSB but should be LSB.... ask HPTDC designers...
       return time;
     }

@@ -22,14 +22,6 @@
 #include "DetectorDescription/Core/interface/DDSpecifics.h"
 #include "DetectorDescription/Core/interface/DDRotationMatrix.h"
 
-// TODO: remove ?
-/*
-#include "DetectorDescription/Core/src/Material.h"
-#include "DetectorDescription/Core/src/Solid.h"
-#include "DetectorDescription/Core/src/LogicalPart.h"
-#include "DetectorDescription/Core/src/Specific.h"
-*/
-
 #include "DataFormats/CTPPSAlignment/interface/RPAlignmentCorrectionsData.h"
 
 #include "CondFormats/AlignmentRecord/interface/RPRealAlignmentRecord.h"
@@ -49,27 +41,27 @@
  *
  * Second, it creates CTPPSGeometry from DetGeoDesc tree.
  **/
-class  TotemRPGeometryESModule : public edm::ESProducer
+class  CTPPSGeometryESModule : public edm::ESProducer
 {
   public:
-    TotemRPGeometryESModule(const edm::ParameterSet &p);
-    ~TotemRPGeometryESModule() override; 
+    CTPPSGeometryESModule( const edm::ParameterSet& );
+    virtual ~CTPPSGeometryESModule(); 
 
-    std::unique_ptr<DetGeomDesc> produceIdealGD(const IdealGeometryRecord &);
+    std::unique_ptr<DetGeomDesc> produceIdealGD( const IdealGeometryRecord& );
 
-    std::unique_ptr<DetGeomDesc> produceRealGD(const VeryForwardRealGeometryRecord &);
-    std::unique_ptr<TotemRPGeometry> produceRealTG(const VeryForwardRealGeometryRecord &);
+    std::unique_ptr<DetGeomDesc> produceRealGD( const VeryForwardRealGeometryRecord& );
+    std::unique_ptr<TotemRPGeometry> produceRealTG( const VeryForwardRealGeometryRecord& );
 
-    std::unique_ptr<DetGeomDesc> produceMisalignedGD(const VeryForwardMisalignedGeometryRecord &);
-    std::unique_ptr<TotemRPGeometry> produceMisalignedTG(const VeryForwardMisalignedGeometryRecord &);
+    std::unique_ptr<DetGeomDesc> produceMisalignedGD( const VeryForwardMisalignedGeometryRecord& );
+    std::unique_ptr<TotemRPGeometry> produceMisalignedTG( const VeryForwardMisalignedGeometryRecord& );
 
   protected:
     unsigned int verbosity;
 
-    static void applyAlignments(const edm::ESHandle<DetGeomDesc> &idealGD,
-      const edm::ESHandle<RPAlignmentCorrectionsData> &alignments, DetGeomDesc* &newGD);
+    static void applyAlignments( const edm::ESHandle<DetGeomDesc>& idealGD,
+      const edm::ESHandle<RPAlignmentCorrectionsData>& alignments, DetGeomDesc*& newGD );
 
-    static void buildDetGeomDesc(DDFilteredView *fv, DetGeomDesc *gd);
+    static void buildDetGeomDesc( DDFilteredView* fv, DetGeomDesc* gd );
 };
 
 
@@ -79,37 +71,37 @@ using namespace edm;
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 
-TotemRPGeometryESModule::TotemRPGeometryESModule(const edm::ParameterSet &p)
+CTPPSGeometryESModule::CTPPSGeometryESModule( const edm::ParameterSet& p )
 {
   verbosity = p.getUntrackedParameter<unsigned int>("verbosity", 1);  
 
-  setWhatProduced(this, &TotemRPGeometryESModule::produceIdealGD);
+  setWhatProduced(this, &CTPPSGeometryESModule::produceIdealGD);
 
-  setWhatProduced(this, &TotemRPGeometryESModule::produceRealGD);
-  setWhatProduced(this, &TotemRPGeometryESModule::produceRealTG);
+  setWhatProduced(this, &CTPPSGeometryESModule::produceRealGD);
+  setWhatProduced(this, &CTPPSGeometryESModule::produceRealTG);
 
-  setWhatProduced(this, &TotemRPGeometryESModule::produceMisalignedGD);
-  setWhatProduced(this, &TotemRPGeometryESModule::produceMisalignedTG);
+  setWhatProduced(this, &CTPPSGeometryESModule::produceMisalignedGD);
+  setWhatProduced(this, &CTPPSGeometryESModule::produceMisalignedTG);
 }
 
 //----------------------------------------------------------------------------------------------------
 
-TotemRPGeometryESModule::~TotemRPGeometryESModule()
+CTPPSGeometryESModule::~CTPPSGeometryESModule()
 {
 }
 
 //----------------------------------------------------------------------------------------------------
 
-void TotemRPGeometryESModule::applyAlignments(const ESHandle<DetGeomDesc> &idealGD, 
-    const ESHandle<RPAlignmentCorrectionsData> &alignments, DetGeomDesc* &newGD)
+void CTPPSGeometryESModule::applyAlignments( const ESHandle<DetGeomDesc>& idealGD, 
+    const ESHandle<RPAlignmentCorrectionsData>& alignments, DetGeomDesc*& newGD )
 {
-  newGD = new DetGeomDesc( *(idealGD.product()) );
-  deque<const DetGeomDesc *> buffer;
-  deque<DetGeomDesc *> bufferNew;
-  buffer.push_back(idealGD.product());
-  bufferNew.push_back(newGD);
+  newGD = new DetGeomDesc( *( idealGD.product() ) );
+  deque<const DetGeomDesc*> buffer;
+  deque<DetGeomDesc*> bufferNew;
+  buffer.push_back( idealGD.product() );
+  bufferNew.push_back( newGD );
 
-  while (buffer.size() > 0)
+  while ( buffer.size() > 0 )
   {
     const DetGeomDesc *sD = buffer.front();
     DetGeomDesc *pD = bufferNew.front();
@@ -123,10 +115,10 @@ void TotemRPGeometryESModule::applyAlignments(const ESHandle<DetGeomDesc> &ideal
     {
       unsigned int plId = pD->geographicalID();
 
-      if (alignments.isValid())
+      if ( alignments.isValid() )
       {
-        const RPAlignmentCorrectionData& ac = alignments->GetFullSensorCorrection(plId);
-        pD->ApplyAlignment(ac);
+        const RPAlignmentCorrectionData& ac = alignments->GetFullSensorCorrection( plId );
+        pD->ApplyAlignment( ac );
       }
     }
 
@@ -137,43 +129,43 @@ void TotemRPGeometryESModule::applyAlignments(const ESHandle<DetGeomDesc> &ideal
     {
       unsigned int rpId = pD->geographicalID();
       
-      if (alignments.isValid())
+      if ( alignments.isValid() )
       {
-        const RPAlignmentCorrectionData& ac = alignments->GetRPCorrection(rpId);
-        pD->ApplyAlignment(ac);
+        const RPAlignmentCorrectionData& ac = alignments->GetRPCorrection( rpId );
+        pD->ApplyAlignment( ac );
       }
     }
 
     // create and add children
-    for (unsigned int i = 0; i < sD->components().size(); i++)
+    for ( unsigned int i = 0; i < sD->components().size(); i++ )
     {
       const DetGeomDesc *sDC = sD->components()[i];
-      buffer.push_back(sDC);
+      buffer.push_back( sDC );
     
       // create new node with the same information as in sDC and add it as a child of pD
-      DetGeomDesc * cD = new DetGeomDesc(*sDC);
-      pD->addComponent(cD);
+      DetGeomDesc* cD = new DetGeomDesc( *sDC );
+      pD->addComponent( cD );
 
-      bufferNew.push_back(cD);
+      bufferNew.push_back( cD );
     }
   }
 }
 
 //----------------------------------------------------------------------------------------------------
 
-void TotemRPGeometryESModule::buildDetGeomDesc(DDFilteredView *fv, DetGeomDesc *gd)
+void CTPPSGeometryESModule::buildDetGeomDesc( DDFilteredView* fv, DetGeomDesc* gd )
 {
   // try to dive into next level
-  if (! fv->firstChild())
+  if ( !fv->firstChild() )
     return;
 
   // loop over siblings in the level
   do {
     // create new DetGeomDesc node and add it to the parent's (gd) list
-    DetGeomDesc* newGD = new DetGeomDesc(fv);
+    DetGeomDesc* newGD = new DetGeomDesc( fv );
 
     // strip sensors
-    if (fv->logicalPart().name().name().compare(DDD_TOTEM_RP_SENSOR_NAME) == 0)
+    if ( fv->logicalPart().name().name().compare( DDD_TOTEM_RP_SENSOR_NAME ) == 0 )
     {
       const vector<int> &cN = fv->copyNumbers();
       // check size of copy numubers array
@@ -187,11 +179,11 @@ void TotemRPGeometryESModule::buildDetGeomDesc(DDFilteredView *fv, DetGeomDesc *
       const unsigned int station = (decRPId % 100) / 10;
       const unsigned int rp = decRPId % 10;
       const unsigned int detector = cN[cN.size() - 1];
-      newGD->setGeographicalID(TotemRPDetId(arm, station, rp, detector));
+      newGD->setGeographicalID( TotemRPDetId( arm, station, rp, detector ) );
     }
 
     // strip RPs
-    if (fv->logicalPart().name().name().compare(DDD_TOTEM_RP_RP_NAME) == 0)
+    if ( fv->logicalPart().name().name().compare( DDD_TOTEM_RP_RP_NAME ) == 0 )
     {
       const unsigned int decRPId = fv->copyno();
 
@@ -201,12 +193,12 @@ void TotemRPGeometryESModule::buildDetGeomDesc(DDFilteredView *fv, DetGeomDesc *
         const unsigned int armIdx = (decRPId / 100) % 10;
         const unsigned int stIdx = (decRPId / 10) % 10;
         const unsigned int rpIdx = decRPId % 10;
-        newGD->setGeographicalID(TotemRPDetId(armIdx, stIdx, rpIdx));
+        newGD->setGeographicalID( TotemRPDetId( armIdx, stIdx, rpIdx ) );
       }
     }
 
     // pixel sensors
-    if (fv->logicalPart().name().name().compare(DDD_CTPPS_PIXELS_SENSOR_NAME) == 0)
+    if ( fv->logicalPart().name().name().compare( DDD_CTPPS_PIXELS_SENSOR_NAME ) == 0 )
     {
       const vector<int> &cN = fv->copyNumbers();
       // check size of copy numubers array
@@ -220,11 +212,11 @@ void TotemRPGeometryESModule::buildDetGeomDesc(DDFilteredView *fv, DetGeomDesc *
       const unsigned int station = (decRPId % 100) / 10;
       const unsigned int rp = decRPId % 10;
       const unsigned int detector = cN[cN.size() - 2] - 1;
-      newGD->setGeographicalID(CTPPSPixelDetId(arm, station, rp, detector));
+      newGD->setGeographicalID( CTPPSPixelDetId( arm, station, rp, detector ) );
     }
 
     // pixel RPs
-    if (fv->logicalPart().name().name().compare(DDD_CTPPS_PIXELS_RP_NAME) == 0)
+    if ( fv->logicalPart().name().name().compare( DDD_CTPPS_PIXELS_RP_NAME ) == 0 )
     {
       uint32_t decRPId = fv->copyno();
     
@@ -235,12 +227,12 @@ void TotemRPGeometryESModule::buildDetGeomDesc(DDFilteredView *fv, DetGeomDesc *
         const uint32_t armIdx = (decRPId / 100) % 10;
         const uint32_t stIdx = (decRPId / 10) % 10;
         const uint32_t rpIdx = decRPId % 10;
-        newGD->setGeographicalID(CTPPSPixelDetId(armIdx, stIdx, rpIdx));
+        newGD->setGeographicalID( CTPPSPixelDetId( armIdx, stIdx, rpIdx ) );
       }
     }
 
     // diamond sensors
-    if (fv->logicalPart().name().name().compare(DDD_CTPPS_DIAMONDS_SEGMENT_NAME) == 0)
+    if ( fv->logicalPart().name().name().compare( DDD_CTPPS_DIAMONDS_SEGMENT_NAME ) == 0 )
     {
       const vector<int>& copy_num = fv->copyNumbers();
 
@@ -254,7 +246,7 @@ void TotemRPGeometryESModule::buildDetGeomDesc(DDFilteredView *fv, DetGeomDesc *
     }
 
     // diamond RPs
-    if (fv->logicalPart().name().name().compare(DDD_CTPPS_DIAMONDS_RP_NAME) == 0)
+    if ( fv->logicalPart().name().name().compare( DDD_CTPPS_DIAMONDS_RP_NAME ) == 0 )
     {
       const vector<int>& copy_num = fv->copyNumbers();
 
@@ -267,15 +259,15 @@ void TotemRPGeometryESModule::buildDetGeomDesc(DDFilteredView *fv, DetGeomDesc *
       const unsigned int station = 1;
       const unsigned int rp = 6;
 
-      newGD->setGeographicalID(CTPPSDiamondDetId(arm, station, rp));
+      newGD->setGeographicalID( CTPPSDiamondDetId( arm, station, rp ) );
     }
 
     // add component
-    gd->addComponent(newGD);
+    gd->addComponent( newGD );
 
     // recursion
-    buildDetGeomDesc(fv, newGD);
-  } while (fv->nextSibling());
+    buildDetGeomDesc( fv, newGD );
+  } while ( fv->nextSibling() );
 
   // go a level up
   fv->parent();
@@ -283,104 +275,104 @@ void TotemRPGeometryESModule::buildDetGeomDesc(DDFilteredView *fv, DetGeomDesc *
 
 //----------------------------------------------------------------------------------------------------
 
-std::unique_ptr<DetGeomDesc> TotemRPGeometryESModule::produceIdealGD(const IdealGeometryRecord &iRecord)
+std::unique_ptr<DetGeomDesc> CTPPSGeometryESModule::produceIdealGD( const IdealGeometryRecord& iRecord )
 {
   // get the DDCompactView from EventSetup
   edm::ESHandle<DDCompactView> cpv;
-  iRecord.get(cpv);
+  iRecord.get( cpv );
 
   // create DDFilteredView and apply the filter
   DDPassAllFilter filter;
-  DDFilteredView fv(*(cpv.product()), filter);
+  DDFilteredView fv( *( cpv.product() ), filter );
 
   // conversion to DetGeomDesc structure
-  DetGeomDesc* root = new DetGeomDesc(&fv);
-  buildDetGeomDesc(&fv, root);
+  DetGeomDesc* root = new DetGeomDesc( &fv );
+  buildDetGeomDesc( &fv, root );
   
   // construct the tree of DetGeomDesc
-  return std::unique_ptr<DetGeomDesc>( const_cast<DetGeomDesc*>(root) );
+  return std::unique_ptr<DetGeomDesc>( const_cast<DetGeomDesc*>( root ) );
 }
 
 //----------------------------------------------------------------------------------------------------
 
-std::unique_ptr<DetGeomDesc> TotemRPGeometryESModule::produceRealGD(const VeryForwardRealGeometryRecord &iRecord)
+std::unique_ptr<DetGeomDesc> CTPPSGeometryESModule::produceRealGD( const VeryForwardRealGeometryRecord& iRecord )
 {
   // get the input GeometricalDet
   edm::ESHandle<DetGeomDesc> idealGD;
-  iRecord.getRecord<IdealGeometryRecord>().get(idealGD);
+  iRecord.getRecord<IdealGeometryRecord>().get( idealGD );
 
   // load alignments
   edm::ESHandle<RPAlignmentCorrectionsData> alignments;
-  try { iRecord.getRecord<RPRealAlignmentRecord>().get(alignments); }
-  catch (...) {}
+  try { iRecord.getRecord<RPRealAlignmentRecord>().get( alignments ); }
+  catch (...) {} //FIXME clang warning
 
-  if (alignments.isValid())
+  if ( alignments.isValid() )
   {
-    if (verbosity)
-      LogVerbatim("TotemRPGeometryESModule::produceRealGD")
-        << ">> TotemRPGeometryESModule::produceRealGD > Real geometry: "
+    if ( verbosity )
+      LogVerbatim("CTPPSGeometryESModule::produceRealGD")
+        << ">> CTPPSGeometryESModule::produceRealGD > Real geometry: "
         << alignments->GetRPMap().size() << " RP and "
         << alignments->GetSensorMap().size() << " sensor alignments applied.";
   } else {
-    if (verbosity)
-      LogVerbatim("TotemRPGeometryESModule::produceRealGD")
-        << ">> TotemRPGeometryESModule::produceRealGD > Real geometry: No alignments applied.";
+    if ( verbosity )
+      LogVerbatim("CTPPSGeometryESModule::produceRealGD")
+        << ">> CTPPSGeometryESModule::produceRealGD > Real geometry: No alignments applied.";
   }
 
   DetGeomDesc* newGD = NULL;
-  applyAlignments(idealGD, alignments, newGD);
-  return std::unique_ptr<DetGeomDesc>(newGD);
+  applyAlignments( idealGD, alignments, newGD );
+  return std::unique_ptr<DetGeomDesc>( newGD );
 }
 
 //----------------------------------------------------------------------------------------------------
 
-std::unique_ptr<DetGeomDesc> TotemRPGeometryESModule::produceMisalignedGD(const VeryForwardMisalignedGeometryRecord &iRecord)
+std::unique_ptr<DetGeomDesc> CTPPSGeometryESModule::produceMisalignedGD( const VeryForwardMisalignedGeometryRecord& iRecord )
 {
   // get the input GeometricalDet
   edm::ESHandle<DetGeomDesc> idealGD;
-  iRecord.getRecord<IdealGeometryRecord>().get(idealGD);
+  iRecord.getRecord<IdealGeometryRecord>().get( idealGD );
 
   // load alignments
   edm::ESHandle<RPAlignmentCorrectionsData> alignments;
-  try { iRecord.getRecord<RPMisalignedAlignmentRecord>().get(alignments); }
-  catch (...) {}
+  try { iRecord.getRecord<RPMisalignedAlignmentRecord>().get( alignments ); }
+  catch (...) {} //FIXME clang warning
 
-  if (alignments.isValid())
+  if ( alignments.isValid() )
   {
-    if (verbosity)
-      LogVerbatim("TotemRPGeometryESModule::produceMisalignedGD")
-        << ">> TotemRPGeometryESModule::produceMisalignedGD > Misaligned geometry: "
+    if ( verbosity )
+      LogVerbatim("CTPPSGeometryESModule::produceMisalignedGD")
+        << ">> CTPPSGeometryESModule::produceMisalignedGD > Misaligned geometry: "
         << alignments->GetRPMap().size() << " RP and "
         << alignments->GetSensorMap().size() << " sensor alignments applied.";
   } else {
-    if (verbosity)
-      LogVerbatim("TotemRPGeometryESModule::produceMisalignedGD")
-        << ">> TotemRPGeometryESModule::produceMisalignedGD > Misaligned geometry: No alignments applied.";
+    if ( verbosity )
+      LogVerbatim("CTPPSGeometryESModule::produceMisalignedGD")
+        << ">> CTPPSGeometryESModule::produceMisalignedGD > Misaligned geometry: No alignments applied.";
   }
 
   DetGeomDesc* newGD = NULL;
-  applyAlignments(idealGD, alignments, newGD);
-  return std::unique_ptr<DetGeomDesc>(newGD);
+  applyAlignments( idealGD, alignments, newGD );
+  return std::unique_ptr<DetGeomDesc>( newGD );
 }
 
 //----------------------------------------------------------------------------------------------------
 
-std::unique_ptr<TotemRPGeometry> TotemRPGeometryESModule::produceRealTG(const VeryForwardRealGeometryRecord &iRecord)
+std::unique_ptr<TotemRPGeometry> CTPPSGeometryESModule::produceRealTG( const VeryForwardRealGeometryRecord& iRecord )
 {
   edm::ESHandle<DetGeomDesc> gD;
-  iRecord.get(gD);
+  iRecord.get( gD );
 
-  return std::make_unique<TotemRPGeometry>( gD.product());
+  return std::make_unique<TotemRPGeometry>( gD.product() );
 }
 
 //----------------------------------------------------------------------------------------------------
 
-std::unique_ptr<TotemRPGeometry> TotemRPGeometryESModule::produceMisalignedTG(const VeryForwardMisalignedGeometryRecord &iRecord)
+std::unique_ptr<TotemRPGeometry> CTPPSGeometryESModule::produceMisalignedTG( const VeryForwardMisalignedGeometryRecord& iRecord )
 {
   edm::ESHandle<DetGeomDesc> gD;
-  iRecord.get(gD);
+  iRecord.get( gD );
 
-  return std::make_unique<TotemRPGeometry>( gD.product());
+  return std::make_unique<TotemRPGeometry>( gD.product() );
 }
 
-DEFINE_FWK_EVENTSETUP_MODULE(TotemRPGeometryESModule);
+DEFINE_FWK_EVENTSETUP_MODULE( CTPPSGeometryESModule );

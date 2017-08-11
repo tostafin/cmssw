@@ -18,4 +18,7 @@ const char DDD_TOTEM_RP_PRIMARY_VACUUM_NAME[] = "RP_box_primary_vacuum";
 const char DDD_CTPPS_DIAMONDS_PLANE_NAME[] = "CTPPS_Diamond_Plane";
 const char DDD_CTPPS_DIAMONDS_DETECTOR_NAME[] = "CTPPS_Diamond_Segment";
 
+const char DDD_CTPPS_UFSD_PLANE_NAME[] = "CTPPS_UFSD_Plane";
+const char DDD_CTPPS_UFSD_DETECTOR_NAME[] = "CTPPS_UFSD_Segment";
+
 #endif // Geometry_VeryForwardGeometryBuilder_DDDTotemRPCommon

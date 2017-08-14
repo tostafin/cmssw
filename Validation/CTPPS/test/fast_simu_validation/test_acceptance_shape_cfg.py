@@ -35,8 +35,12 @@ process.XMLIdealGeometryESSource_CTPPS = cms.ESSource("XMLIdealGeometryESSource"
 # particle generator
 from SimCTPPS.OpticsParameterisation.lhcBeamProducer_cfi import lhcBeamProducer
 process.generator = lhcBeamProducer.clone(
-    MinXi = cms.double(0.0),
-    MaxXi = cms.double(0.2),
+    PGunParameters = lhcBeamProducer.PGunParameters.clone(
+        MinXi = cms.double(0.0),
+        MaxXi = cms.double(0.2),
+        MinT = cms.double(0.0),
+        MaxT = cms.double(3.0)
+    )
 )
 
 process.TotemRPGeometryESModule = cms.ESProducer("TotemRPGeometryESModule")

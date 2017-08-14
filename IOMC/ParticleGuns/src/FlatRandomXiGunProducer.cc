@@ -4,12 +4,14 @@ namespace edm
 {
   FlatRandomXiGunProducer::FlatRandomXiGunProducer( const edm::ParameterSet& iConfig ) :
     partGunParams_( iConfig.getParameter<edm::ParameterSet>( "PGunParameters" ) ),
-    partIds_       ( partGunParams_.getParameter< std::vector<int> >( "PartID" ) ),
-    sqrtS_         ( partGunParams_.getParameter<double>( "SqrtS" ) ),
-    minXi_         ( partGunParams_.getParameter<double>( "MinXi" ) ),
-    maxXi_         ( partGunParams_.getParameter<double>( "MaxXi" ) )
-    /*minPhi_        ( partGunParams_.getUntrackedParameter<double>( "MinPhi", -M_PI ) ),
-    maxPhi_        ( partGunParams_.getUntrackedParameter<double>( "MaxPhi", +M_PI ) )*/
+    partIds_( partGunParams_.getParameter< std::vector<int> >( "PartID" ) ),
+    sqrtS_  ( partGunParams_.getParameter<double>( "SqrtS" ) ),
+    minXi_  ( partGunParams_.getParameter<double>( "MinXi" ) ),
+    maxXi_  ( partGunParams_.getParameter<double>( "MaxXi" ) ),
+    minT_   ( partGunParams_.getParameter<double>( "MinT" ) ),
+    maxT_   ( partGunParams_.getParameter<double>( "MaxT" ) ),
+    minPhi_ ( partGunParams_.getUntrackedParameter<double>( "MinPhi", -M_PI ) ),
+    maxPhi_ ( partGunParams_.getUntrackedParameter<double>( "MaxPhi", +M_PI ) )
   {
     produces<edm::HepMCProduct>( "unsmeared" );
     produces<GenEventInfoProduct>();
@@ -71,14 +73,24 @@ namespace edm
   FlatRandomXiGunProducer::shoot( CLHEP::HepRandomEngine* rnd, double mass, int z_direction )
   {
     // generate xi
-    const double xi = minXi_ + CLHEP::RandFlat::shoot( rnd ) * ( maxXi_-minXi_ );
-    // generate phi
-    //const double phi = minPhi_ + CLHEP::RandFlat::shoot( rnd ) * ( maxPhi_-minPhi_ );
-  
-    const double e_part = sqrtS_/2.*( 1.-xi );
-    const double p = sqrt( e_part*e_part-mass*mass );
+    const double xi = CLHEP::RandFlat::shoot( rnd, minXi_, maxXi_ );
+    const double e_0 = sqrtS_*0.5, e_part = e_0 * ( 1.-xi );
+    const double p_0 = sqrt( e_0*e_0-mass*mass ), p = sqrt( e_part*e_part-mass*mass );
 
-    return HepMC::FourVector( 0., 0., z_direction*p, e_part );
+    // generate phi
+    const double phi = CLHEP::RandFlat::shoot( rnd, minPhi_, maxPhi_ );
+
+    // generate t
+    const double min_t = std::max( minT_, -2. * ( sqrt( e_0*e_0-mass*mass ) * p - e_0*e_part + mass*mass ) );
+    const double t = CLHEP::RandFlat::shoot( rnd, min_t, maxT_ );
+
+    double theta = acos( ( -0.5*t - mass*mass + e_part*e_0 ) / ( p*p_0 ) );
+    if ( z_direction < 0 ) theta = M_PI - theta;
+
+    const double px = p * cos( phi ) * sin( theta ) * z_direction;
+    const double py = p * sin( phi ) * sin( theta );
+    const double pz = p * cos( theta );
+    return HepMC::FourVector( px, py, pz, e_part );
   }
 
   void

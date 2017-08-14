@@ -48,7 +48,8 @@ namespace edm
       double sqrtS_;
 
       double minXi_, maxXi_;
-      //double minPhi_, maxPhi_;
+      double minT_, maxT_;
+      double minPhi_, maxPhi_;
   };
 }
 

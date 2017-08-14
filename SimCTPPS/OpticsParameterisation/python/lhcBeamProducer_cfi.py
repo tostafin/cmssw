@@ -6,5 +6,7 @@ lhcBeamProducer = cms.EDProducer('FlatRandomXiGunProducer',
         SqrtS = cms.double(13.e3),
         MinXi = cms.double(0.03),
         MaxXi = cms.double(0.17),
+        MinT = cms.double(0.0),
+        MaxT = cms.double(3.0),
     )
 )

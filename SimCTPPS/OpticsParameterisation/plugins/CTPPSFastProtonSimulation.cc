@@ -131,8 +131,6 @@ CTPPSFastProtonSimulation::CTPPSFastProtonSimulation( const edm::ParameterSet& i
   produces_strips_rechits_( false ), produces_scoring_plane_hits_( false ),
   rnd_( 0 )
 {
-  produces<edm::HepMCProduct>( "smeared" );
-
   // check if the module needs to generate the TOTEM strips simulation
   if ( iConfig.exists( "stripsRecHitsParams" ) ) {
     // TOTEM strips simulation parameters
@@ -210,7 +208,6 @@ CTPPSFastProtonSimulation::produce( edm::Event& iEvent, const edm::EventSetup& i
   std::unique_ptr<std::vector<CTPPSLocalTrackLite> > pLiteTrks( new std::vector<CTPPSLocalTrackLite>() );
 
   auto evt = new HepMC::GenEvent( *hepmc_prod->GetEvent() );
-  std::unique_ptr<edm::HepMCProduct> pOutProd( new edm::HepMCProduct( evt ) );
 
   // loop over event vertices
   for ( auto it_vtx=evt->vertices_begin(); it_vtx!=evt->vertices_end(); ++it_vtx ) {
@@ -245,8 +242,6 @@ CTPPSFastProtonSimulation::produce( edm::Event& iEvent, const edm::EventSetup& i
       //FIXME add an association map proton track <-> sim hits
     }
   }
-
-  iEvent.put( std::move( pOutProd ), "smeared" );
 
   if ( produces_strips_rechits_ ) {
     iEvent.put( std::move( pRecHits ) );

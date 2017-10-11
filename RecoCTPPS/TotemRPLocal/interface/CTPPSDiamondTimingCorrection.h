@@ -37,7 +37,7 @@ class CTPPSDiamondTimingCorrection
     ~CTPPSDiamondTimingCorrection();
 
     /// Writes in the RecHit the Time of arrival corrected using the Time Over Threshold
-    float correctTiming( const CTPPSDiamondDetId& detId, const CTPPSDiamondRecHit& recHit );
+    float correctTiming( const CTPPSDiamondDetId& detId, const float& t, const float& tot );
     
     /// Reads time precision from database
     float getPrecision( const CTPPSDiamondDetId& detId );

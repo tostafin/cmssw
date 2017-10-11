@@ -12,7 +12,8 @@
 
 CTPPSDiamondRecHitProducerAlgorithm::CTPPSDiamondRecHitProducerAlgorithm( const edm::ParameterSet& iConfig ) :
   ts_to_ns_( iConfig.getParameter<double>( "timeSliceNs" ) ),
-  t_shift_( iConfig.getParameter<int>( "timeShift" ) )
+  t_shift_( iConfig.getParameter<int>( "timeShift" ) ),
+  TOTCorrections_ ( iConfig )
 {}
 
 void
@@ -41,9 +42,11 @@ CTPPSDiamondRecHitProducerAlgorithm::build( const CTPPSGeometry* geom, const edm
       int tot = 0;
       if ( t!=0 && digi->getTrailingEdge()!=0 ) tot = ( (int) digi->getTrailingEdge() ) - t;
 
+      float t_corrected = TOTCorrections_.correctTiming(detid, ts_to_ns_ * t0, ts_to_ns_ * tot);
+      
       rec_hits.push_back( CTPPSDiamondRecHit( x_pos, x_width, y_pos, y_width, // spatial information
-                                              ( t0 * ts_to_ns_ ),
-                                              ( tot * ts_to_ns_),
+                                              ( t_corrected ),
+                                              ( ts_to_ns_ * tot),
                                               time_slice,
                                               digi->getHPTDCErrorFlags(),
                                               digi->getMultipleHit() ) );

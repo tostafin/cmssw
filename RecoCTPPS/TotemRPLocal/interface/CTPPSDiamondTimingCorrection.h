@@ -20,6 +20,8 @@
 
 #include "DataFormats/CTPPSDetId/interface/CTPPSDiamondDetId.h"
 
+#include "RecoCTPPS/TotemRPLocal/interface/CTPPSDiamondTimingGetParameters.h"
+
 #include <vector>
 #include <unordered_map>
 #include "TF1.h"
@@ -35,7 +37,10 @@ class CTPPSDiamondTimingCorrection
     ~CTPPSDiamondTimingCorrection();
 
     /// Writes in the RecHit the Time of arrival corrected using the Time Over Threshold
-    CTPPSDiamondRecHit correctTiming( const CTPPSDiamondDetId& detId, const CTPPSDiamondRecHit& recHit );
+    float correctTiming( const CTPPSDiamondDetId& detId, const CTPPSDiamondRecHit& recHit );
+    
+    /// Reads time precision from database
+    float getPrecision( const CTPPSDiamondDetId& detId );
 
   private:
     const float startFromT_;
@@ -43,6 +48,8 @@ class CTPPSDiamondTimingCorrection
 
     /// Function for Time Over Threshold correction
     TF1 tot_f_;
+    
+    CTPPSDiamondTimingGetParameters params_;
 };
 
 #endif

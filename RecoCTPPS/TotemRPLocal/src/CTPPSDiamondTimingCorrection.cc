@@ -28,18 +28,20 @@ CTPPSDiamondTimingCorrection::~CTPPSDiamondTimingCorrection()
 
 //----------------------------------------------------------------------------------------------------
 
-CTPPSDiamondRecHit
+float
 CTPPSDiamondTimingCorrection::correctTiming( const CTPPSDiamondDetId& detId, const CTPPSDiamondRecHit& recHit )
 {
-  CTPPSDiamondRecHit recHitLocal = recHit;
-  // Retrive parameters using detid
-  
+  CTPPSDiamondRecHit recHitLocal = recHit;  
   // Set parameters in the TF1
   
   // Compute the corrected timing
-  float correctedT = recHitLocal.getT() + tot_f_.Eval( recHitLocal.getToT() );
-  
-  //Set the corrected time in the RecHit
-  recHitLocal.setT(correctedT);
-  return recHitLocal;
+  return params_.getT0( detId ) + recHitLocal.getT() + tot_f_.Eval( recHitLocal.getToT() );
 }
+
+//----------------------------------------------------------------------------------------------------
+
+float CTPPSDiamondTimingCorrection::getPrecision( const CTPPSDiamondDetId& detId )
+{
+  return 0.1;
+}
+

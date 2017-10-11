@@ -156,7 +156,7 @@ CTPPSDiamondTimingGetParameters::~CTPPSDiamondTimingGetParameters()
 float CTPPSDiamondTimingGetParameters::getT0( const CTPPSDiamondDetId& detId )
 {
   float t0 = .0;
-  unsigned int internalID = 1000*detId.arm() + 100*detId.plane() + detId.channel;
+  unsigned int internalID = 1000*detId.arm() + 100*detId.plane() + detId.channel();
   if ( t0_map_.find( internalID ) != t0_map_.end() ) t0 = t0_map_[ internalID ];
   return t0;
 }
@@ -174,6 +174,7 @@ std::vector<float> CTPPSDiamondTimingGetParameters::getTOTParameters( const CTPP
 
 float CTPPSDiamondTimingGetParameters::getPrecision( const CTPPSDiamondDetId& detId )
 {
+  float t0 = .0;
   return t0;
 }
 

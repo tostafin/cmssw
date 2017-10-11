@@ -18,7 +18,8 @@
 CTPPSDiamondTimingCorrection::CTPPSDiamondTimingCorrection( const edm::ParameterSet& iConfig ) :
   startFromT_          ( iConfig.getParameter<double>( "startFromT" ) ),
   stopAtT_             ( iConfig.getParameter<double>( "stopAtT" ) ),
-  tot_f_( "tot_TF1_CTPPS", iConfig.getParameter<std::string>( "totCorrectionFunction" ).c_str(), startFromT_, stopAtT_ )
+  tot_f_( "tot_TF1_CTPPS", iConfig.getParameter<std::string>( "totCorrectionFunction" ).c_str(), startFromT_, stopAtT_ ),
+  params_              ( iConfig )
 {}
 
 //----------------------------------------------------------------------------------------------------
@@ -29,13 +30,13 @@ CTPPSDiamondTimingCorrection::~CTPPSDiamondTimingCorrection()
 //----------------------------------------------------------------------------------------------------
 
 float
-CTPPSDiamondTimingCorrection::correctTiming( const CTPPSDiamondDetId& detId, const CTPPSDiamondRecHit& recHit )
+CTPPSDiamondTimingCorrection::correctTiming( const CTPPSDiamondDetId& detId, const float& t, const float& tot )
 {
-  CTPPSDiamondRecHit recHitLocal = recHit;  
   // Set parameters in the TF1
   
   // Compute the corrected timing
-  return params_.getT0( detId ) + recHitLocal.getT() + tot_f_.Eval( recHitLocal.getToT() );
+//   std::cout<<"#### Correcting " << detId << " with t0 = " << params_.getT0( detId ) << std::endl;
+  return params_.getT0( detId ) + t + tot_f_.Eval( tot );
 }
 
 //----------------------------------------------------------------------------------------------------

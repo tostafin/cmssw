@@ -36,7 +36,7 @@ CTPPSDiamondTimingCorrection::correctTiming( const CTPPSDiamondDetId& detId, con
   
   // Compute the corrected timing
 //   std::cout<<"#### Correcting " << detId << " with t0 = " << params_.getT0( detId ) << std::endl;
-  return params_.getT0( detId ) + t + tot_f_.Eval( tot );
+  return params_.getT0( detId ) - t + tot_f_.Eval( tot );
 }
 
 //----------------------------------------------------------------------------------------------------

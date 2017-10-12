@@ -58,7 +58,7 @@ CTPPSDiamondLocalTrackFitter::CTPPSDiamondLocalTrackFitter( const edm::Parameter
   recHitsToken_( consumes< edm::DetSetVector<CTPPSDiamondRecHit> >( iConfig.getParameter<edm::InputTag>( "recHitsTag" ) ) ),
   trk_algo_45_ ( iConfig.getParameter<edm::ParameterSet>( "trackingAlgorithmParams" ) ),
   trk_algo_56_ ( iConfig.getParameter<edm::ParameterSet>( "trackingAlgorithmParams" ) ),
-  totCorrection_ ( iConfig )
+  totCorrection_ ( iConfig.getParameter<edm::ParameterSet>( "timingCalibrations" ) )
 {
   produces< edm::DetSetVector<CTPPSDiamondLocalTrack> >();
 }
@@ -202,8 +202,6 @@ CTPPSDiamondLocalTrackFitter::fillDescriptions( edm::ConfigurationDescriptions& 
   desc.add<edm::ParameterSetDescription>( "trackingAlgorithmParams", trackingAlgoParams )
     ->setComment( "list of parameters associated to the track recognition algorithm" );
 
-  descr.add( "ctppsDiamondLocalTracks", desc );
-
   edm::ParameterSetDescription descTimingCalibrations;
   descTimingCalibrations.add<double>( "startFromT", 0. )
     ->setComment( "minimum time over threshold (ns) to be considered" );
@@ -212,7 +210,9 @@ CTPPSDiamondLocalTrackFitter::fillDescriptions( edm::ConfigurationDescriptions& 
   descTimingCalibrations.add<std::string>( "totCorrectionFunction", "pol2" )
     ->setComment( "function for time over threshold corrections" );
 
-  descr.add( "ctppsTimingCalibrations", descTimingCalibrations );
+  desc.add<edm::ParameterSetDescription>( "timingCalibrations", descTimingCalibrations );
+
+  descr.add( "ctppsDiamondLocalTracks", desc );
 }
 
 DEFINE_FWK_MODULE( CTPPSDiamondLocalTrackFitter );

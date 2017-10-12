@@ -42,14 +42,12 @@ class CTPPSDiamondLocalTrackFitter : public edm::stream::EDProducer<>
     edm::EDGetTokenT< edm::DetSetVector<CTPPSDiamondRecHit> > recHitsToken_;
     CTPPSDiamondTrackRecognition trk_algo_45_;
     CTPPSDiamondTrackRecognition trk_algo_56_;
-    CTPPSDiamondTimingCorrection totCorrection_;
 };
 
 CTPPSDiamondLocalTrackFitter::CTPPSDiamondLocalTrackFitter( const edm::ParameterSet& iConfig ) :
   recHitsToken_ ( consumes< edm::DetSetVector<CTPPSDiamondRecHit> >( iConfig.getParameter<edm::InputTag>( "recHitsTag" ) ) ),
   trk_algo_45_  ( iConfig.getParameter<edm::ParameterSet>( "trackingAlgorithmParams" ) ),
-  trk_algo_56_  ( iConfig.getParameter<edm::ParameterSet>( "trackingAlgorithmParams" ) ),
-  totCorrection_( iConfig.getParameter<edm::ParameterSet>( "timingCalibrations" ) )
+  trk_algo_56_  ( iConfig.getParameter<edm::ParameterSet>( "trackingAlgorithmParams" ) )
 {
   produces< edm::DetSetVector<CTPPSDiamondLocalTrack> >();
 }
@@ -106,8 +104,8 @@ CTPPSDiamondLocalTrackFitter::produce( edm::Event& iEvent, const edm::EventSetup
         // first check if the hit contributes to the track
         if ( !hitBelongsToTrack( localtrack, hit ) ) continue;
 
-        weightTmp = pow( 1./totCorrection_.getPrecision( detid ), 2 );
-        weightedAvgNum += totCorrection_.correctTiming( detid, hit.getT(), hit.getToT() ) * weightTmp;
+        weightTmp = pow( 1./hit.getTPrecision(), 2 );
+        weightedAvgNum += hit.getT() * weightTmp;
         weightedAvgDen += weightTmp;
         ++counterTmp;
         if ( hit.getMultipleHits() ) ++mhTmp;
@@ -132,8 +130,8 @@ CTPPSDiamondLocalTrackFitter::produce( edm::Event& iEvent, const edm::EventSetup
         // first check if the hit contributes to the track
         if ( !hitBelongsToTrack( localtrack, hit ) ) continue;
 
-        weightTmp = pow( 1./totCorrection_.getPrecision( detid ), 2 );
-        weightedAvgNum += totCorrection_.correctTiming( detid, hit.getT(), hit.getToT() ) * weightTmp;
+        weightTmp = pow( 1./hit.getTPrecision(), 2 );
+        weightedAvgNum += hit.getT() * weightTmp;
         weightedAvgDen += weightTmp;
         ++counterTmp;
         if ( hit.getMultipleHits() ) ++mhTmp;
@@ -201,16 +199,6 @@ CTPPSDiamondLocalTrackFitter::fillDescriptions( edm::ConfigurationDescriptions& 
 
   desc.add<edm::ParameterSetDescription>( "trackingAlgorithmParams", trackingAlgoParams )
     ->setComment( "list of parameters associated to the track recognition algorithm" );
-
-  edm::ParameterSetDescription descTimingCalibrations;
-  descTimingCalibrations.add<double>( "startFromT", 0. )
-    ->setComment( "minimum time over threshold (ns) to be considered" );
-  descTimingCalibrations.add<double>( "stopAtT", 25. )
-    ->setComment( "maximum time over threshold (ns) to be considered" );
-  descTimingCalibrations.add<std::string>( "totCorrectionFunction", "pol2" )
-    ->setComment( "function for time over threshold corrections" );
-
-  desc.add<edm::ParameterSetDescription>( "timingCalibrations", descTimingCalibrations );
 
   descr.add( "ctppsDiamondLocalTracks", desc );
 }

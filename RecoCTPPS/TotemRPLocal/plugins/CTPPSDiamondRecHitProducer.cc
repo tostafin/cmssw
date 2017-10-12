@@ -89,8 +89,19 @@ CTPPSDiamondRecHitProducer::fillDescriptions( edm::ConfigurationDescriptions& de
     ->setComment( "conversion constant between HPTDC timing bin size and nanoseconds" );
   desc.add<int>( "timeShift", 0 ) // to be determined at calibration level, will be replaced by a map channel id -> time shift
     ->setComment( "overall time offset to apply on all hits in all channels" );
-
+    
   descr.add( "ctppsDiamondRecHits", desc );
+  
+  edm::ParameterSetDescription descTimingCalibrations;
+  
+  descTimingCalibrations.add<double>( "startFromT", 0. )
+  ->setComment( "minimum time over threshold (ns) to be considered" );
+  descTimingCalibrations.add<double>( "stopAtT", 25. )
+    ->setComment( "maximum time over threshold (ns) to be considered" );
+  descTimingCalibrations.add<std::string>( "totCorrectionFunction", "pol2" )
+    ->setComment( "function for time over threshold corrections" );
+    
+    descr.add( "ctppsTimingCalibrations", descTimingCalibrations );
 }
 
 DEFINE_FWK_MODULE( CTPPSDiamondRecHitProducer );

@@ -24,6 +24,7 @@
 #include "DataFormats/CTPPSReco/interface/CTPPSDiamondLocalTrack.h"
 
 #include "RecoCTPPS/TotemRPLocal/interface/CTPPSDiamondTrackRecognition.h"
+#include "RecoCTPPS/TotemRPLocal/interface/CTPPSDiamondTimingCorrection.h"
 
 class CTPPSDiamondLocalTrackFitter : public edm::stream::EDProducer<>
 {
@@ -39,12 +40,25 @@ class CTPPSDiamondLocalTrackFitter : public edm::stream::EDProducer<>
     edm::EDGetTokenT< edm::DetSetVector<CTPPSDiamondRecHit> > recHitsToken_;
     CTPPSDiamondTrackRecognition trk_algo_45_;
     CTPPSDiamondTrackRecognition trk_algo_56_;
+    CTPPSDiamondTimingCorrection totCorrection_;
+};
+
+inline bool hitBelongsToTrack( const CTPPSDiamondLocalTrack& localTrack, const CTPPSDiamondRecHit& recHit )
+{
+  // Check if one of the edges of the recHit is within the 
+  return ( 
+            ( ( recHit.getX() + recHit.getXWidth() > localTrack.getX0() - localTrack.getX0Sigma() ) &&
+              ( recHit.getX() + recHit.getXWidth() < localTrack.getX0() + localTrack.getX0Sigma() )  ) ||
+            ( ( recHit.getX() - recHit.getXWidth() > localTrack.getX0() + localTrack.getX0Sigma() ) &&
+              ( recHit.getX() - recHit.getXWidth() < localTrack.getX0() - localTrack.getX0Sigma() )  )
+         );
 };
 
 CTPPSDiamondLocalTrackFitter::CTPPSDiamondLocalTrackFitter( const edm::ParameterSet& iConfig ) :
   recHitsToken_( consumes< edm::DetSetVector<CTPPSDiamondRecHit> >( iConfig.getParameter<edm::InputTag>( "recHitsTag" ) ) ),
   trk_algo_45_ ( iConfig.getParameter<edm::ParameterSet>( "trackingAlgorithmParams" ) ),
-  trk_algo_56_ ( iConfig.getParameter<edm::ParameterSet>( "trackingAlgorithmParams" ) )
+  trk_algo_56_ ( iConfig.getParameter<edm::ParameterSet>( "trackingAlgorithmParams" ) ),
+  totCorrection_ ( iConfig )
 {
   produces< edm::DetSetVector<CTPPSDiamondLocalTrack> >();
 }
@@ -77,13 +91,13 @@ CTPPSDiamondLocalTrackFitter::produce( edm::Event& iEvent, const edm::EventSetup
     {
       for ( edm::DetSet<CTPPSDiamondRecHit>::const_iterator hit = vec->begin(); hit != vec->end(); ++hit )
       {
-	trk_algo_45_.addHit( *hit );
+        trk_algo_45_.addHit( *hit );
       }
     } else
     {
       for ( edm::DetSet<CTPPSDiamondRecHit>::const_iterator hit = vec->begin(); hit != vec->end(); ++hit )
       {
-	trk_algo_56_.addHit( *hit );
+        trk_algo_56_.addHit( *hit );
       }
     }
   }
@@ -91,6 +105,72 @@ CTPPSDiamondLocalTrackFitter::produce( edm::Event& iEvent, const edm::EventSetup
   // retrieve the tracks for both arms
   trk_algo_45_.produceTracks( tracks45 );
   trk_algo_56_.produceTracks( tracks56 );
+  
+  // Timing corrections
+  float weightedAvgDen, weightedAvgNum, weightTmp;
+  int mhTmp, counterTmp;
+  for (edm::DetSet<CTPPSDiamondLocalTrack>::iterator localtrack = tracks45.begin(); localtrack != tracks45.end(); ++localtrack)
+  {
+    weightedAvgNum = .0;
+    weightedAvgDen = .0;
+    mhTmp = 0;
+    counterTmp = 0;
+    
+    for ( edm::DetSetVector<CTPPSDiamondRecHit>::const_iterator vec = recHits->begin(); vec != recHits->end(); ++vec )
+    {
+      const CTPPSDiamondDetId detid( vec->detId() );
+
+      if (detid.arm()==0)
+      {
+        for ( edm::DetSet<CTPPSDiamondRecHit>::const_iterator hit = vec->begin(); hit != vec->end(); ++hit )
+        {
+          if ( hitBelongsToTrack( *localtrack, *hit ) )  //hit belongs to the track
+          {
+            weightTmp = pow( 1./totCorrection_.getPrecision(detid), 2 );
+            weightedAvgNum += totCorrection_.correctTiming(detid, hit->getT(), hit->getToT() ) * weightTmp;
+            weightedAvgDen += weightTmp;
+            ++counterTmp;
+            if ( hit->getMultipleHits() ) ++mhTmp;
+          }
+        }
+      }
+    }
+    
+    localtrack->setT( weightedAvgNum/weightedAvgDen );
+    localtrack->setTSigma( std::sqrt( weightedAvgDen ) );
+  }
+  for (edm::DetSet<CTPPSDiamondLocalTrack>::iterator localtrack = tracks56.begin(); localtrack != tracks56.end(); ++localtrack)
+  {
+    weightedAvgNum = .0;
+    weightedAvgDen = .0;
+    mhTmp = 0;
+    counterTmp = 0;
+    
+    for ( edm::DetSetVector<CTPPSDiamondRecHit>::const_iterator vec = recHits->begin(); vec != recHits->end(); ++vec )
+    {
+      const CTPPSDiamondDetId detid( vec->detId() );
+
+      if (detid.arm()==1)
+      {
+        for ( edm::DetSet<CTPPSDiamondRecHit>::const_iterator hit = vec->begin(); hit != vec->end(); ++hit )
+        {
+          if ( hitBelongsToTrack( *localtrack, *hit ) )  //hit belongs to the track
+          {
+            weightTmp = pow( 1./totCorrection_.getPrecision(detid), 2 );
+            weightedAvgNum += totCorrection_.correctTiming(detid, hit->getT(), hit->getToT() ) * weightTmp;
+            weightedAvgDen += weightTmp;
+            ++counterTmp;
+            if ( hit->getMultipleHits() ) ++mhTmp;
+          }
+        }
+      }
+    }
+    
+    localtrack->setT( weightedAvgNum/weightedAvgDen );
+    localtrack->setTSigma( std::sqrt( weightedAvgDen ) );
+    localtrack->setNumOfHits( counterTmp );
+    localtrack->setMultipleHits( mhTmp );
+  }
 
   iEvent.put( std::move( pOut ) );
 
@@ -138,8 +218,20 @@ CTPPSDiamondLocalTrackFitter::fillDescriptions( edm::ConfigurationDescriptions& 
 
   desc.add<edm::ParameterSetDescription>( "trackingAlgorithmParams", trackingAlgoParams )
     ->setComment( "list of parameters associated to the track recognition algorithm" );
-
+    
   descr.add( "ctppsDiamondLocalTracks", desc );
+  
+  edm::ParameterSetDescription descTimingCalibrations;
+  
+  descTimingCalibrations.add<double>( "startFromT", 0. )
+  ->setComment( "minimum time over threshold (ns) to be considered" );
+  descTimingCalibrations.add<double>( "stopAtT", 25. )
+    ->setComment( "maximum time over threshold (ns) to be considered" );
+  descTimingCalibrations.add<std::string>( "totCorrectionFunction", "pol2" )
+    ->setComment( "function for time over threshold corrections" );
+    
+    descr.add( "ctppsTimingCalibrations", descTimingCalibrations );
+
 }
 
 DEFINE_FWK_MODULE( CTPPSDiamondLocalTrackFitter );

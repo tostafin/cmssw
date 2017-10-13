@@ -40,7 +40,7 @@ class CTPPSDiamondTimingCorrection
     float correctTiming( const CTPPSDiamondDetId& detId, const float& t, const float& tot );
     
     /// Reads time precision from database
-    float getPrecision( const CTPPSDiamondDetId& detId );
+    float getPrecision( const CTPPSDiamondDetId& detId, const bool withTot=true);
 
   private:
     const float startFromT_;

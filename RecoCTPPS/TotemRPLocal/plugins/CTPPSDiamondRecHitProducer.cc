@@ -90,18 +90,18 @@ CTPPSDiamondRecHitProducer::fillDescriptions( edm::ConfigurationDescriptions& de
   desc.add<int>( "timeShift", 0 ) // to be determined at calibration level, will be replaced by a map channel id -> time shift
     ->setComment( "overall time offset to apply on all hits in all channels" );
     
-  descr.add( "ctppsDiamondRecHits", desc );
   
-  edm::ParameterSetDescription descTimingCalibrations;
+//   edm::ParameterSetDescription descTimingCalibrations;
   
-  descTimingCalibrations.add<double>( "startFromT", 0. )
+  desc.add<double>( "startFromT", 0. )
   ->setComment( "minimum time over threshold (ns) to be considered" );
-  descTimingCalibrations.add<double>( "stopAtT", 25. )
+  desc.add<double>( "stopAtT", 25. )
     ->setComment( "maximum time over threshold (ns) to be considered" );
-  descTimingCalibrations.add<std::string>( "totCorrectionFunction", "pol2" )
+  desc.add<std::string>( "totCorrectionFunction", "pol2" )
     ->setComment( "function for time over threshold corrections" );
     
-    descr.add( "ctppsTimingCalibrations", descTimingCalibrations );
+//     descr.add( "ctppsTimingCalibrations", descTimingCalibrations );
+  descr.add( "ctppsDiamondRecHits", desc );
 }
 
 DEFINE_FWK_MODULE( CTPPSDiamondRecHitProducer );

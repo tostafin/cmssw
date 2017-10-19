@@ -18,7 +18,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 1000 )
 process.source = cms.Source('EmptySource')
 
 # load the geometry
-process.load('SimCTPPS.OpticsParameterisation.simGeometryRP_cfi')
+process.load('Geometry.VeryForwardGeometry.geometryRP_cfi')
 
 # load the simulation part
 from SimCTPPS.OpticsParameterisation.lhcBeamProducer_cfi import lhcBeamProducer

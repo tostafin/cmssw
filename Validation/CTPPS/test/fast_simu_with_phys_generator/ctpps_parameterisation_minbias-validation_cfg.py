@@ -18,7 +18,7 @@ process.maxEvents = cms.untracked.PSet(
 process.source = cms.Source('EmptySource')
 
 # load the geometry
-process.load('SimCTPPS.OpticsParameterisation.simGeometryRP_cfi')
+process.load('Geometry.VeryForwardGeometry.geometryRP_cfi')
 
 process.generator = cms.EDFilter('Pythia8GeneratorFilter',
     maxEventsToPrint = cms.untracked.int32(1),

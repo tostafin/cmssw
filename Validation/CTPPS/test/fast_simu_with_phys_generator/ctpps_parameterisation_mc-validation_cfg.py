@@ -20,7 +20,7 @@ process.source = cms.Source('PoolSource',
 process.load('SimCTPPS.OpticsParameterisation.ctppsFastProtonSimulation_cfi')
 
 # load the geometry
-process.load('SimCTPPS.OpticsParameterisation.simGeometryRP_cfi')
+process.load('Geometry.VeryForwardGeometry.geometryRP_cfi')
 
 # load the reconstruction
 process.load('RecoCTPPS.TotemRPLocal.totemRPUVPatternFinder_cfi')

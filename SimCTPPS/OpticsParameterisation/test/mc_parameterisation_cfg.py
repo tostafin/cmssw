@@ -22,7 +22,9 @@ process.source = cms.Source('PoolSource',
 )
 
 # load the geometry
-process.load('SimCTPPS.OpticsParameterisation.simGeometryRP_cfi')
+process.load('Geometry.VeryForwardGeometry.geometryRP_cfi')
+
+Validation/CTPPS/test/rp_positions/data/2016_preTS2_without_margin_end/RP_Dist_Beam_Cent.xml
 
 process.VtxSmeared.src = cms.InputTag('source')
 

@@ -48,7 +48,8 @@ namespace edm
       auto part_data = pdgTable_->particle( HepPDT::ParticleID( abs( part ) ) );
       const double mass = part_data->mass().value();
 
-      int dir = ( CLHEP::RandFlat::shoot( rnd )<0.5 ) ? -1 : 1;
+      //int dir = ( CLHEP::RandFlat::shoot( rnd )<0.5 ) ? -1 : 1;
+      short dir = ( barcode % 2 == 0 ) ? -1 : 1; //FIXME
 
       auto p = new HepMC::GenParticle( shoot( rnd, mass, dir ), part, 1 ); // cleanup in HepMCProduct
       p->suggest_barcode( barcode );
@@ -70,25 +71,30 @@ namespace edm
   //----------------------------------------------------------------------------------------------------
 
   HepMC::FourVector
-  FlatRandomXiGunProducer::shoot( CLHEP::HepRandomEngine* rnd, double mass, int z_direction )
+  FlatRandomXiGunProducer::shoot( CLHEP::HepRandomEngine* rnd, double mass, short z_direction )
   {
+    const double mass2 = mass*mass;
+
     // generate xi
     const double xi = CLHEP::RandFlat::shoot( rnd, minXi_, maxXi_ );
-    const double e_0 = sqrtS_*0.5, e_part = e_0 * ( 1.-xi );
-    const double p_0 = sqrt( e_0*e_0-mass*mass ), p = sqrt( e_part*e_part-mass*mass );
+    const double e0 = sqrtS_*0.5, e_part = e0 * ( 1.-xi );
+    const double p0 = sqrt( e0*e0-mass2 ), p = sqrt( e_part*e_part-mass2 );
 
     // generate phi
     const double phi = CLHEP::RandFlat::shoot( rnd, minPhi_, maxPhi_ );
 
     // generate t
-    const double min_t = std::max( minT_, -2. * ( sqrt( e_0*e_0-mass*mass ) * p - e_0*e_part + mass*mass ) );
+    const double min_t = std::max( minT_, -2. * ( p0*p - e0*e_part + mass2 ) );
     const double t = CLHEP::RandFlat::shoot( rnd, min_t, maxT_ );
 
-    double theta = acos( ( -0.5*t - mass*mass + e_part*e_0 ) / ( p*p_0 ) );
+    if ( p*p0 == 0. ) throw cms::Exception("FlatRandomXiGunProducer::shoot") << "Invalid momentum combination: " << p << "\t" << p0;
+
+    // combine everything together
+    double theta = acos( ( -0.5*t - mass2 + e_part*e0 ) / ( p*p0 ) );
     if ( z_direction < 0 ) theta = M_PI - theta;
 
-    const double px = p * cos( phi ) * sin( theta ) * z_direction;
-    const double py = p * sin( phi ) * sin( theta );
+    const double px = p * sin( theta ) * cos( phi ) * z_direction;
+    const double py = p * sin( theta ) * sin( phi );
     const double pz = p * cos( theta );
     return HepMC::FourVector( px, py, pz, e_part );
   }

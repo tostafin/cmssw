@@ -19,7 +19,6 @@
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
-#include "CLHEP/Random/RandGauss.h"
 #include "CLHEP/Random/RandFlat.h"
 
 #include "HepPDT/ParticleDataTable.hh"
@@ -32,14 +31,14 @@ namespace edm
       explicit FlatRandomXiGunProducer( const edm::ParameterSet& );
       ~FlatRandomXiGunProducer();
 
-      static void fillDescriptions( edm::ConfigurationDescriptions& descriptions );
+      static void fillDescriptions( edm::ConfigurationDescriptions& );
 
     private:
       virtual void beginRun( const edm::Run&, const edm::EventSetup& ) override;
       virtual void produce( edm::Event&, const edm::EventSetup& ) override;
       virtual void endRun( const edm::Run&, const edm::EventSetup& ) override;
 
-      HepMC::FourVector shoot( CLHEP::HepRandomEngine*, double, int );
+      HepMC::FourVector shoot( CLHEP::HepRandomEngine*, double, short );
 
       edm::ESHandle<HepPDT::ParticleDataTable> pdgTable_;
 
@@ -54,3 +53,4 @@ namespace edm
 }
 
 #endif
+

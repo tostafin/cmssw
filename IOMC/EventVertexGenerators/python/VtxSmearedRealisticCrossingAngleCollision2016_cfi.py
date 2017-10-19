@@ -10,8 +10,8 @@ Realistic25ns13TeV2016PreTS2CollisionVtxSmearingParameters = cms.PSet(
     # switches
     simulateVertexX = cms.bool(True),
     simulateVertexY = cms.bool(True),
-    simulateScatteringAngleX = cms.bool(True),
-    simulateScatteringAngleY = cms.bool(True),
+    simulateScatteringAngleX = cms.bool(False),
+    simulateScatteringAngleY = cms.bool(False),
     simulateBeamDivergence = cms.bool(True),
 
     # crossing angle

@@ -38,12 +38,10 @@ class CrossingAngleVtxGenerator : public edm::stream::EDProducer<>
     void rotateParticle( HepMC::GenParticle* ) const;
  
     edm::EDGetTokenT<edm::HepMCProduct> sourceToken_;
-    double scatteringAngle_;
     double vertexSize_;
     double beamDivergence_;
     double halfCrossingAngleSector45_, halfCrossingAngleSector56_;
     bool simulateVertexX_, simulateVertexY_;
-    bool simulateScatteringAngleX_, simulateScatteringAngleY_;
     bool simulateBeamDivergence_;
     CLHEP::HepRandomEngine* rnd_;
 };

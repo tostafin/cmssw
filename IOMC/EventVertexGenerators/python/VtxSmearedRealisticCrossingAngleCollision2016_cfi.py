@@ -5,13 +5,11 @@ from IOMC.EventVertexGenerators.VtxSmearedParameters_cfi import VtxSmearedCommon
 Realistic25ns13TeV2016PreTS2CollisionVtxSmearingParameters = cms.PSet(
     vertexSize = cms.double(10.0e-6), # in m
     beamDivergence = cms.double(20.0e-6), # in rad
-    scatteringAngle = cms.double(25.0e-6), # in rad
 
     # switches
+    scatteringAngle = cms.double(25.0e-6), # in rad
     simulateVertexX = cms.bool(True),
     simulateVertexY = cms.bool(True),
-    simulateScatteringAngleX = cms.bool(False),
-    simulateScatteringAngleY = cms.bool(False),
     simulateBeamDivergence = cms.bool(True),
 
     # crossing angle

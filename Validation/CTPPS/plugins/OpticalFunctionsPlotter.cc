@@ -64,8 +64,8 @@ OpticalFunctionsPlotter::OpticalFunctionsPlotter( const edm::ParameterSet& iConf
   beamConditions_        ( iConfig.getParameter<edm::ParameterSet>( "beamConditions" ) ),
   vertex_size_           ( beamConditions_.getParameter<double>( "vertexSize" ) ), // in m
   beam_divergence_       ( beamConditions_.getParameter<double>( "beamDivergence" ) ), // in rad
-  vtx0_y_45_             ( beamConditions_.getParameter<double>( "yOffsetSector45" ) ), // in m
-  vtx0_y_56_             ( beamConditions_.getParameter<double>( "yOffsetSector56" ) ), // in m
+  vtx0_y_45_             ( iConfig.getParameter<double>( "vtxY0Sector45" ) ), // in m
+  vtx0_y_56_             ( iConfig.getParameter<double>( "vtxY0Sector56" ) ), // in m
   half_crossing_angle_45_( beamConditions_.getParameter<double>( "halfCrossingAngleSector45" ) ), // in rad
   half_crossing_angle_56_( beamConditions_.getParameter<double>( "halfCrossingAngleSector56" ) ), // in rad
   minXi_                 ( iConfig.getParameter<double>( "minXi" ) ),

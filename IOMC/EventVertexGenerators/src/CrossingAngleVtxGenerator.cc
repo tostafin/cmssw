@@ -2,15 +2,12 @@
 
 CrossingAngleVtxGenerator::CrossingAngleVtxGenerator( const edm::ParameterSet& iConfig ) :
   sourceToken_( consumes<edm::HepMCProduct>( iConfig.getParameter<edm::InputTag>( "src" ) ) ),
-  scatteringAngle_          ( iConfig.getParameter<double>( "scatteringAngle" ) ),
   vertexSize_               ( iConfig.getParameter<double>( "vertexSize" ) ),
   beamDivergence_           ( iConfig.getParameter<double>( "beamDivergence" ) ),
   halfCrossingAngleSector45_( iConfig.getParameter<double>( "halfCrossingAngleSector45" ) ),
   halfCrossingAngleSector56_( iConfig.getParameter<double>( "halfCrossingAngleSector56" ) ),
   simulateVertexX_          ( iConfig.getParameter<bool>( "simulateVertexX" ) ),
   simulateVertexY_          ( iConfig.getParameter<bool>( "simulateVertexY" ) ),
-  simulateScatteringAngleX_ ( iConfig.getParameter<bool>( "simulateScatteringAngleX" ) ),
-  simulateScatteringAngleY_ ( iConfig.getParameter<bool>( "simulateScatteringAngleY" ) ),
   simulateBeamDivergence_   ( iConfig.getParameter<bool>( "simulateBeamDivergence" ) ),
   rnd_( 0 )
 {
@@ -66,10 +63,6 @@ CrossingAngleVtxGenerator::rotateParticle( HepMC::GenParticle* part ) const
   double th_x = atan2( mom.x(), fabs( mom.z() ) ), th_y = atan2( mom.y(), fabs( mom.z() ) );
 
   if ( mom.z()<0.0 ) { th_x = M_PI-th_x; th_y = M_PI-th_y; }
-
-  // generate scattering angles
-  if ( simulateScatteringAngleX_ ) th_x += CLHEP::RandGauss::shoot( rnd_ ) * scatteringAngle_;
-  if ( simulateScatteringAngleY_ ) th_y += CLHEP::RandGauss::shoot( rnd_ ) * scatteringAngle_;
 
   // generate beam divergence
   if ( simulateBeamDivergence_ ) {

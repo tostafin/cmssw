@@ -45,6 +45,13 @@ CTPPSDiamondTimingCorrection::correctTiming( const CTPPSDiamondDetId& detId, con
 
 //----------------------------------------------------------------------------------------------------
 
+int CTPPSDiamondTimingCorrection::getCoarseAlignment( const CTPPSDiamondDetId& detId )
+{
+  return 0 - params_.getCoarseAlignment( detId );
+}
+
+//----------------------------------------------------------------------------------------------------
+
 float CTPPSDiamondTimingCorrection::getPrecision( const CTPPSDiamondDetId& detId, const bool withTot )
 {
   float precision=.0;

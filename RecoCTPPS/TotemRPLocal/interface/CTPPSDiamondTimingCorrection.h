@@ -39,6 +39,9 @@ class CTPPSDiamondTimingCorrection
     /// Writes in the RecHit the Time of arrival corrected using the Time Over Threshold
     float correctTiming( const CTPPSDiamondDetId& detId, const float& t, const float& tot );
     
+    /// Returns the coarse time shift (in bits) needed to align the channels
+    int getCoarseAlignment( const CTPPSDiamondDetId& detId );
+    
     /// Reads time precision from database
     float getPrecision( const CTPPSDiamondDetId& detId, const bool withTot=true);
 

@@ -34,10 +34,14 @@ class CTPPSDiamondTimingGetParameters
     
     float getPrecision( const CTPPSDiamondDetId& detId );
     
+    /// Returns the coarse time shift (in bits) needed to align the channels
+    int getCoarseAlignment( const CTPPSDiamondDetId& detId );
+    
     std::vector<float> getTOTParameters( const CTPPSDiamondDetId& detId );
     
   private:
     std::unordered_map<unsigned int, float> t0_map_;
+    std::unordered_map<unsigned int, int> t0_shiftmap_;
 
 };
 

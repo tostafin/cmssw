@@ -89,7 +89,11 @@ CTPPSDiamondRecHitProducer::fillDescriptions( edm::ConfigurationDescriptions& de
     ->setComment( "conversion constant between HPTDC timing bin size and nanoseconds" );
   desc.add<int>( "timeShift", 0 ) // to be determined at calibration level, will be replaced by a map channel id -> time shift
     ->setComment( "overall time offset to apply on all hits in all channels" );
-    
+  
+  desc.add<int>( "planeInversion", 0 ) // TODO Remove for PR
+    ->setComment( "For Digi produced with wrong mapping, before run 300670" );
+  desc.add<int>( "coarseCorrection", 0 ) // TODO Remove for PR ?
+    ->setComment( "For runs without the HPTDC delay set, before run ??" );
   
 //   edm::ParameterSetDescription descTimingCalibrations;
   

@@ -33,6 +33,8 @@ class CTPPSDiamondRecHitProducerAlgorithm
     /// Conversion constant between HPTDC time slice and absolute time (in ns)
     double ts_to_ns_;
     int t_shift_;
+    int plane_inversion_; //TODO remove for PR
+    int coarse_correction_;
     CTPPSDiamondTimingCorrection TOTCorrections_;
 };
 

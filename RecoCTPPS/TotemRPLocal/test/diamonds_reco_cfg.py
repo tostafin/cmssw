@@ -54,6 +54,8 @@ process.load("RecoCTPPS.Configuration.recoCTPPS_cff")
 # rechits production
 process.load('Geometry.VeryForwardGeometry.geometryRP_cfi')
 process.load('RecoCTPPS.TotemRPLocal.ctppsDiamondRecHits_cfi')
+#process.ctppsDiamondRecHits.planeInversion = cms.int32(1)               # Put >0 for Runs > 300670     #FIXME
+#process.ctppsDiamondRecHits.coarseCorrection = cms.int32(1)               # Put >0 for Runs > ??       #FIXME
 
 # local tracks fitter
 process.load('RecoCTPPS.TotemRPLocal.ctppsDiamondLocalTracks_cfi')

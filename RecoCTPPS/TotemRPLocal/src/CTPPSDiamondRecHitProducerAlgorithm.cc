@@ -24,15 +24,30 @@ CTPPSDiamondRecHitProducerAlgorithm::build( const CTPPSGeometry* geom, const edm
   for ( edm::DetSetVector<CTPPSDiamondDigi>::const_iterator vec = input.begin(); vec != input.end(); ++vec ) {
 //     const CTPPSDiamondDetId detid( vec->detId() );           //TODO uncomment
     
-    CTPPSDiamondDetId detid( vec->detId() );                    //TODO patch for runs before 300670
-    if ( plane_inversion_>0 ) {                                 //TODO comment, remove for PR
-      if (detid.arm() == 1) {                                   //TODO comment
-        if ( detid.plane() == 0 ) detid.setPlane(2);            //TODO comment
-        if ( detid.plane() == 1 ) detid.setPlane(2);            //TODO comment
-        if ( detid.plane() == 2 ) detid.setPlane(0);            //TODO comment
-        if ( detid.plane() == 3 ) detid.setPlane(1);            //TODO comment
-      }                                                         //TODO comment
+    //FIXME patch for runs before 300670, not needed after rereco!
+    CTPPSDiamondDetId detid( vec->detId() ); 
+    if ( plane_inversion_>0 ) {
+      if (detid.arm() == 0) {
+        switch ( detid.plane() ) {
+          case 0:
+                     detid.setPlane(2);
+                     break;
+          case 1:
+                     detid.setPlane(3);
+                     break;
+          case 2:
+                     detid.setPlane(0);
+                     break;
+          case 3:
+                     detid.setPlane(1);
+                     break;    
+          default:
+                     std::cout << "ERROR!!! Strange plane number!" << std::endl;
+        }
+      }
     }
+    //FIXME end of patch for runs before 300670
+
 
     if ( detid.channel() > 20 ) continue;              // VFAT-like information, to be ignored by CTPPSDiamondRecHitProducer
 
@@ -49,6 +64,24 @@ CTPPSDiamondRecHitProducerAlgorithm::build( const CTPPSGeometry* geom, const edm
 
     for ( edm::DetSet<CTPPSDiamondDigi>::const_iterator digi = vec->begin(); digi != vec->end(); ++digi ) {
       if ( digi->getLeadingEdge()==0 and digi->getTrailingEdge()==0 ) { continue; }
+      
+      //FIXME patch for runs before 300670, not needed after rereco!
+      if ( detid.arm() == 0 and detid.plane() == 0 and detid.channel() == 0 ) {
+        std::cout << "###############################################################" << std::endl;
+        std::cout << "###############################################################" << std::endl;
+        std::cout << "###############################################################" << std::endl;
+        std::cout << "###############################################################" << std::endl;
+        std::cout << "###############################################################" << std::endl;
+        std::cout << "###################   Forgot plane inversion?   ###############" << std::endl;
+        std::cout << "###############################################################" << std::endl;
+        std::cout << "###############################################################" << std::endl;
+        std::cout << "###############################################################" << std::endl;
+        std::cout << "###############################################################" << std::endl;
+        std::cout << "In your python add: \nprocess.ctppsDiamondRecHits.planeInversion = cms.int32(1)" << std::endl;
+    }
+    //FIXME end of patch for runs before 300670
+    
+//     if ( detid.plane() == 3 ) continue;
       
       int t_shift_tmp = 0;
       if ( coarse_correction_ > 0 ) t_shift_tmp = TOTCorrections_.getCoarseAlignment(detid);

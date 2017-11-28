@@ -12,7 +12,7 @@
 
 #include "DataFormats/CTPPSDigi/interface/HPTDCErrorFlags.h"
 
-enum {CTPPSDIAMONDRECHIT_WITHOUT_LEADING_TIMESLICE = -10};
+enum {CTPPSDIAMONDRECHIT_WITHOUT_LEADING_TIMESLICESHIFT = -20};
 
 /// Reconstructed hit in diamond detectors.
 class CTPPSDiamondRecHit

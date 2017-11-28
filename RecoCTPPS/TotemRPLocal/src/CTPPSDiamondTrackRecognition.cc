@@ -57,7 +57,10 @@ void
 CTPPSDiamondTrackRecognition::addHit( const CTPPSDiamondRecHit& recHit )
 {
   // store hit parameters
-  hitParametersVectorMap_[recHit.getOOTIndex()].emplace_back( recHit.getX(), recHit.getXWidth() );
+  if ( recHit.getOOTIndex()>0 )
+    hitParametersVectorMap_[recHit.getOOTIndex()].emplace_back( recHit.getX(), recHit.getXWidth() );
+  else
+    hitParametersVectorMap_[recHit.getOOTIndex() - CTPPSDIAMONDRECHIT_WITHOUT_LEADING_TIMESLICESHIFT].emplace_back( recHit.getX(), recHit.getXWidth() );
   
   // Check y
   if ( yPosition_ == yPositionInitial_ and yWidth_ == yWidthInitial_ ) {

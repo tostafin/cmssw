@@ -84,8 +84,9 @@ CTPPSDiamondLocalTrackFitter::produce( edm::Event& iEvent, const edm::EventSetup
   for ( const auto& vec : *recHits ) {
     const CTPPSDiamondDetId detid( vec.detId() );
     for ( const auto& hit : vec ) {
-      if ( hit.getOOTIndex() != CTPPSDIAMONDRECHIT_WITHOUT_LEADING_TIMESLICE )
+//       if ( detid.plane() != 3 ) {
         trackRecoPair.at( detid.arm() )->addHit( hit );
+//       }
     }
   }
 
@@ -109,12 +110,13 @@ CTPPSDiamondLocalTrackFitter::produce( edm::Event& iEvent, const edm::EventSetup
         for ( const auto& hit : vec ) {
           // first check if the hit contributes to the track
           if ( CTPPSHitBelongsToTrack( localtrack, hit ) ) {
-            float weightTmp = 1./pow( hit.getTPrecision(), 2 );
-            weightedAvgNum += hit.getT() * weightTmp;
-            weightedAvgDen += weightTmp;
             ++counterTmp;
             planesInTrackSet.insert(detid.plane());
-//             std::cout << "\tHit plane: " << detid.plane() << " / " << planesInTrackSet.size() << " x:" << hit.getX() - 0.5*hit.getXWidth() << " to " << hit.getX() + 0.5*hit.getXWidth() <<  "\tt: " << hit.getT() << "\t+- " << hit.getTPrecision() << "\t\tOOT: " << hit.getOOTIndex() << std::endl;
+            if ( hit.getOOTIndex() >= 0 ) {    // leading edge present
+              float weightTmp = 1./pow( hit.getTPrecision(), 2 );
+              weightedAvgNum += hit.getT() * weightTmp;
+              weightedAvgDen += weightTmp;
+            }
             if ( hit.getMultipleHits() ) ++mhTmp;
           }
         }

@@ -108,7 +108,7 @@ inline bool
 CTPPSHitBelongsToTrack( const CTPPSDiamondLocalTrack& localTrack, const CTPPSDiamondRecHit& recHit, float tolerance=0.1 )
 {
   return
-  ( recHit.getOOTIndex() == localTrack.getOOTIndex() &&
+  ( ( recHit.getOOTIndex() == localTrack.getOOTIndex() || recHit.getOOTIndex() == localTrack.getOOTIndex() + CTPPSDIAMONDRECHIT_WITHOUT_LEADING_TIMESLICESHIFT ) &&
                ( ( recHit.getX() + 0.5 * recHit.getXWidth() > localTrack.getX0() - localTrack.getX0Sigma() - tolerance
                 && recHit.getX() + 0.5 * recHit.getXWidth() < localTrack.getX0() + localTrack.getX0Sigma() + tolerance )
               || ( recHit.getX() - 0.5 * recHit.getXWidth() > localTrack.getX0() - localTrack.getX0Sigma() - tolerance

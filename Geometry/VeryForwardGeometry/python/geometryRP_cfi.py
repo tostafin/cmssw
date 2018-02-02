@@ -110,6 +110,7 @@ ctppsDiamondGeomXMLFiles = cms.vstring(
     'Geometry/VeryForwardData/data/CTPPS_Diamond_Planes/CTPPS_Diamond_Plane2.xml',
     'Geometry/VeryForwardData/data/CTPPS_Diamond_Planes/CTPPS_Diamond_Plane3.xml',
     #'Geometry/VeryForwardData/data/CTPPS_Diamond_Planes/CTPPS_Diamond_Plane4.xml',
+    'Geometry/VeryForwardData/data/CTPPS_Diamond_Planes/CTPPS_DoubleDiamond_Plane1.xml',
     'Geometry/VeryForwardData/data/CTPPS_Diamond_Detector_Assembly.xml'
 )
 

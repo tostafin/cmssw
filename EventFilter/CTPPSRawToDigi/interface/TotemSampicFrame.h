@@ -142,10 +142,9 @@ class TotemSampicFrame
     }
 
     inline uint64_t getFPGATimestamp() const {
-      uint64_t tmp = 0;
+      uint32_t tmp = 0;
       if ( status_ ) {
-        for ( unsigned short i = 0; i < TotemSampicConstant::fpgaTime_Size; ++i )
-          tmp += totemSampicInfoPtr_[ TotemSampicConstant::fpgaTime_Position + i ] << 8*i;
+        tmp = *( ( const uint32_t* ) ( totemSampicInfoPtr_ + TotemSampicConstant::fpgaTime_Position ) );
       }
       return tmp;
     }
@@ -153,17 +152,16 @@ class TotemSampicFrame
     inline uint16_t getTimestampA() const {
       uint16_t tmp = 0;
       if ( status_ ) {
-        for ( unsigned short i = 0; i < TotemSampicConstant::timestampA_Size; ++i )
-          tmp |= ( totemSampicInfoPtr_[ TotemSampicConstant::timestampA_Position + i ] ) << 8*i;
+        tmp = *( ( const uint16_t* ) ( totemSampicInfoPtr_ + TotemSampicConstant::timestampA_Position ) );
       }
+      tmp = 0xFFF - tmp;
       return grayToBinary<uint16_t> ( tmp );
     }
 
     inline uint16_t getTimestampB() const {
       uint16_t tmp = 0;
       if ( status_ ) {
-        for ( unsigned short i = 0; i < TotemSampicConstant::timestampB_Size; ++i )
-          tmp |= ( totemSampicInfoPtr_[ TotemSampicConstant::timestampB_Position + i ] ) << 8*i;
+        tmp = *( ( const uint16_t* ) ( totemSampicInfoPtr_ + TotemSampicConstant::timestampB_Position ) );
       }
       return grayToBinary<uint16_t> ( tmp );
     }
@@ -212,10 +210,9 @@ class TotemSampicFrame
     }
 
     inline uint64_t getL1ATimestamp() const {
-      uint64_t tmp = 0;
+      uint32_t tmp = 0;
       if ( status_ ) {
-        for ( unsigned short i = 0; i < TotemSampicConstant::l1ATimestamp_Size; ++i )
-          tmp += totemSampicEventInfoPtr_[ TotemSampicConstant::l1ATimestamp_Position + i ] << 8*i;
+        tmp = *( ( const uint32_t* ) ( totemSampicEventInfoPtr_ + TotemSampicConstant::l1ATimestamp_Position ) );
       }
       return tmp;
     }

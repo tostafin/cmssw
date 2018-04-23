@@ -11,6 +11,13 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
+# load DQM framework
+process.load("DQM.Integration.config.environment_cfi")
+process.dqmEnv.subSystemFolder = "CTPPS"
+process.dqmEnv.eventInfoFolder = "EventInfo"
+process.dqmSaver.path = ""
+process.dqmSaver.tag = "CTPPS"
+
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_hlt_relval', '')
 
@@ -32,6 +39,9 @@ process.UFSDAnlzr = cms.EDAnalyzer('UFSDAnlzr',
  tagDigi = cms.InputTag("totemTimingRawToDigi", "TotemTiming"),
 )
 
+# CTPPS DQM modules
+process.load("DQM.CTPPS.ctppsDQM_cff")
+
 process.TFileService = cms.Service("TFileService",
      fileName = cms.string('out_LHC.root')
 )
@@ -41,15 +51,19 @@ process.p = cms.Path(
     process.UFSDAnlzr
     )
 
-
-# output configuration
-process.output = cms.OutputModule("PoolOutputModule",
-  fileName = cms.untracked.string("file:./sampic_LHC.root"),
-  outputCommands = cms.untracked.vstring(
-    'drop *',
-    'keep *_*RawToDigi_*_*',
-  )
+process.end_path = cms.EndPath(
+    process.dqmEnv +
+    process.dqmSaver
 )
 
-process.outpath = cms.EndPath(process.output)
+# output configuration
+#process.output = cms.OutputModule("PoolOutputModule",
+  #fileName = cms.untracked.string("file:./sampic_LHC.root"),
+  #outputCommands = cms.untracked.vstring(
+    #'drop *',
+    #'keep *_*RawToDigi_*_*',
+  #)
+#)
+
+#process.outpath = cms.EndPath(process.output)
 

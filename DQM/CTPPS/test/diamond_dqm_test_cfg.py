@@ -14,7 +14,7 @@ process.MessageLogger = cms.Service("MessageLogger",
         threshold = cms.untracked.string('WARNING')
     )
 )
-    
+
     # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
@@ -30,44 +30,22 @@ process.dqmSaver.tag = "CTPPS"
 
 # raw data source
 process.source = cms.Source("PoolSource",
-    # replace '*.root',',' with the source file you want to use
-    fileNames = cms.untracked.vstring(
-    *(
-'/store/data/Run2017C/ZeroBias/AOD/PromptReco-v2/000/300/088/00000/469D8C89-1477-E711-A6A4-02163E01190C.root',
-     )
-    ),
+  fileNames = cms.untracked.vstring(
+    '/store/data/Commissioning2018/ZeroBias10/AOD/PromptReco-v1/000/314/276/00000/0099E2CC-0743-E811-9CF7-FA163E7270C7.root',
+  )
 )
 
 
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_hlt_relval', '')
+process.GlobalTag = process.GlobalTag = GlobalTag(process.GlobalTag, '101X_dataRun2_Prompt_Candidate_2018_04_04_13_35_31', '')
 
-# raw-to-digi conversion
-process.load("EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff")
-
-# local RP reconstruction chain with standard settings
-process.load("RecoCTPPS.Configuration.recoCTPPS_cff")
-
-# rechits production
-process.load('RecoCTPPS.TotemRPLocal.ctppsDiamondRecHits_cfi')
-
-# local tracks fitter
-process.load('RecoCTPPS.TotemRPLocal.ctppsDiamondLocalTracks_cfi')
-
-# pixel
-process.load('RecoCTPPS.PixelLocal.ctppsPixelLocalTracks_cfi')
+process.load('Geometry.VeryForwardGeometry.geometryRPFromDD_2018_cfi')
 
 # CTPPS DQM modules
 process.load("DQM.CTPPS.ctppsDQM_cff")
 process.ctppsDiamondDQMSource.excludeMultipleHits = cms.bool(True);
 
 process.path = cms.Path(
-    #process.ctppsRawToDigi *
-    process.recoCTPPS *
-    #process.ctppsDiamondRawToDigi *
-    process.ctppsDiamondRecHits *
-    process.ctppsDiamondLocalTracks *
-    process.ctppsPixelLocalTracks *
     process.ctppsDQM
     )
 

@@ -1276,6 +1276,18 @@ digiPremixUp2015Defaults25ns = {
     '--procModifiers': 'premix_stage2',
     '--era'          : 'Run2_2016'
     }
+# Specifying explicitly the --filein is not nice but that was the
+# easiest way to "skip" the output of step2 (=premixing stage1) for
+# filein (as it goes to pileup_input). It works (a bit accidentally
+# though) also for "-i all" because in that case the --filein for DAS
+# input is after this one in the list of command line arguments to
+# cmsDriver, and gets then used in practice.
+digiPremixLocalPileup = {
+    "--filein": "file:step1.root",
+    "--pileup_input": "file:step2.root"
+}
+digiPremixLocalPileupUp2015Defaults25ns = merge([digiPremixLocalPileup,
+                                                 digiPremixUp2015Defaults25ns])
 digiPremixUp2015Defaults50ns=merge([{'-s':'DIGI:pdigi_valid,DATAMIX,L1,DIGI2RAW,HLT:@relval50ns'},
                                     {'--conditions':'auto:run2_mc_50ns'},
                                     {'--pileup_input' : 'das:/RelValPREMIXUP15_PU50/%s/GEN-SIM-DIGI-RAW'%baseDataSetRelease[6]},
@@ -1292,6 +1304,8 @@ digiPremixUp2017Defaults25ns = {
     '--procModifiers': 'premix_stage2',
     '--era'          : 'Run2_2017'
     }
+digiPremixLocalPileupUp2017Defaults25ns = merge([digiPremixLocalPileup,
+                                                 digiPremixUp2017Defaults25ns])
 
 
 digiPremixUp2018Defaults25ns = {
@@ -1304,12 +1318,17 @@ digiPremixUp2018Defaults25ns = {
     '--procModifiers': 'premix_stage2',
     '--era'          : 'Run2_2018'
     }
+digiPremixLocalPileupUp2018Defaults25ns = merge([digiPremixLocalPileup,
+                                                 digiPremixUp2018Defaults25ns])
 
 
 steps['DIGIPRMXUP15_PU25']=merge([digiPremixUp2015Defaults25ns])
+steps['DIGIPRMXLOCALUP15_PU25']=merge([digiPremixLocalPileupUp2015Defaults25ns])
 steps['DIGIPRMXUP15_PU50']=merge([digiPremixUp2015Defaults50ns])
 steps['DIGIPRMXUP17_PU25']=merge([digiPremixUp2017Defaults25ns])
+steps['DIGIPRMXLOCALUP17_PU25']=merge([digiPremixLocalPileupUp2017Defaults25ns])
 steps['DIGIPRMXUP18_PU25']=merge([digiPremixUp2018Defaults25ns])
+steps['DIGIPRMXLOCALUP18_PU25']=merge([digiPremixLocalPileupUp2018Defaults25ns])
 
 premixProd25ns = {'-s'             : 'DIGI,DATAMIX,L1,DIGI2RAW,HLT:@relval2016',
                  '--eventcontent' : 'PREMIXRAW',
@@ -1473,6 +1492,8 @@ steps['ALCAEXPLP']={'-s':'ALCAOUTPUT:AlCaPCCRandom,ALCA:PromptCalibProdLumiPCC',
 steps['ALCAHARVLP']={'-s':'ALCAHARVEST:%s'%(autoPCL['PromptCalibProdLumiPCC']),
                      '--conditions':'auto:run2_data',
                      '--scenario':'pp',
+                     '--datatier':'DQM',
+                     '--eventcontent': 'DQM',
                      '--data':'',
                      '--filein':'file:PromptCalibProdLumiPCC.root'}
 
@@ -2363,7 +2384,7 @@ defaultDataSets['2018']='CMSSW_10_1_0-101X_upgrade2018_realistic_v6_rsb-v'
 defaultDataSets['2018Design']='CMSSW_10_1_0-101X_upgrade2018_design_v7_resub-v'
 #defaultDataSets['2019']=''
 #defaultDataSets['2019Design']=''
-defaultDataSets['2023D17']='CMSSW_9_3_2-93X_upgrade2023_realistic_v2_2023D17noPU-v'
+defaultDataSets['2023D17']='CMSSW_10_2_0_pre2-101X_upgrade2023_realistic_v5_2023D17noPU-v'
 defaultDataSets['2023D19']=''
 defaultDataSets['2023D21']=''
 defaultDataSets['2023D22']=''
@@ -2503,7 +2524,6 @@ for year,k in [(year,k) for year in upgradeKeys for k in upgradeKeys[year]]:
                                     '--geometry' : geom,
                                     '--scenario' : 'pp',
                                     '--filetype':'DQM',
-				    '--filein':'file:step3_inDQM.root'
                                     }
 
     upgradeStepDict['HARVESTFullGlobal'][k] = merge([{'-s': 'HARVESTING:@phase2Validation+@phase2+@miniAODValidation+@miniAODDQM'}, upgradeStepDict['HARVESTFull'][k]])
@@ -2513,7 +2533,8 @@ for year,k in [(year,k) for year in upgradeKeys for k in upgradeKeys[year]]:
                                       '--datatier':'ALCARECO',
                                       '-n':'10',
                                       '--eventcontent':'ALCARECO',
-                                      '--geometry' : geom
+                                      '--geometry' : geom,
+                                      '--filein':'file:step3.root'
                                       }
 
     upgradeStepDict['FastSim'][k]={'-s':'GEN,SIM,RECO,VALIDATION',

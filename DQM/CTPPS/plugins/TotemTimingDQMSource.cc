@@ -722,10 +722,7 @@ void TotemTimingDQMSource::analyze(const edm::Event &event,
                 planePlots_.find(detId_plane) != planePlots_.end()  &&
                 channelPlots_.find(detId) != channelPlots_.end()      )
       {
-        // only when there is 1 hit per plane
-        if (stripTracks.isValid() &&
-            channelsPerPlaneWithTime.find(detId_plane) != channelsPerPlaneWithTime.end() &&
-            channelsPerPlaneWithTime[detId_plane]<3 )
+        if ( stripTracks.isValid() )
         {
           for (const auto &ds : *stripTracks) {
             const CTPPSDetId stripId(ds.detId());
@@ -736,11 +733,9 @@ void TotemTimingDQMSource::analyze(const edm::Event &event,
             plId_U.setPlane(1);
 
             double rp_x = (geometry->getSensor(plId_V)->translation().x() +
-                           geometry->getSensor(plId_U)->translation().x()) /
-                          2.;
+                           geometry->getSensor(plId_U)->translation().x())/2;
             double rp_y = (geometry->getSensor(plId_V)->translation().y() +
-                           geometry->getSensor(plId_U)->translation().y()) /
-                          2.;
+                           geometry->getSensor(plId_U)->translation().y())/2;
 
             for (const auto &striplt : ds) {
               if (striplt.isValid() && stripId.arm() == detId.arm()) {
@@ -757,9 +752,6 @@ void TotemTimingDQMSource::analyze(const edm::Event &event,
                   double y = striplt.getY0() - rp_y;
                   if (stripId.station() == TOTEM_STATION_210)
                   {
-                    // To rotate the strips, uncomment this part
-                    // x = COS_8_DEG * x - SIN_8_DEG * y;
-                    // y = SIN_8_DEG * x + COS_8_DEG * y;
                     potPlots_[detId_pot].stripTomography210->Fill(x + detId.plane()*50, y + y_shift);
                     channelPlots_[detId].stripTomography210->Fill(x, y + y_shift);
                   }

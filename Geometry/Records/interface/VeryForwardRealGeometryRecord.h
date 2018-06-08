@@ -15,13 +15,14 @@
 #include "boost/mpl/vector.hpp"
 
 #include "CondFormats/AlignmentRecord/interface/RPRealAlignmentRecord.h"
+#include "CondFormats/AlignmentRecord/interface/CTPPSRPAlignmentCorrectionsDataRcd.h"
 
 /**
  * \ingroup TotemRPGeometry
  * \brief Event setup record containing the real (actual) geometry information.
  **/
 class VeryForwardRealGeometryRecord : public edm::eventsetup::DependentRecordImplementation
-						   <VeryForwardRealGeometryRecord, boost::mpl::vector<IdealGeometryRecord, RPRealAlignmentRecord /*, ... */> >
+						   <VeryForwardRealGeometryRecord, boost::mpl::vector<IdealGeometryRecord, RPRealAlignmentRecord, CTPPSRPAlignmentCorrectionsDataRcd /*, ... */> >
 {
 };
 

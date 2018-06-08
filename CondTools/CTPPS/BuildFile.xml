@@ -1,4 +1,5 @@
 <use   name="CondFormats/DataRecord"/>
+<use   name="CondFormats/AlignmentRecord"/>
 <use   name="CondFormats/CTPPSReadoutObjects"/>
 <use   name="CondCore/DBOutputService"/>
 <use   name="FWCore/ServiceRegistry"/>

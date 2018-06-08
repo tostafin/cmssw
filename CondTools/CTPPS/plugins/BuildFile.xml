@@ -7,4 +7,5 @@
 <use   name="FWCore/ServiceRegistry"/>
 <use   name="FWCore/ParameterSet"/>
 <use   name="CondFormats/DataRecord"/>
+<use   name="CondFormats/AlignmentRecord"/>
 <flags   EDM_PLUGIN="1"/>

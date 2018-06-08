@@ -20,7 +20,7 @@
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
 
 
-#include "CondFormats/DataRecord/interface/CTPPSRPAlignmentCorrectionsDataRcd.h"
+#include "CondFormats/AlignmentRecord/interface/CTPPSRPAlignmentCorrectionsDataRcd.h"
 
 #include "CondFormats/CTPPSReadoutObjects/interface/CTPPSRPAlignmentCorrectionsData.h"
 

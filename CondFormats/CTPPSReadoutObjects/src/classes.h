@@ -7,5 +7,6 @@ namespace CondFormats_CTPPSPixelObjects {
      std::vector< CTPPSPixelGainCalibration::DetRegistry >::iterator p3;
      std::vector< CTPPSPixelGainCalibration::DetRegistry >::const_iterator p4;
      std::map<uint32_t,CTPPSPixelGainCalibration> mycalibmap; 
+     std::map<unsigned int, CTPPSRPAlignmentCorrectionData> mapType;
  };
 }     

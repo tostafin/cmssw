@@ -13,15 +13,16 @@ process.MessageLogger = cms.Service("MessageLogger",
 # geometry
 process.load("Geometry.VeryForwardGeometry.geometryRPFromDD_2017_cfi")
 
-# load alignment correction
+## older style for loading alignment correction
 #process.load("Geometry.VeryForwardGeometryBuilder.ctppsIncludeAlignmentsFromXML_cfi")
 #process.ctppsIncludeAlignmentsFromXML.RealFiles = cms.vstring("Geometry/VeryForwardGeometryBuilder/test/sample_alignment_corrections.xml")
 
-# load the alignment xml file
+## new style for loading  the alignment from xml file
 #process.load("CondFormats.CTPPSReadoutObjects.CTPPSRPAlignmentCorrectionsDataESSourceXML_cfi")
 #process.ctppsRPAlignmentCorrectionsDataESSourceXML.XMLFile = cms.string("CondFormats/CTPPSReadoutObjects/xml/sample_alignment_corrections.xml")
 
-##Database output service
+## Load alignment corection from DB
+## Cal Database  service
 process.load("CondCore.CondDB.CondDB_cfi")
 ## input database (in this case local sqlite file)
 process.CondDB.connect = 'sqlite_file:CTPPSRPAlignment.db'
@@ -45,7 +46,7 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 process.ctppsGeometryInfo = cms.EDAnalyzer("CTPPSGeometryInfo",
-    geometryType = cms.untracked.string("misaligned"),
+    geometryType = cms.untracked.string("real"),
     printRPInfo = cms.untracked.bool(True),
     printSensorInfo = cms.untracked.bool(True)
 )

@@ -19,7 +19,8 @@
 #include "DetectorDescription/Core/interface/DDSpecifics.h"
 #include "DetectorDescription/Core/interface/DDRotationMatrix.h"
 
-#include "DataFormats/CTPPSAlignment/interface/RPAlignmentCorrectionsData.h"
+//#include "DataFormats/CTPPSAlignment/interface/RPAlignmentCorrectionsData.h"
+#include "CondFormats/CTPPSReadoutObjects/interface/CTPPSRPAlignmentCorrectionsData.h"
 
 #include "DataFormats/CTPPSDetId/interface/TotemRPDetId.h"
 #include "DataFormats/CTPPSDetId/interface/CTPPSPixelDetId.h"
@@ -27,6 +28,8 @@
 
 #include "CondFormats/AlignmentRecord/interface/RPRealAlignmentRecord.h"
 #include "CondFormats/AlignmentRecord/interface/RPMisalignedAlignmentRecord.h"
+
+#include "CondFormats/AlignmentRecord/interface/CTPPSRPAlignmentCorrectionsDataRcd.h"
 
 #include "Geometry/Records/interface/IdealGeometryRecord.h"
 #include "Geometry/Records/interface/VeryForwardMisalignedGeometryRecord.h"
@@ -55,11 +58,11 @@ class CTPPSGeometryESModule : public edm::ESProducer
     std::unique_ptr<DetGeomDesc> produceRealGD( const VeryForwardRealGeometryRecord& );
     std::unique_ptr<CTPPSGeometry> produceRealTG( const VeryForwardRealGeometryRecord& );
 
-    std::unique_ptr<DetGeomDesc> produceMisalignedGD( const VeryForwardMisalignedGeometryRecord& );
-    std::unique_ptr<CTPPSGeometry> produceMisalignedTG( const VeryForwardMisalignedGeometryRecord& );
+    //std::unique_ptr<DetGeomDesc> produceMisalignedGD( const VeryForwardMisalignedGeometryRecord& );
+    //std::unique_ptr<CTPPSGeometry> produceMisalignedTG( const VeryForwardMisalignedGeometryRecord& );
 
   protected:
-    static void applyAlignments( const edm::ESHandle<DetGeomDesc>&, const edm::ESHandle<RPAlignmentCorrectionsData>&, DetGeomDesc*& );
+    static void applyAlignments( const edm::ESHandle<DetGeomDesc>&, const edm::ESHandle<CTPPSRPAlignmentCorrectionsData>&, DetGeomDesc*& );
     static void buildDetGeomDesc( DDFilteredView* fv, DetGeomDesc* gd );
 
     unsigned int verbosity_;
@@ -79,15 +82,15 @@ CTPPSGeometryESModule::CTPPSGeometryESModule(const edm::ParameterSet& iConfig) :
   setWhatProduced( this, &CTPPSGeometryESModule::produceRealGD );
   setWhatProduced( this, &CTPPSGeometryESModule::produceRealTG );
 
-  setWhatProduced( this, &CTPPSGeometryESModule::produceMisalignedGD );
-  setWhatProduced( this, &CTPPSGeometryESModule::produceMisalignedTG );
+  //setWhatProduced( this, &CTPPSGeometryESModule::produceMisalignedGD );
+  //setWhatProduced( this, &CTPPSGeometryESModule::produceMisalignedTG );
 }
 
 //----------------------------------------------------------------------------------------------------
 
 void
 CTPPSGeometryESModule::applyAlignments( const edm::ESHandle<DetGeomDesc>& idealGD,
-                                        const edm::ESHandle<RPAlignmentCorrectionsData>& alignments,
+                                        const edm::ESHandle<CTPPSRPAlignmentCorrectionsData>& alignments,
                                         DetGeomDesc*& newGD )
 {
   newGD = new DetGeomDesc( *(idealGD.product()) );
@@ -112,7 +115,7 @@ CTPPSGeometryESModule::applyAlignments( const edm::ESHandle<DetGeomDesc>& idealG
       unsigned int plId = pD->geographicalID();
 
       if ( alignments.isValid() ) {
-        const RPAlignmentCorrectionData& ac = alignments->getFullSensorCorrection( plId );
+        const CTPPSRPAlignmentCorrectionData& ac = alignments->getFullSensorCorrection( plId );
         pD->ApplyAlignment( ac );
       }
     }
@@ -124,7 +127,7 @@ CTPPSGeometryESModule::applyAlignments( const edm::ESHandle<DetGeomDesc>& idealG
       unsigned int rpId = pD->geographicalID();
       
       if ( alignments.isValid() ) {
-        const RPAlignmentCorrectionData& ac = alignments->getRPCorrection( rpId );
+        const CTPPSRPAlignmentCorrectionData& ac = alignments->getRPCorrection( rpId );
         pD->ApplyAlignment( ac );
       }
     }
@@ -283,8 +286,8 @@ CTPPSGeometryESModule::produceRealGD( const VeryForwardRealGeometryRecord& iReco
   iRecord.getRecord<IdealGeometryRecord>().get( idealGD );
 
   // load alignments
-  edm::ESHandle<RPAlignmentCorrectionsData> alignments;
-  try { iRecord.getRecord<RPRealAlignmentRecord>().get( alignments ); }
+  edm::ESHandle<CTPPSRPAlignmentCorrectionsData> alignments;
+  try { iRecord.getRecord<CTPPSRPAlignmentCorrectionsDataRcd>().get( alignments ); }
   catch ( cms::Exception& ) {}
 
   if ( alignments.isValid() ) {
@@ -306,7 +309,7 @@ CTPPSGeometryESModule::produceRealGD( const VeryForwardRealGeometryRecord& iReco
 }
 
 //----------------------------------------------------------------------------------------------------
-
+/*
 std::unique_ptr<DetGeomDesc>
 CTPPSGeometryESModule::produceMisalignedGD( const VeryForwardMisalignedGeometryRecord& iRecord )
 {
@@ -315,7 +318,7 @@ CTPPSGeometryESModule::produceMisalignedGD( const VeryForwardMisalignedGeometryR
   iRecord.getRecord<IdealGeometryRecord>().get( idealGD );
 
   // load alignments
-  edm::ESHandle<RPAlignmentCorrectionsData> alignments;
+  edm::ESHandle<CTPPSRPAlignmentCorrectionsData> alignments;
   try { iRecord.getRecord<RPMisalignedAlignmentRecord>().get( alignments ); }
   catch ( cms::Exception& ) {}
 
@@ -335,7 +338,7 @@ CTPPSGeometryESModule::produceMisalignedGD( const VeryForwardMisalignedGeometryR
   applyAlignments( idealGD, alignments, newGD );
   return std::unique_ptr<DetGeomDesc>( newGD );
 }
-
+*/
 //----------------------------------------------------------------------------------------------------
 
 std::unique_ptr<CTPPSGeometry>
@@ -349,7 +352,7 @@ CTPPSGeometryESModule::produceRealTG( const VeryForwardRealGeometryRecord& iReco
 
 //----------------------------------------------------------------------------------------------------
 
-std::unique_ptr<CTPPSGeometry>
+/*std::unique_ptr<CTPPSGeometry>
 CTPPSGeometryESModule::produceMisalignedTG( const VeryForwardMisalignedGeometryRecord& iRecord )
 {
   edm::ESHandle<DetGeomDesc> gD;
@@ -357,5 +360,5 @@ CTPPSGeometryESModule::produceMisalignedTG( const VeryForwardMisalignedGeometryR
 
   return std::make_unique<CTPPSGeometry>( gD.product() );
 }
-
+*/
 DEFINE_FWK_EVENTSETUP_MODULE( CTPPSGeometryESModule );

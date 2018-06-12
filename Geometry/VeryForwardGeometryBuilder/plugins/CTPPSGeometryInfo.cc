@@ -44,7 +44,7 @@ class CTPPSGeometryInfo : public edm::one::EDAnalyzer<>
 
     edm::ESWatcher<IdealGeometryRecord> watcherIdealGeometry_;
     edm::ESWatcher<VeryForwardRealGeometryRecord> watcherRealGeometry_;
-    edm::ESWatcher<VeryForwardMisalignedGeometryRecord> watcherMisalignedGeometry_;
+    //edm::ESWatcher<VeryForwardMisalignedGeometryRecord> watcherMisalignedGeometry_;
 
     void analyze( const edm::Event&, const edm::EventSetup& ) override;
 
@@ -85,13 +85,13 @@ CTPPSGeometryInfo::analyze( const edm::Event& iEvent, const edm::EventSetup& iSe
     return;
   }
 
-  else if ( geometryType_ == "misaligned" ) {
+  /*else if ( geometryType_ == "misaligned" ) {
     if ( watcherMisalignedGeometry_.check( iSetup ) ) {
       iSetup.get<VeryForwardMisalignedGeometryRecord>().get( geometry );
       printGeometry( *geometry, iEvent );
     }
     return;
-  }
+  }*/
 
   throw cms::Exception("CTPPSGeometryInfo") << "Unknown geometry type: `" << geometryType_ << "'.";
 }

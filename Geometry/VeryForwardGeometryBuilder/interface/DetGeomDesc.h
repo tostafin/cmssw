@@ -19,6 +19,7 @@
 
 class DDFilteredView;
 class RPAlignmentCorrectionData;
+class CTPPSRPAlignmentCorrectionData;
 
 /**
  * \brief Geometrical description of a sensor.
@@ -95,6 +96,7 @@ class DetGeomDesc
 
 		/// alignment
 		void ApplyAlignment(const RPAlignmentCorrectionData&);
+		void ApplyAlignment(const CTPPSRPAlignmentCorrectionData&);
 		
 	private:
 		Container						_container;

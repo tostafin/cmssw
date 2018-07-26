@@ -72,7 +72,6 @@ class CTPPSTimingLocalTrack
     inline void setTSigma(const float t_sigma) { t_sigma_ = t_sigma; }
 
     //--- comparison operators
-    //inline bool operator<(const CTPPSTimingLocalTrack& other) const;
 
   protected:
 

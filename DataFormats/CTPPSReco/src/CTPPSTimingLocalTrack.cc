@@ -77,11 +77,11 @@ bool operator<( const CTPPSTimingLocalTrack& lhs, const CTPPSTimingLocalTrack& r
   if ( lhs.getT() < rhs.getT() ) return true;
   if ( lhs.getT() > rhs.getT() ) return false;
   // then sort by x-position
-  if ( lhs.getX() < rhs.getX() ) return true;
-  if ( lhs.getX() > rhs.getX() ) return false;
+  if ( lhs.getX0() < rhs.getX0() ) return true;
+  if ( lhs.getX0() > rhs.getX0() ) return false;
   // ...and y-position
-  if ( lhs.getY() < rhs.getY() ) return true;
-  if ( lhs.getY() > rhs.getY() ) return false;
+  if ( lhs.getY0() < rhs.getY0() ) return true;
+  if ( lhs.getY0() > rhs.getY0() ) return false;
   // ...and z-position
-  return ( lhs.getZ() < rhs.getZ() );
+  return ( lhs.getZ0() < rhs.getZ0() );
 }

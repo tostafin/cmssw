@@ -14,7 +14,7 @@
 #include <algorithm>
 
 //----------------------------------------------------------------------------------------------------
-
+/*
 const std::string CTPPSDiamondTrackRecognition::pixelEfficiencyDefaultFunction_ = "(x>[0]-0.5*[1])*(x<[0]+0.5*[1])";
 
 CTPPSDiamondTrackRecognition::CTPPSDiamondTrackRecognition( const edm::ParameterSet& iConfig ) :
@@ -135,4 +135,4 @@ CTPPSDiamondTrackRecognition::produceTracks( edm::DetSet<CTPPSDiamondLocalTrack>
 
   return number_of_tracks;
 }
-
+*/

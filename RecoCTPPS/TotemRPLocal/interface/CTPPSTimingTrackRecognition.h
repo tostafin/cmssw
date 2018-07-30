@@ -23,6 +23,7 @@
 #include <set>
 #include <vector>
 #include <unordered_map>
+#include <algorithm>
 #include "TF1.h"
 
 /**
@@ -36,11 +37,11 @@ class CTPPSTimingTrackRecognition
     /* Parameters set naming convention:
      * TODO
      */
-    CTPPSDiamondTrackRecognition( const edm::ParameterSet& ) {
+    CTPPSTimingTrackRecognition( const edm::ParameterSet& ) {
 
     }
 
-    ~CTPPSDiamondTrackRecognition();
+    ~CTPPSTimingTrackRecognition();
 
     // Class public interface:
 
@@ -55,7 +56,84 @@ class CTPPSTimingTrackRecognition
     }
 
     /// Produce a collection of tracks for the current station, given its hits collection
-    virtual int produceTracks( edm::DetSet<CTPPSDiamondLocalTrack>& tracks );
+    int produceTracks( edm::DetSet<CTPPSDiamondLocalTrack>& tracks );
+
+
+
+    int produceTotemTimingTracks(edm::DetSet<CTPPSDiamondLocalTrack>& tracks) {
+
+      int numberOfTracks;
+      DimensionParameters xParam, yParam;
+
+      // TODO: reading parameters for both dimensions
+
+      for(auto hitBatch: hitVectorMap) {
+
+        auto hits = hitBatch.first;
+        std::vector<PartialTrack> xPartTracks, yPartTracks;
+        auto getX = [](CTPPSTimingRecHit& hit){ return hit.getX; };
+        auto getXWidth = [](CTPPSTimingRecHit& hit){ return hit.getXWidth; };
+        auto getY = [](CTPPSTimingRecHit& hit){ return hit.getY; };
+        auto getYWidth = [](CTPPSTimingRecHit& hit){ return hit.getYWidth; };
+        producePartialTracks(hits, xParam, getX, getXWidth, xPartTracks);
+        producePartialTracks(hits, yParam, getY, getYWidth, yPartTracks);
+
+        if(xPartTracks.size() == 0 && yPartTracks.size() == 0)
+          continue;
+
+        if(xPartTracks.size() == 0) {
+          PartialTrack partTrackBuffer;
+          getDefaultPartialTrack(hits, getX, getXWidth, partTrackBuffer);
+          xPartTracks.push_back(partTrackBuffer);
+        }
+
+        if(yPartTracks.size() == 0) {
+          PartialTrack partTrackBuffer;
+          getDefaultPartialTrack(hits, getY, getYWidth, partTrackBuffer);
+          yPartTracks.push_back(partTrackBuffer);
+        }
+
+        PartialTrack zTrack;
+        auto getZ = [](CTPPSTimingRecHit& hit){ return hit.getZ; };
+        auto getZWidth = [](CTPPSTimingRecHit& hit){ return hit.getZWidth; };
+        getDefaultPartialTrack(hits, getZ, getZWidth, zTrack);
+
+        // TODO: unify threshold among different dimensions
+        int validHitsNumber = (int)(xParam.threshold + 1.0);
+
+        for(auto xTrack: xPartTracks) {
+          for(auto yTrack: yPartTracks) {
+
+            int commonHitsNumber = countTrackIntersectionSize(xTrack, yTrack);
+            if(commonHitsNumber >= validHitsNumber) {
+              math::XYZPoint position(
+                (xTrack.End - xTrack.Begin) / 2.0;
+                (yTrack.End - yTrack.Begin) / 2.0;
+                (zTrack.End - zTrack.Begin) / 2.0;
+              );
+              math::XYZPoint positionSigma(
+                (xTrack.End + xTrack.Begin) / 2.0;
+                (yTrack.End + yTrack.Begin) / 2.0;
+                (zTrack.End + zTrack.Begin) / 2.0;
+              );
+
+              // TODO: setting validity / time / numHits / numPlanes
+
+              CTPPSTimingLocalTrack newTrack;
+              newTrack.setPosition(position);
+              newTrack.setPositionSigma(positionSigma);
+              tracks.push_back(newTrack);
+              numberOfTracks+;
+              a = 0
+            }
+          }
+        }
+      }
+
+      return numberOfTracks;
+    }
+
+
 
   private:
 
@@ -105,7 +183,6 @@ class CTPPSTimingTrackRecognition
       float trackBegin;
       float trackEnd;
       std::set<int> hitComponents;
-      std::vector<float> timeComponents;
 
       bool containsHit(const float& hitCenter, const float& hitRangeWidth) {
         float trackWidth = trackEnd - trackBegin;
@@ -113,6 +190,32 @@ class CTPPSTimingTrackRecognition
         return ((fabs(trackCenter - hitCenter)) < ((trackWidth + hitRangeWidth) / 2.0));
       }
     };
+
+    /* Counts the size of
+     *
+     */
+    int countTrackIntersectionSize(const PartialTrack &track1, const PartialTrack& track2) {
+      auto it1 = track1.hitComponents.begin();
+      auto it2 = track2.hitComponents.begin();
+
+      int result = 0;
+
+      while(it1 != track1.hitComponents.end() && it2 != track2.hitComponents.end()) {
+        if(it1 < it2)
+          it1++;
+
+        else if(it1 > it2)
+          it2++;
+
+        else {
+          result++;
+          it1++;
+          it2++;
+        }
+      }
+
+      return result;
+    }
 
     /* Produces all partial tracks from given set with regard to single dimension.
      *
@@ -123,10 +226,8 @@ class CTPPSTimingTrackRecognition
      * @getHitRangeWidth: analogical to getHitCenter, but extracts hit's width
      *      in specific dimension
      * @result: vector to which produced tracks are appended
-     *
-     * @return: number of produced partial tracks
      */
-    int producePartialTracks(
+    void producePartialTracks(
         const HitVector& hits,
         const dimensionParameters& param,
         float (*getHitCenter)(const &CTPPSTimingRecHit),
@@ -151,7 +252,8 @@ class CTPPSTimingTrackRecognition
         }
       }
 
-      hitProfile.push_back(-1.0); // Guard to make sure that no track is lost
+      // Guard to make sure that no track is lost
+      hitProfile.push_back(param.threshold - 1.0);
 
       bool underThreshold = true;
       float rangeMaximum;
@@ -199,6 +301,7 @@ class CTPPSTimingTrackRecognition
               pt.trackBegin = param.rangeBegin + param.resolution * trackBegin;
               pt.trackEnd = param.rangeBegin + param.resolution * j;
               result.push_back(pt);
+              numberOfTracks++;
             }
           }
 
@@ -207,7 +310,52 @@ class CTPPSTimingTrackRecognition
       }
     }
 
+    /* Creates a partial track that consists of all hits in the hit set.
+     *
+     * @hits: vector of hits from which the track is created
+     * @getHitCenter: functor extracting hit's center in the dimension
+     *      that the track relates to
+     * @getHitRangeWidth: analogical to getHitCenter, but extracts hit's width
+     *      in specific dimension
+     * @result: track buffer to which found values are saved
+     *
+     * @return: true if the track was successfully produced. false otherwise
+     */
+    bool getDefaultPartialTrack(
+        const HitVector& hits,
+        float (*getHitCenter)(const &CTPPSTimingRecHit),
+        float (*getHitRangeWidth)(const &CTPPSTimingRecHit),
+        PartialTrack& result
+      ) {
 
+      float minVal;
+      float maxVal;
+      bool initialized = false;
+
+      for(int i = 0; i < hits.size(); i++) {
+
+        result.hitComponents.insert(i);
+
+        if(initialized) {
+          float newMinVal = getHitCenter(hits[i]) - getHitRangeWidth(hits[i]) / 2.0;
+          float newMaxVal = getHitCenter(hits[i]) + getHitRangeWidth(hits[i]) / 2.0;
+
+          if(minVal > newMinVal)
+            minVal = newMinVal;
+
+          if(maxVal < newMaxVal)
+            maxVal = newMaxVal;
+        }
+
+        else {
+          minVal = getHitCenter(hits[i]) - getHitRangeWidth(hits[i]) / 2.0;
+          maxVal = getHitCenter(hits[i]) + getHitRangeWidth(hits[i]) / 2.0;
+          initialized = true;
+        }
+      }
+
+      return initialized;
+    }
 };
 
 #endif

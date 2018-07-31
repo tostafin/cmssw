@@ -34,14 +34,32 @@ class CTPPSTimingTrackRecognition
 {
   public:
 
-    /* Parameters set naming convention:
-     * TODO
+    /* General parameters in the set:
+     * "threshold": float
+     * "thresholdFromMaximum": float
+     * "resolution": float
+     * "sigma": float
+     * "pixelEfficiencyFunction": TF1
+     *
+     * Parameters specific to CTPPSDiamondLocalTrack:
+     * "startFromX": float
+     * "stopAtX": float
+     * "yPosition": float
+     * "yWidth": float
+     *
+     * Parameters specific to TotemTimingLocalTrack:
+     * "startFromX": float
+     * "stopAtX": float
+     * "startFromY": float
+     * "stopAtY": float
      */
-    CTPPSTimingTrackRecognition( const edm::ParameterSet& ) {
-
+    CTPPSTimingTrackRecognition(const edm::ParameterSet& parameters) {
+      //TODO: reading parameters
     }
 
     ~CTPPSTimingTrackRecognition();
+
+
 
     // Class public interface:
 
@@ -55,7 +73,7 @@ class CTPPSTimingTrackRecognition
       hitVectorMap[getHitKey(recHit)].push_back(recHit);
     }
 
-    /// Produce a collection of tracks for the current station, given its hits collection
+    /// Produces a collection of tracks for the current station, given its hits collection
     int produceTracks( edm::DetSet<CTPPSDiamondLocalTrack>& tracks );
 
 
@@ -107,14 +125,14 @@ class CTPPSTimingTrackRecognition
             int commonHitsNumber = countTrackIntersectionSize(xTrack, yTrack);
             if(commonHitsNumber >= validHitsNumber) {
               math::XYZPoint position(
-                (xTrack.End - xTrack.Begin) / 2.0;
-                (yTrack.End - yTrack.Begin) / 2.0;
-                (zTrack.End - zTrack.Begin) / 2.0;
+                (xTrack.End - xTrack.Begin) / 2.0,
+                (yTrack.End - yTrack.Begin) / 2.0,
+                (zTrack.End - zTrack.Begin) / 2.0
               );
               math::XYZPoint positionSigma(
-                (xTrack.End + xTrack.Begin) / 2.0;
-                (yTrack.End + yTrack.Begin) / 2.0;
-                (zTrack.End + zTrack.Begin) / 2.0;
+                (xTrack.End + xTrack.Begin) / 2.0,
+                (yTrack.End + yTrack.Begin) / 2.0,
+                (zTrack.End + zTrack.Begin) / 2.0
               );
 
               // TODO: setting validity / time / numHits / numPlanes
@@ -123,8 +141,6 @@ class CTPPSTimingTrackRecognition
               newTrack.setPosition(position);
               newTrack.setPositionSigma(positionSigma);
               tracks.push_back(newTrack);
-              numberOfTracks+;
-              a = 0
             }
           }
         }
@@ -144,7 +160,7 @@ class CTPPSTimingTrackRecognition
     HitVectorMap hitVectorMap;
 
 
-    // Funtions used to extract hit's key by wchich the hits are grouped in hitVectorMap
+    // Functions used to extract hit's key by which the hits are grouped in hitVectorMap
     template <class CTPPSTimingRecHit>
     int getHitKey(const CTPPSTimingRecHit& obj) {
       return 0;
@@ -175,7 +191,7 @@ class CTPPSTimingTrackRecognition
      *
      * @trackBegin: starting point of the track within considered dimension
      * @trackEnd: ending point of the track within considered dimension
-     * @hitComponents: indeces of all hits from source hit vector
+     * @hitComponents: indices of all hits from the source hit vector
      *      which produced the partial track
      * @timeComponents: time values of all hits that produced the track
      */
@@ -230,8 +246,8 @@ class CTPPSTimingTrackRecognition
     void producePartialTracks(
         const HitVector& hits,
         const dimensionParameters& param,
-        float (*getHitCenter)(const &CTPPSTimingRecHit),
-        float (*getHitRangeWidth)(const &CTPPSTimingRecHit),
+        float (*getHitCenter)(const CTPPSTimingRecHit&),
+        float (*getHitRangeWidth)(const CTPPSTimingRecHit&),
         std::vector<PartialTrack>& result
       ) {
 
@@ -323,8 +339,8 @@ class CTPPSTimingTrackRecognition
      */
     bool getDefaultPartialTrack(
         const HitVector& hits,
-        float (*getHitCenter)(const &CTPPSTimingRecHit),
-        float (*getHitRangeWidth)(const &CTPPSTimingRecHit),
+        float (*getHitCenter)(const CTPPSTimingRecHit&),
+        float (*getHitRangeWidth)(const CTPPSTimingRecHit&),
         PartialTrack& result
       ) {
 
@@ -356,6 +372,8 @@ class CTPPSTimingTrackRecognition
 
       return initialized;
     }
+
+    std::vector<DimensionParameters> paramVector;
 };
 
 #endif

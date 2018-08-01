@@ -8,6 +8,10 @@ totemTimingRecHits.smoothingPoints = cms.int32(20)
 totemTimingRecHits.lowPassFrequency = cms.double(0.7)
 totemTimingRecHits.hysteresis = cms.double(5e-3)
 
+# local track fitting
+from RecoCTPPS.TotemRPLocal.totemTimingLocalTracks_cfi import totemTimingLocalTracks
+
 totemTimingLocalReconstruction = cms.Sequence(
-    totemTimingRecHits
+    totemTimingRecHits *
+    totemTimingLocalTracks
 )

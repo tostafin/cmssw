@@ -19,6 +19,8 @@
 #include "DataFormats/CTPPSDetId/interface/TotemTimingDetId.h"
 
 #include "DataFormats/CTPPSReco/interface/TotemTimingRecHit.h"
+#include "DataFormats/CTPPSReco/interface/TotemTimingLocalTrack.h"
+
 
 #include <map>
 
@@ -48,6 +50,8 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       // ---------- objects to retrieve ---------------------------
       edm::EDGetTokenT< edm::DetSetVector<TotemTimingDigi> > tokenDigi_;
       edm::EDGetTokenT< edm::DetSetVector<TotemTimingRecHit> > tokenRecHit_;
+      edm::EDGetTokenT< edm::DetSetVector<TotemTimingLocalTrack> > tokenLocalTrack_;
+
 
       // ---------- directories ---------------------------
       std::map< TotemTimingDetId, TFileDirectory > maindir_map_;
@@ -78,7 +82,8 @@ const double    SimpleAnalyzer::SAMPIC_SAMPLING_PERIOD_NS = 1./7.8;
 SimpleAnalyzer::SimpleAnalyzer(const edm::ParameterSet& iConfig)
  :
  tokenDigi_            ( consumes< edm::DetSetVector<TotemTimingDigi> >      ( iConfig.getParameter<edm::InputTag>( "tagDigi" ) ) ),
- tokenRecHit_          ( consumes< edm::DetSetVector<TotemTimingRecHit> >      ( iConfig.getParameter<edm::InputTag>( "tagRecHit" ) ) )
+ tokenRecHit_          ( consumes< edm::DetSetVector<TotemTimingRecHit> >      ( iConfig.getParameter<edm::InputTag>( "tagRecHit" ) ) ),
+ tokenLocalTrack_          ( consumes< edm::DetSetVector<TotemTimingLocalTrack> >      ( iConfig.getParameter<edm::InputTag>( "tagLocalTrack" ) ) )
 {
   usesResource("TFileService");
 }
@@ -134,8 +139,10 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   edm::Handle< edm::DetSetVector<TotemTimingDigi> > timingDigi;
   edm::Handle< edm::DetSetVector<TotemTimingRecHit> > timingRecHit;
+  edm::Handle< edm::DetSetVector<TotemTimingLocalTrack> > timingLocalTrack;
   iEvent.getByToken( tokenDigi_, timingDigi );
   iEvent.getByToken( tokenRecHit_, timingRecHit );
+  iEvent.getByToken( tokenLocalTrack_, timingLocalTrack );
 
   for (const auto& digis : *timingDigi)
   {
@@ -163,6 +170,11 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       tHisto_map_[ detId ]->Fill( recHit.getT() );
 
     }
+  }
+
+  for (const auto& track : *timingLocalTrack)
+  {
+    std::cout << track.detId() << std::endl;
   }
 }
 

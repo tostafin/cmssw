@@ -8,8 +8,8 @@
  *
  ****************************************************************************/
 
-#ifndef RecoCTPPS_TotemRPLocal_CTPPSTimingTrackRecognition
-#define RecoCTPPS_TotemRPLocal_CTPPSTimingTrackRecognition
+#ifndef RecoCTPPS_TotemRPLocal_CTPPSTimingTrackRecognition2
+#define RecoCTPPS_TotemRPLocal_CTPPSTimingTrackRecognition2
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
@@ -77,7 +77,7 @@ class CTPPSTimingTrackRecognition
     }
 
     /// Produces a collection of tracks for the current station, given its hits collection
-    int produceTracks( edm::DetSet<CTPPSTimingLocalTrack>& tracks );
+    int produceTracks(edm::DetSet<CTPPSTimingLocalTrack>& tracks);
 
 
 

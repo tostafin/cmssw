@@ -22,4 +22,4 @@
 TotemTimingLocalTrack::TotemTimingLocalTrack() : CTPPSTimingLocalTrack() {}
 //--- destructor
 
-TotemTimingLocalTrack::~TotemTimingLocalTrack() {}
+//TotemTimingLocalTrack::~TotemTimingLocalTrack() {}

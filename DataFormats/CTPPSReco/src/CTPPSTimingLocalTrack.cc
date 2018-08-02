@@ -46,14 +46,16 @@ CTPPSTimingLocalTrack::CTPPSTimingLocalTrack(
 
 //--- destructor
 
-CTPPSTimingLocalTrack::~CTPPSTimingLocalTrack() {}
+//CTPPSTimingLocalTrack::~CTPPSTimingLocalTrack() {}
 
 
 //--- interface member functions
 
 bool CTPPSTimingLocalTrack::containsHit(
     const CTPPSTimingRecHit& recHit,
-    float tolerance) const {
+    float tolerance,
+    CheckDimension check
+  ) const {
 
   float xTolerance = pos0_sigma_.x() + (0.5 * recHit.getXWidth()) + tolerance;
   float yTolerance = pos0_sigma_.y() + (0.5 * recHit.getYWidth()) + tolerance;
@@ -62,6 +64,12 @@ bool CTPPSTimingLocalTrack::containsHit(
   float xDiff = fabs(pos0_.x() - recHit.getX());
   float yDiff = fabs(pos0_.y() - recHit.getY());
   float zDiff = fabs(pos0_.z() - recHit.getZ());
+
+  if(check == CHECK_X)
+    return xDiff < xTolerance;
+
+  if(check == CHECK_Y)
+    return yDiff < yTolerance;
 
   return (xDiff < xTolerance && yDiff < yTolerance && zDiff < zTolerance);
 }

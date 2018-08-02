@@ -21,7 +21,7 @@ class TotemTimingLocalTrack : public CTPPSTimingLocalTrack
 
     TotemTimingLocalTrack();
 
-    virtual ~TotemTimingLocalTrack();
+    //~TotemTimingLocalTrack() {};
 
     // no specific class members yet
 };

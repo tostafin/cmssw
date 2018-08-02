@@ -83,7 +83,7 @@ SimpleAnalyzer::SimpleAnalyzer(const edm::ParameterSet& iConfig)
  :
  tokenDigi_            ( consumes< edm::DetSetVector<TotemTimingDigi> >      ( iConfig.getParameter<edm::InputTag>( "tagDigi" ) ) ),
  tokenRecHit_          ( consumes< edm::DetSetVector<TotemTimingRecHit> >      ( iConfig.getParameter<edm::InputTag>( "tagRecHit" ) ) ),
- tokenLocalTrack_          ( consumes< edm::DetSetVector<TotemTimingLocalTrack> >      ( iConfig.getParameter<edm::InputTag>( "tagLocalTrack" ) ) )
+ tokenLocalTrack_      ( consumes< edm::DetSetVector<TotemTimingLocalTrack> >      ( iConfig.getParameter<edm::InputTag>( "tagLocalTrack" ) ) )
 {
   usesResource("TFileService");
 }
@@ -174,7 +174,7 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   for (const auto& track : *timingLocalTrack)
   {
-    std::cout << track.detId() << std::endl;
+    std::cout << "LOLOLOLOLO" << std::endl;
   }
 }
 

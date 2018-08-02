@@ -106,14 +106,14 @@ namespace DataFormats_CTPPSReco {
     edm::Wrapper<edm::DetSetVector<CTPPSDiamondLocalTrack> > wrp_dsv_ctd_lt;
 
     TotemTimingLocalTrack ttd_lt;
-    edm::Ptr<CTPPSDiamondLocalTrack> ptr_ttd_lt;
-    edm::Wrapper<CTPPSDiamondLocalTrack> wrp_ttd_lt;
-    std::vector<CTPPSDiamondLocalTrack> vec_ttd_lt;
-    edm::DetSet<CTPPSDiamondLocalTrack> ds_ttd_lt;
-    std::vector<edm::DetSet<CTPPSDiamondLocalTrack> > vec_ds_ttd_lt;
-    edm::Wrapper<std::vector<CTPPSDiamondLocalTrack> > wrp_vec_ttd_lt;
-    edm::DetSetVector<CTPPSDiamondLocalTrack> dsv_ttd_lt;
-    edm::Wrapper<edm::DetSetVector<CTPPSDiamondLocalTrack> > wrp_dsv_ttd_lt;
+    edm::Ptr<TotemTimingLocalTrack> ptr_ttd_lt;
+    edm::Wrapper<TotemTimingLocalTrack> wrp_ttd_lt;
+    std::vector<TotemTimingLocalTrack> vec_ttd_lt;
+    edm::DetSet<TotemTimingLocalTrack> ds_ttd_lt;
+    std::vector<edm::DetSet<TotemTimingLocalTrack> > vec_ds_ttd_lt;
+    edm::Wrapper<std::vector<TotemTimingLocalTrack> > wrp_vec_ttd_lt;
+    edm::DetSetVector<TotemTimingLocalTrack> dsv_ttd_lt;
+    edm::Wrapper<edm::DetSetVector<TotemTimingLocalTrack> > wrp_dsv_ttd_lt;
 
     //--- pixel objects
 

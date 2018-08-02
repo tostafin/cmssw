@@ -72,6 +72,18 @@ class TotemTimingTrackRecognition
 
   private:
 
+    // Algorithm parameters:
+    float threshold;
+    float thresholdFromMaximum;
+    float resolution;
+    float sigma;
+    float startFromX;
+    float stopAtX;
+    float startFromY;
+    float stopAtY;
+    TF1 pixelEfficiencyFunction;
+
+
     typedef std::vector<CTPPSTimingRecHit> HitVector;
     typedef std::unordered_map<int, HitVector> HitVectorMap;
 
@@ -109,8 +121,10 @@ class TotemTimingTrackRecognition
      * @trackEnd: ending point of the track within considered dimension
      * @hitComponents: indices of all hits from the source hit vector
      *      which produced the partial track
-     * @timeComponents: time values of all hits that produced the track
      */
+
+/*
+
     struct PartialTrack {
       float begin;
       float end;
@@ -123,10 +137,11 @@ class TotemTimingTrackRecognition
       }
     };
 
+*/
 
     /* Counts the size of the intersection of two partial tracks' hit componetns vectors.
      */
-    int countTrackIntersectionSize(const PartialTrack &track1, const PartialTrack& track2);
+//    int countTrackIntersectionSize(const PartialTrack &track1, const PartialTrack& track2);
 
 
     /* Produces all partial tracks from given set with regard to single dimension.

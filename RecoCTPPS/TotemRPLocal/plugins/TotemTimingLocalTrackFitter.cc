@@ -88,6 +88,9 @@ TotemTimingLocalTrackFitter::produce( edm::Event& iEvent, const edm::EventSetup&
   trk_algo_45_.produceTracks( tracks45 );
   trk_algo_56_.produceTracks( tracks56 );
 
+  for(int i = 0; i < 50; i++)
+    std::cout << "jestem dalej" << std::endl;
+
   iEvent.put( std::move( pOut ) );
 
   // remove all hits from the track producers to prepare for the next event

@@ -172,9 +172,13 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
 
-  for (const auto& track : *timingLocalTrack)
+  int iter = 0;
+  for (const auto& trackSet : *timingLocalTrack)
   {
-    std::cout << "LOLOLOLOLO" << std::endl;
+    for(auto track: trackSet) {
+      std::cout << iter << ": x = " << track.getX0() << ", y = " << track.getY0() << std::endl;
+    }
+
   }
 }
 

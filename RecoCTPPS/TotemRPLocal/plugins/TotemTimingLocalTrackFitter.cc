@@ -88,9 +88,6 @@ TotemTimingLocalTrackFitter::produce( edm::Event& iEvent, const edm::EventSetup&
   trk_algo_45_.produceTracks( tracks45 );
   trk_algo_56_.produceTracks( tracks56 );
 
-  for(int i = 0; i < 50; i++)
-    std::cout << "jestem dalej" << std::endl;
-
   iEvent.put( std::move( pOut ) );
 
   // remove all hits from the track producers to prepare for the next event
@@ -114,10 +111,6 @@ TotemTimingLocalTrackFitter::fillDescriptions( edm::ConfigurationDescriptions& d
   trackingAlgoParams.add<double>( "resolution", 0.01 /* mm */ )
     ->setComment( "spatial resolution on the horizontal coordinate (in mm)" );
   trackingAlgoParams.add<double>( "sigma", 0.1 );
-  trackingAlgoParams.add<double>( "startFromX", -0.5 /* mm */ )
-    ->setComment( "starting horizontal coordinate of rechits for the track recognition" );
-  trackingAlgoParams.add<double>( "stopAtX", 19.5 /* mm */ )
-    ->setComment( "ending horizontal coordinate of rechits for the track recognition" );
 
   trackingAlgoParams.add<std::string>( "pixelEfficiencyFunction", "(TMath::Erf((x-[0]+0.5*[1])/([2]/4)+2)+1)*TMath::Erfc((x-[0]-0.5*[1])/([2]/4)-2)/4" )
     ->setComment( "efficiency function for single pixel\n"

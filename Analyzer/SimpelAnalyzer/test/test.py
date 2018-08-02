@@ -77,6 +77,7 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.path = cms.Path(
+    process.recoCTPPS *
     process.simpleAnalyzer
 )
 

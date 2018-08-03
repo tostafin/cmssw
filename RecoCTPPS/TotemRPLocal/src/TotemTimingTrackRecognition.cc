@@ -12,8 +12,11 @@
 
 #include "DataFormats/Common/interface/DetSet.h"
 #include "DataFormats/Common/interface/DetSetVector.h"
+#include "DataFormats/Math/interface/Point3D.h"
+
 
 #include "DataFormats/CTPPSReco/interface/TotemTimingRecHit.h"
+#include "DataFormats/CTPPSReco/interface/CTPPSTimingLocalTrack.h"
 #include "DataFormats/CTPPSReco/interface/TotemTimingLocalTrack.h"
 
 #include "RecoCTPPS/TotemRPLocal/interface/TotemTimingTrackRecognition.h"
@@ -76,58 +79,88 @@ int TotemTimingTrackRecognition::produceTracks(edm::DetSet<TotemTimingLocalTrack
 
     auto hits = hitBatch.second;
 
-    std::vector<PartialTrack> xPartTracks, yPartTracks;
+    std::vector<TotemTimingLocalTrack> xPartTracks, yPartTracks;
     auto getX = [](const CTPPSTimingRecHit& hit){ return hit.getX(); };
     auto getXWidth = [](const CTPPSTimingRecHit& hit){ return hit.getXWidth(); };
+    auto setX = [](TotemTimingLocalTrack& track, float x){ track.setPosition(math::XYZPoint(x, 0., 0.)); };
+    auto setXSigma = [](TotemTimingLocalTrack& track, float sigma){ track.setPositionSigma(math::XYZPoint(sigma, 0., 0.)); };
     auto getY = [](const CTPPSTimingRecHit& hit){ return hit.getY(); };
     auto getYWidth = [](const CTPPSTimingRecHit& hit){ return hit.getYWidth(); };
+    auto setY = [](TotemTimingLocalTrack& track, float y){ track.setPosition(math::XYZPoint(0., y, 0.)); };
+    auto setYSigma = [](TotemTimingLocalTrack& track, float sigma){ track.setPositionSigma(math::XYZPoint(0., sigma, 0.)); };
 
-    PartialTrack xDefaultPartTrack, yDefaultPartTrack;
-    getDefaultPartialTrack(hits, getX, getXWidth, xDefaultPartTrack);
-    getDefaultPartialTrack(hits, getY, getYWidth, yDefaultPartTrack);
+    float xRangeBegin, xRangeEnd, yRangeBegin, yRangeEnd;
+    getHitSpatialRange(hits, getX, getXWidth, xRangeBegin, xRangeEnd);
+    getHitSpatialRange(hits, getY, getYWidth, yRangeBegin, yRangeEnd);
 
-    param.rangeBegin = xDefaultPartTrack.begin;
-    param.rangeEnd = xDefaultPartTrack.end;
-    producePartialTracks(hits, param, getX, getXWidth, xPartTracks);
+    param.rangeBegin = xRangeBegin;
+    param.rangeEnd = xRangeEnd;
+    producePartialTracks(hits, param, getX, getXWidth, setX, setXSigma, xPartTracks);
 
-    param.rangeBegin = yDefaultPartTrack.begin;
-    param.rangeEnd = yDefaultPartTrack.end;
-    producePartialTracks(hits, param, getY, getYWidth, yPartTracks);
+    param.rangeBegin = yRangeBegin;
+    param.rangeEnd = yRangeEnd;
+    producePartialTracks(hits, param, getY, getYWidth, setY, setYSigma, yPartTracks);
 
     if(xPartTracks.size() == 0 && yPartTracks.size() == 0)
       continue;
 
-    if(xPartTracks.size() == 0)
-      xPartTracks.push_back(xDefaultPartTrack);
+    //TODO: create default tracks
+    //if(xPartTracks.size() == 0)
+    //  xPartTracks.push_back(xDefaultPartTrack);
 
-    if(yPartTracks.size() == 0)
-      yPartTracks.push_back(yDefaultPartTrack);
+    //if(yPartTracks.size() == 0)
+    //  yPartTracks.push_back(yDefaultPartTrack);
 
-    PartialTrack zTrack;
     auto getZ = [](const CTPPSTimingRecHit& hit){ return hit.getZ(); };
     auto getZWidth = [](const CTPPSTimingRecHit& hit){ return hit.getZWidth(); };
-    getDefaultPartialTrack(hits, getZ, getZWidth, zTrack);
+    float zRangeBegin, zRangeEnd;
+    getHitSpatialRange(hits, getZ, getZWidth, zRangeBegin, zRangeEnd);
+
+
+    std::vector< std::vector<int> > xComponents(xPartTracks.size(), std::vector<int>(0));
+    for(unsigned int i = 0; i < xPartTracks.size(); i++) {
+      for(unsigned int j = 0; j < hits.size(); j++) {
+        if(xPartTracks[i].containsHit(hits[j], 0.1, CTPPSTimingLocalTrack::CHECK_X))
+          xComponents[i].push_back(j);
+      }
+    }
+
+    std::vector< std::vector<int> > yComponents(yPartTracks.size(), std::vector<int>(0));
+    for(unsigned int i = 0; i < yPartTracks.size(); i++) {
+      for(unsigned int j = 0; j < hits.size(); j++) {
+        if(yPartTracks[i].containsHit(hits[j], 0.1, CTPPSTimingLocalTrack::CHECK_Y))
+          yComponents[i].push_back(j);
+      }
+    }
 
     // TODO: unify threshold among different dimensions
     int validHitsNumber = (int)(param.threshold + 1.0);
 
-    std::cout << "yy: " << xPartTracks.size() << " " << yPartTracks.size() << std::endl;
+    std::vector<int> commonComponents(0);
+    for(unsigned int i = 0; i < xComponents.size(); i++) {
+      for(unsigned int j = 0; j < yComponents.size(); j++) {
 
-    for(auto xTrack: xPartTracks) {
-      for(auto yTrack: yPartTracks) {
+        commonComponents.resize(std::max(xComponents[i].size(), yComponents[j].size()));
+        auto commonEndIter = std::set_intersection(
+          xComponents[i].begin(),
+          xComponents[i].end(),
+          yComponents[j].begin(),
+          yComponents[j].end(),
+          commonComponents.begin()
+        );
 
-        int commonHitsNumber = countTrackIntersectionSize(xTrack, yTrack);
-        std::cout << "int: " << commonHitsNumber << std::endl;
-        if(commonHitsNumber >= validHitsNumber) {
+        int commonComponentsNumber = commonEndIter - commonComponents.begin();
+
+        if(commonComponentsNumber >= validHitsNumber) {
           math::XYZPoint position(
-            (xTrack.end - xTrack.begin) / 2.0,
-            (yTrack.end - yTrack.begin) / 2.0,
-            (zTrack.end - zTrack.begin) / 2.0
+            xPartTracks[i].getX0(),
+            yPartTracks[j].getY0(),
+            (zRangeBegin + zRangeEnd) / 2.0
           );
           math::XYZPoint positionSigma(
-            (xTrack.end + xTrack.begin) / 2.0,
-            (yTrack.end + yTrack.begin) / 2.0,
-            (zTrack.end + zTrack.begin) / 2.0
+            xPartTracks[i].getX0Sigma(),
+            yPartTracks[j].getY0Sigma(),
+            (zRangeEnd - zRangeBegin) / 2.0
           );
 
           // TODO: setting validity / time / numHits / numPlanes
@@ -155,36 +188,14 @@ int TotemTimingTrackRecognition::getHitKey(const CTPPSDiamondRecHit& hit) {
 }
 
 
-int TotemTimingTrackRecognition::countTrackIntersectionSize(const PartialTrack &track1, const PartialTrack& track2) {
-  auto it1 = track1.hitComponents.begin();
-  auto it2 = track2.hitComponents.begin();
-
-  int result = 0;
-
-  while(it1 != track1.hitComponents.end() && it2 != track2.hitComponents.end()) {
-    if(*it1 < *it2)
-      it1++;
-
-    else if(*it1 > *it2)
-      it2++;
-
-    else {
-      result++;
-      it1++;
-      it2++;
-    }
-  }
-
-  return result;
-}
-
-
 void TotemTimingTrackRecognition::producePartialTracks(
     const HitVector& hits,
     const DimensionParameters& param,
     float (*getHitCenter)(const CTPPSTimingRecHit&),
     float (*getHitRangeWidth)(const CTPPSTimingRecHit&),
-    std::vector<PartialTrack>& result
+    void (*setTrackCenter)(TotemTimingLocalTrack&, float),
+    void (*setTrackSigma)(TotemTimingLocalTrack&, float),
+    std::vector<TotemTimingLocalTrack>& result
   ) {
 
   int numberOfTracks = 0;
@@ -204,16 +215,6 @@ void TotemTimingTrackRecognition::producePartialTracks(
     for(unsigned int i = 0; i < hitProfile.size(); ++i) {
       hitProfile[i] += hitFunction.Eval(param.rangeBegin + i*param.resolution);
     }
-  }
-
-  {
-    float tmp = 0;
-    for(auto a : hitProfile) {
-      if(tmp < a)
-        tmp = a;
-    }
-
-    std::cout << "! " << tmp << std::endl;
   }
 
   // Guard to make sure that no track is lost
@@ -241,7 +242,7 @@ void TotemTimingTrackRecognition::producePartialTracks(
     // Going under the threshold
     else if(!underThreshold && hitProfile[i] <= param.threshold){
       underThreshold = true;
-      trackRangeEnd = true;
+      trackRangeEnd = i;
       trackRangeFound = true;
     }
 
@@ -261,10 +262,12 @@ void TotemTimingTrackRecognition::producePartialTracks(
 
         else if(!underTrackThreshold && hitProfile[j] <= trackThreshold) {
           underTrackThreshold = true;
-          PartialTrack pt;
-          pt.begin = param.rangeBegin + param.resolution * trackBegin;
-          pt.end = param.rangeBegin + param.resolution * j;
-          result.push_back(pt);
+          TotemTimingLocalTrack track;
+          float leftMargin = param.rangeBegin + param.resolution * trackBegin;
+          float rightMargin = param.rangeBegin + param.resolution * j;
+          setTrackCenter(track, (leftMargin + rightMargin) / 2.0);
+          setTrackSigma(track, (rightMargin - leftMargin) / 2.0);
+          result.push_back(track);
           numberOfTracks++;
         }
       }
@@ -275,43 +278,34 @@ void TotemTimingTrackRecognition::producePartialTracks(
 }
 
 
-bool TotemTimingTrackRecognition::getDefaultPartialTrack(
+bool TotemTimingTrackRecognition::getHitSpatialRange(
     const HitVector& hits,
     float (*getHitCenter)(const CTPPSTimingRecHit&),
     float (*getHitRangeWidth)(const CTPPSTimingRecHit&),
-    PartialTrack& result
+    float& rangeBegin,
+    float& rangeEnd
   ) {
 
-  float minVal;
-  float maxVal;
   bool initialized = false;
-  result.hitComponents.clear();
 
   for(unsigned int i = 0; i < hits.size(); i++) {
 
-    result.hitComponents.insert(i);
-
     if(initialized) {
-      float newMinVal = getHitCenter(hits[i]) - getHitRangeWidth(hits[i]) / 2.0;
-      float newMaxVal = getHitCenter(hits[i]) + getHitRangeWidth(hits[i]) / 2.0;
+      float bottomVal = getHitCenter(hits[i]) - getHitRangeWidth(hits[i]) / 2.0;
+      float topVal = getHitCenter(hits[i]) + getHitRangeWidth(hits[i]) / 2.0;
 
-      if(minVal > newMinVal)
-        minVal = newMinVal;
+      if(bottomVal < rangeBegin)
+        rangeBegin = bottomVal;
 
-      if(maxVal < newMaxVal)
-        maxVal = newMaxVal;
+      if(topVal > rangeEnd)
+        rangeEnd = topVal;
     }
 
     else {
-      minVal = getHitCenter(hits[i]) - getHitRangeWidth(hits[i]) / 2.0;
-      maxVal = getHitCenter(hits[i]) + getHitRangeWidth(hits[i]) / 2.0;
+      rangeBegin = getHitCenter(hits[i]) - getHitRangeWidth(hits[i]) / 2.0;
+      rangeEnd = getHitCenter(hits[i]) + getHitRangeWidth(hits[i]) / 2.0;
       initialized = true;
     }
-  }
-
-  if(initialized) {
-    result.begin = minVal;
-    result.end = maxVal;
   }
 
   return initialized;

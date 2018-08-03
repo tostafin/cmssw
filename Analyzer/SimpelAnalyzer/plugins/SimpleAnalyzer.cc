@@ -41,6 +41,7 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       virtual void endJob() override;
 
       void initHistograms( const TotemTimingDetId&);
+      void initTrackHistogram(const TotemTimingDetId&);
 
       // ---------- constants ---------------------------
       static const double SAMPIC_MAX_NUMBER_OF_SAMPLES;
@@ -59,6 +60,10 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       // ---------- histograms ---------------------------
       std::map< TotemTimingDetId, TH1F*> yHisto_map_;
       std::map< TotemTimingDetId, TH1F*> tHisto_map_;
+      std::map< TotemTimingDetId, TH1F*> trackXHistoMap;
+      std::map< TotemTimingDetId, TH1F*> trackYHistoMap;
+      std::map< TotemTimingDetId, TH1F*> hitXHistoMap;
+      std::map< TotemTimingDetId, TH1F*> hitYHistoMap;
 
       // ---------- graphs ---------------------------
       std::map< TotemTimingDetId, TGraph*> samples_graph_map_;
@@ -131,6 +136,35 @@ SimpleAnalyzer::initHistograms(const TotemTimingDetId& detId)
 
 }
 
+void SimpleAnalyzer::initTrackHistogram(const TotemTimingDetId& detId) {
+  edm::Service<TFileService> fs;
+  if (maindir_map_.find(detId) == maindir_map_.end())
+  {
+    std::string dirName;
+    detId.armName(dirName, TotemTimingDetId::nPath);
+
+    // create directory for the detector, if not already done
+    maindir_map_[ detId ] = fs->mkdir( dirName );
+
+    // create all histograms
+    std::string trackXHistName;
+    trackXHistName.insert(0, "xTrackDistribution");
+    trackXHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(trackXHistName.c_str(), trackXHistName.c_str(), 18, 0, 9 );
+
+    std::string trackYHistName;
+    trackYHistName.insert(0, "yTrackDistribution");
+    trackYHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(trackYHistName.c_str(), trackYHistName.c_str(), 20, 45, 65 );
+
+    std::string hitXHistName;
+    hitXHistName.insert(0, "xHitDistribution");
+    hitXHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(hitXHistName.c_str(), hitXHistName.c_str(), 18, 0, 9 );
+
+    std::string hitYHistName;
+    hitYHistName.insert(0, "yHitDistribution");
+    hitYHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(hitYHistName.c_str(), hitYHistName.c_str(), 20, 45, 65 );
+  }
+}
+
 // ------------ method called for each event  ------------
 void
 SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -163,20 +197,30 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     const TotemTimingDetId detId( recHits.detId() );
     if (maindir_map_.find(detId) == maindir_map_.end())
       initHistograms( detId );
+
+    if (maindir_map_.find(detId.getArmId()) == maindir_map_.end())
+      initTrackHistogram( detId.getArmId() );
+
     for (const auto& recHit : recHits )
     {
       // Do stuff on recHits
       yHisto_map_[ detId ]->Fill( recHit.getY() );
       tHisto_map_[ detId ]->Fill( recHit.getT() );
+      hitXHistoMap[ detId.getArmId() ]->Fill( recHit.getX() );
+      hitYHistoMap[ detId.getArmId() ]->Fill( recHit.getY() );
 
     }
   }
 
-  int iter = 0;
   for (const auto& trackSet : *timingLocalTrack)
   {
-    for(auto track: trackSet) {
-      std::cout << iter << ": x = " << track.getX0() << ", y = " << track.getY0() << std::endl;
+    const TotemTimingDetId detId( trackSet.detId() );
+    if (maindir_map_.find(detId.getArmId()) == maindir_map_.end())
+      initTrackHistogram( detId.getArmId() );
+    for (const auto& track : trackSet )
+    {
+      trackXHistoMap[detId.getArmId()]->Fill(track.getX0());
+      trackYHistoMap[detId.getArmId()]->Fill(track.getY0());
     }
 
   }

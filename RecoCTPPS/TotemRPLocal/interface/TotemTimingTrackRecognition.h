@@ -114,36 +114,6 @@ class TotemTimingTrackRecognition
     };
 
 
-    /* Structure describing single "partial track".
-     * Partial track is a single dimensional component of a complete track.
-     *
-     * @trackBegin: starting point of the track within considered dimension
-     * @trackEnd: ending point of the track within considered dimension
-     * @hitComponents: indices of all hits from the source hit vector
-     *      which produced the partial track
-     */
-
-/*
-
-    struct PartialTrack {
-      float begin;
-      float end;
-      std::set<int> hitComponents;
-
-      bool containsHit(const float& hitCenter, const float& hitRangeWidth) {
-        float trackWidth = end - begin;
-        float trackCenter = (begin + end) / 2.0;
-        return ((fabs(trackCenter - hitCenter)) < ((trackWidth + hitRangeWidth) / 2.0));
-      }
-    };
-
-*/
-
-    /* Counts the size of the intersection of two partial tracks' hit componetns vectors.
-     */
-//    int countTrackIntersectionSize(const PartialTrack &track1, const PartialTrack& track2);
-
-
     /* Produces all partial tracks from given set with regard to single dimension.
      *
      * @hits: vector of hits from which the tracks are created
@@ -159,7 +129,9 @@ class TotemTimingTrackRecognition
         const DimensionParameters& param,
         float (*getHitCenter)(const CTPPSTimingRecHit&),
         float (*getHitRangeWidth)(const CTPPSTimingRecHit&),
-        std::vector<PartialTrack>& result
+        void (*setTrackCenter)(TotemTimingLocalTrack&, float),
+        void (*setTrackSigma)(TotemTimingLocalTrack&, float),
+        std::vector<TotemTimingLocalTrack>& result
       );
 
 
@@ -175,15 +147,13 @@ class TotemTimingTrackRecognition
      *
      * @return: true if the track was successfully produced. false otherwise
      */
-    bool getDefaultPartialTrack(
+    bool getHitSpatialRange(
         const HitVector& hits,
         float (*getHitCenter)(const CTPPSTimingRecHit&),
         float (*getHitRangeWidth)(const CTPPSTimingRecHit&),
-        PartialTrack& result
+        float& rangeBegin,
+        float& rangeEnd
       );
-
-
-    std::vector<DimensionParameters> paramVector;
 };
 
 #endif

@@ -64,7 +64,7 @@ void CalibrationData::print(){
   std::cout << *this;
 }
 
-std::vector<double> CalibrationData::getParameters(int db, int sampic, int channel, int cell){
+std::vector<double> CalibrationData::getParameters(int db, int sampic, int channel, int cell) const{
   CalibrationKey key = CalibrationKey(db, sampic, channel, cell);
   auto out = parameters_.find(key);
   if(out == parameters_.end())
@@ -72,7 +72,7 @@ std::vector<double> CalibrationData::getParameters(int db, int sampic, int chann
   else
     return out->second;
 }
-double CalibrationData::getTimeOffset(int db, int sampic, int channel){
+double CalibrationData::getTimeOffset(int db, int sampic, int channel) const{
   CalibrationKey key = CalibrationKey(db, sampic, channel);
   auto out = timeOffsets_.find(key);
   if(out == timeOffsets_.end())
@@ -81,6 +81,6 @@ double CalibrationData::getTimeOffset(int db, int sampic, int channel){
     return out->second;
 }
 
-std::string CalibrationData::getFormula(){
+std::string CalibrationData::getFormula() const{
   return formula_;
 }

@@ -43,9 +43,9 @@ public:
   CalibrationData();
   void openFile(const std::string &file_name);
   void print();
-  std::vector<double> getParameters(int db, int sampic, int channel, int cell);
-  double getTimeOffset(int db, int sampic, int channel);
-  std::string getFormula();
+  std::vector<double> getParameters(int db, int sampic, int channel, int cell) const;
+  double getTimeOffset(int db, int sampic, int channel) const;
+  std::string getFormula() const;
 };
 
 #endif

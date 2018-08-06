@@ -36,10 +36,6 @@ void TotemTimingConversions::openCalibrationFile(const std::string& calibrationF
 
   if (calibrationFile_!="/dev/null")
   {
-    /*https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideEdmExceptionUse
-      "If an external package throws an exception that does not inherit from cms::Exception,
-      then the module that invokes this external should catch it,
-      then either deal with it or create a cms::Exception, and throw that."*/
     try{
       calibrationData_.openFile(calibrationFile_);
       calibrationFileOk_ = true;
@@ -85,7 +81,12 @@ const float TotemTimingConversions::getTimeOfFirstSample(const TotemTimingDigi& 
         (SAMPIC_MAX_NUMBER_OF_SAMPLES - digi.getCellInfo()) *
             SAMPIC_SAMPLING_PERIOD_NS;
 
-  return firstCellTimeInstant /*+ calibrationData_.getTimeOffset(db,sampic,channel) where can i find those: db, sampic, channel*/; // if no time offset is set getTimeOffset returns 0;
+  int bd = digi.getHardwareBoardId();
+  int sampic = digi.getHardwareSampicId();
+  int channel = digi.getHardwareChannelId();
+  //there was a problem with
+  return firstCellTimeInstant + calibrationData_.getTimeOffset(bd, sampic, channel);
+                                      // if no time offset is set getTimeOffset returns 0
 }
 
 //----------------------------------------------------------------------------------------------------

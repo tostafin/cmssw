@@ -8,7 +8,6 @@
  ****************************************************************************/
 
 #include "RecoCTPPS/TotemRPLocal/interface/TotemTimingConversions.h"
-
 //----------------------------------------------------------------------------------------------------
 
 const float TotemTimingConversions::SAMPIC_SAMPLING_PERIOD_NS = 1. / 7.8;
@@ -19,12 +18,12 @@ const int TotemTimingConversions::SAMPIC_DEFAULT_OFFSET = 30;
 //----------------------------------------------------------------------------------------------------
 
 TotemTimingConversions::TotemTimingConversions()
-    : calibrationFileOk_(false), calibrationFile_("/dev/null") {}
+    : calibrationFileOk_(false), calibrationFile_("/dev/null"), calibrationData_(CalibrationData()) {}
 
 //----------------------------------------------------------------------------------------------------
 
 TotemTimingConversions::TotemTimingConversions(const std::string& calibrationFile)
-    : calibrationFileOk_(false), calibrationFile_(calibrationFile) {}
+    : calibrationFileOk_(false), calibrationFile_(calibrationFile), calibrationData_(CalibrationData()) {}
 
 //----------------------------------------------------------------------------------------------------
 
@@ -37,9 +36,20 @@ void TotemTimingConversions::openCalibrationFile(const std::string& calibrationF
 
   if (calibrationFile_!="/dev/null")
   {
-    // Open File TODO
-    calibrationFileOk_ = true;
+    /*https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideEdmExceptionUse
+      "If an external package throws an exception that does not inherit from cms::Exception,
+      then the module that invokes this external should catch it,
+      then either deal with it or create a cms::Exception, and throw that."*/
+    try{
+      calibrationData_.openFile(calibrationFile_);
+      calibrationFileOk_ = true;
+    }
+    catch(boost::exception const &e){
+      calibrationFileOk_ = false;
+    }
   }
+  calibrationFormula_ = TF1("calibrationFormula_",calibrationData_.getFormula().c_str()); //set formula
+  //correctionformula ...
 
 }
 
@@ -75,7 +85,7 @@ const float TotemTimingConversions::getTimeOfFirstSample(const TotemTimingDigi& 
         (SAMPIC_MAX_NUMBER_OF_SAMPLES - digi.getCellInfo()) *
             SAMPIC_SAMPLING_PERIOD_NS;
 
-  return firstCellTimeInstant;
+  return firstCellTimeInstant /*+ calibrationData_.getTimeOffset(db,sampic,channel) where can i find those: db, sampic, channel*/; // if no time offset is set getTimeOffset returns 0;
 }
 
 //----------------------------------------------------------------------------------------------------

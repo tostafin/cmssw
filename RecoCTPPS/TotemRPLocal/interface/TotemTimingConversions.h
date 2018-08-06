@@ -12,8 +12,10 @@
 
 #include <string>
 #include <vector>
+#include "TF1.h"
 
 #include "DataFormats/CTPPSDigi/interface/TotemTimingDigi.h"
+#include "RecoCTPPS/TotemRPLocal/interface/CalibrationData.h"
 
 class TotemTimingConversions {
 public:
@@ -31,14 +33,16 @@ public:
   std::vector<float> getVoltSamples(const TotemTimingDigi& digi) const;
 
 private:
+
   static const float SAMPIC_SAMPLING_PERIOD_NS;
   static const float SAMPIC_ADC_V;
   static const int SAMPIC_MAX_NUMBER_OF_SAMPLES;
   static const int SAMPIC_DEFAULT_OFFSET;
 
   bool calibrationFileOk_;
+  TF1 calibrationFormula_;
   std::string calibrationFile_;
-
+  CalibrationData calibrationData_;
 };
 
 #endif

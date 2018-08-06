@@ -142,10 +142,10 @@ class CTPPSDiamondDQMSource : public DQMEDAnalyzer
       MonitorElement* HPTDCErrorFlags_2D = nullptr;
       MonitorElement* MHComprensive = nullptr;
 
-      MonitorElement* clock_Digi1_le = nullptr;
-      MonitorElement* clock_Digi1_te = nullptr;
-      MonitorElement* clock_Digi3_le = nullptr;
-      MonitorElement* clock_Digi3_te = nullptr;
+      // MonitorElement* clock_Digi1_le = nullptr;
+      // MonitorElement* clock_Digi1_te = nullptr;
+      // MonitorElement* clock_Digi3_le = nullptr;
+      // MonitorElement* clock_Digi3_te = nullptr;
 
       unsigned int HitCounter, MHCounter, LeadingOnlyCounter, TrailingOnlyCounter, CompleteCounter;
 
@@ -299,11 +299,11 @@ CTPPSDiamondDQMSource::PotPlots::PotPlots( DQMStore::IBooker& ibooker, unsigned 
 
   EfficiencyOfChannelsInPot = ibooker.book2D( "Efficiency in channels", title+" Efficiency (%) in channels (diamonds only);plane number;ch number", 10, -0.5, 4.5, 14, -1, 13 );
 
-  ibooker.setCurrentFolder( path+"/clock/" );
-  clock_Digi1_le = ibooker.book1D( "clock1 leading edge", title+" clock1;leading edge (ns)", 250, 0, 25 );
-  clock_Digi1_te = ibooker.book1D( "clock1 trailing edge", title+" clock1;trailing edge (ns)", 75, 0, 75 );
-  clock_Digi3_le = ibooker.book1D( "clock3 leading edge", title+" clock3;leading edge (ns)", 250, 0, 25 );
-  clock_Digi3_te = ibooker.book1D( "clock3 trailing edge", title+" clock3;trailing edge (ns)", 75, 0, 75 );
+  // ibooker.setCurrentFolder( path+"/clock/" );
+  // clock_Digi1_le = ibooker.book1D( "clock1 leading edge", title+" clock1;leading edge (ns)", 250, 0, 25 );
+  // clock_Digi1_te = ibooker.book1D( "clock1 trailing edge", title+" clock1;trailing edge (ns)", 75, 0, 75 );
+  // clock_Digi3_le = ibooker.book1D( "clock3 leading edge", title+" clock3;leading edge (ns)", 250, 0, 25 );
+  // clock_Digi3_te = ibooker.book1D( "clock3 trailing edge", title+" clock3;trailing edge (ns)", 75, 0, 75 );
 
 }
 
@@ -322,7 +322,7 @@ CTPPSDiamondDQMSource::PlanePlots::PlanePlots( DQMStore::IBooker& ibooker, unsig
   hit_multiplicity = ibooker.book1D( "channels per plane", title+" channels per plane; ch per plane", 13, -0.5, 12.5 );
 
   pixelTomography_far = ibooker.book2D( "tomography pixel", title+" tomography with pixel;x + 25 OOT (mm);y (mm)", 75, 0, 75, 8, 0, 8 );
-  EfficiencyWRTPixelsInPlane = ibooker.book2D( "Efficieny wrt pixel", title+" Efficieny wrt pixel;x (mm);y (mm)", 25, 0, 25, 12, -2, 10 );
+  EfficiencyWRTPixelsInPlane = ibooker.book2D( "Efficiency wrt pixels", title+" Efficiency wrt pixels;x (mm);y (mm)", 25, 0, 25, 12, -2, 10 );
 
 }
 
@@ -581,10 +581,10 @@ CTPPSDiamondDQMSource::analyze( const edm::Event& event, const edm::EventSetup& 
           {
             if ( detId.channel() == 6 || detId.channel() == 7 ) potPlots_[detId_pot].HPTDCErrorFlags_2D->Fill( 16, 2*detId.plane() + (detId.channel() - 6) );
             if (verbosity_)
-            edm::LogProblem("CTPPSDiamondDQMSource")  << "FED " << CTPPS_FED_ID_45 << ": ECError at EV: 0x"<< std::hex << optorx.getLV1()
-            << "\t\tVFAT EC: 0x"<< static_cast<unsigned int>( status.getEC() )
-            << "\twith ID: " << std::dec << detId
-            << "\tdiff: " <<  EC_difference_45_;
+              edm::LogProblem("CTPPSDiamondDQMSource")  << "FED " << CTPPS_FED_ID_45 << ": ECError at EV: 0x"<< std::hex << optorx.getLV1()
+              << "\t\tVFAT EC: 0x"<< static_cast<unsigned int>( status.getEC() )
+              << "\twith ID: " << std::dec << detId
+              << "\tdiff: " <<  EC_difference_45_;
           }
         }
       }
@@ -730,7 +730,7 @@ CTPPSDiamondDQMSource::analyze( const edm::Event& event, const edm::EventSetup& 
               potPlots_[detId_pot].effDoublecountingChMap[map_index] = 0;
             }
             CTPPSDiamondDetId detId( detId_pot.arm(), CTPPS_DIAMOND_STATION_ID, CTPPS_DIAMOND_RP_ID, plane, channel);
-            if ( channelAlignedWithTrack( geometry_.product(), detId, track, 1) ) {
+            if ( channelAlignedWithTrack( geometry_.product(), detId, track, 0.2) ) {
               // Channel should fire
               ++(potPlots_[detId_pot].effDoublecountingChMap[map_index]);
               for ( const auto& rechits : *diamondRecHits ) {
@@ -780,27 +780,27 @@ CTPPSDiamondDQMSource::analyze( const edm::Event& event, const edm::EventSetup& 
   //------------------------------
   // Clock Plots
   //------------------------------
-
-  for ( const auto& digis : *diamondDigis ) {
-    const CTPPSDiamondDetId detId( digis.detId() );
-    CTPPSDiamondDetId detId_pot( digis.detId() );
-    if ( detId.channel() == CHANNEL_OF_VFAT_CLOCK ) {
-      detId_pot.setPlane( 0 );
-      detId_pot.setChannel( 0 );
-      for ( const auto& digi : digis ) {
-        if ( digi.getLeadingEdge() != 0 )  {
-          if ( detId.plane() == 1 ) {
-            potPlots_[detId_pot].clock_Digi1_le->Fill( HPTDC_BIN_WIDTH_NS * digi.getLeadingEdge() );
-            potPlots_[detId_pot].clock_Digi1_te->Fill( HPTDC_BIN_WIDTH_NS * digi.getTrailingEdge() );
-          }
-          if ( detId.plane() == 3 ) {
-            potPlots_[detId_pot].clock_Digi3_le->Fill( HPTDC_BIN_WIDTH_NS * digi.getLeadingEdge() );
-            potPlots_[detId_pot].clock_Digi3_te->Fill( HPTDC_BIN_WIDTH_NS * digi.getTrailingEdge() );
-          }
-        }
-      }
-    }
-  }
+  // Commented out to save space in the DQM files, but code should be kept
+  // for ( const auto& digis : *diamondDigis ) {
+  //   const CTPPSDiamondDetId detId( digis.detId() );
+  //   CTPPSDiamondDetId detId_pot( digis.detId() );
+  //   if ( detId.channel() == CHANNEL_OF_VFAT_CLOCK ) {
+  //     detId_pot.setPlane( 0 );
+  //     detId_pot.setChannel( 0 );
+  //     for ( const auto& digi : digis ) {
+  //       if ( digi.getLeadingEdge() != 0 )  {
+  //         if ( detId.plane() == 1 ) {
+  //           potPlots_[detId_pot].clock_Digi1_le->Fill( HPTDC_BIN_WIDTH_NS * digi.getLeadingEdge() );
+  //           potPlots_[detId_pot].clock_Digi1_te->Fill( HPTDC_BIN_WIDTH_NS * digi.getTrailingEdge() );
+  //         }
+  //         if ( detId.plane() == 3 ) {
+  //           potPlots_[detId_pot].clock_Digi3_le->Fill( HPTDC_BIN_WIDTH_NS * digi.getLeadingEdge() );
+  //           potPlots_[detId_pot].clock_Digi3_te->Fill( HPTDC_BIN_WIDTH_NS * digi.getTrailingEdge() );
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
   //------------------------------
   // Plane Plots

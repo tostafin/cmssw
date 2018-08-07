@@ -16,10 +16,12 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 
 #include "DataFormats/CTPPSDigi/interface/TotemTimingDigi.h"
+#include "DataFormats/CTPPSDetId/interface/CTPPSDetId.h"
 #include "DataFormats/CTPPSDetId/interface/TotemTimingDetId.h"
 
 #include "DataFormats/CTPPSReco/interface/TotemTimingRecHit.h"
 #include "DataFormats/CTPPSReco/interface/TotemTimingLocalTrack.h"
+#include "DataFormats/CTPPSReco/interface/TotemRPLocalTrack.h"
 
 
 #include <map>
@@ -43,6 +45,7 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
       void initTrackHistogram(const TotemTimingDetId&);
       void initEventTrackPlot(const int eventNo, const TotemTimingDetId& detId);
+      void initTrackScatterPlot(const CTPPSDetId& detId);
 
       void eventTrackPlotAddHit(int eventNo, const TotemTimingRecHit& hit, const TotemTimingDetId& detId);
       void eventTrackPlotAddTrack(int eventNo, const TotemTimingLocalTrack& track, const TotemTimingDetId& detId);
@@ -56,11 +59,13 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       edm::EDGetTokenT< edm::DetSetVector<TotemTimingDigi> > tokenDigi_;
       edm::EDGetTokenT< edm::DetSetVector<TotemTimingRecHit> > tokenRecHit_;
       edm::EDGetTokenT< edm::DetSetVector<TotemTimingLocalTrack> > tokenLocalTrack_;
+      edm::EDGetTokenT< edm::DetSetVector<TotemRPLocalTrack> > tokenStripTrack_;
 
 
       // ---------- directories ---------------------------
       std::map< TotemTimingDetId, TFileDirectory > maindir_map_;
       std::map< int, TFileDirectory > eventDirMap;
+      std::map< int, TFileDirectory > scatterPlotDirMap;
 
       // ---------- histograms ---------------------------
       std::map< TotemTimingDetId, TH1F*> trackXHistoMap;
@@ -68,6 +73,7 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       std::map< TotemTimingDetId, TH1F*> hitXHistoMap;
       std::map< TotemTimingDetId, TH1F*> hitYHistoMap;
       std::map< int, TH2F*> eventTrackMap;
+      std::map< int, TH2F*> scatterPlotMap;
 
       // ---------- graphs ---------------------------
       std::map< TotemTimingDetId, TGraph*> samples_graph_map_;
@@ -92,7 +98,8 @@ SimpleAnalyzer::SimpleAnalyzer(const edm::ParameterSet& iConfig)
  :
  tokenDigi_            ( consumes< edm::DetSetVector<TotemTimingDigi> >      ( iConfig.getParameter<edm::InputTag>( "tagDigi" ) ) ),
  tokenRecHit_          ( consumes< edm::DetSetVector<TotemTimingRecHit> >      ( iConfig.getParameter<edm::InputTag>( "tagRecHit" ) ) ),
- tokenLocalTrack_      ( consumes< edm::DetSetVector<TotemTimingLocalTrack> >      ( iConfig.getParameter<edm::InputTag>( "tagLocalTrack" ) ) )
+ tokenLocalTrack_      ( consumes< edm::DetSetVector<TotemTimingLocalTrack> >      ( iConfig.getParameter<edm::InputTag>( "tagLocalTrack" ) ) ),
+ tokenStripTrack_      ( consumes< edm::DetSetVector<TotemRPLocalTrack> >      ( iConfig.getParameter<edm::InputTag>( "tagStripTrack" ) ) )
 {
   usesResource("TFileService");
 }
@@ -123,15 +130,28 @@ void SimpleAnalyzer::initTrackHistogram(const TotemTimingDetId& detId) {
 
     std::string trackYHistName;
     trackYHistName.insert(0, "yTrackDistribution");
-    trackYHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(trackYHistName.c_str(), trackYHistName.c_str(), 20, 45, 65 );
+    trackYHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(trackYHistName.c_str(), trackYHistName.c_str(), 40, 45, 65 );
 
     std::string hitXHistName;
     hitXHistName.insert(0, "xHitDistribution");
-    hitXHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(hitXHistName.c_str(), hitXHistName.c_str(), 100, 0, 9 );
+    hitXHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(hitXHistName.c_str(), hitXHistName.c_str(), 18, 0, 9 );
 
     std::string hitYHistName;
     hitYHistName.insert(0, "yHitDistribution");
-    hitYHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(hitYHistName.c_str(), hitYHistName.c_str(), 800, 45, 65 );
+    hitYHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(hitYHistName.c_str(), hitYHistName.c_str(), 40, 45, 65 );
+  }
+}
+
+void SimpleAnalyzer::initTrackScatterPlot(const CTPPSDetId& detId) {
+  edm::Service<TFileService> fs;
+  if (scatterPlotDirMap.find(detId) == scatterPlotDirMap.end())
+  {
+    std::string dirName = "tracks_arm" + std::to_string(detId.arm());
+
+    // create directory for the detector, if not already done
+    scatterPlotDirMap[ detId.arm() ] = fs->mkdir( dirName );
+
+    scatterPlotMap[ detId.arm() ] = scatterPlotDirMap[ detId.arm() ].make<TH2F>("strip track distribution", "strip track distribution", 50, -15, 15, 100, -70, 70 );;
   }
 }
 
@@ -245,9 +265,11 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   edm::Handle< edm::DetSetVector<TotemTimingDigi> > timingDigi;
   edm::Handle< edm::DetSetVector<TotemTimingRecHit> > timingRecHit;
   edm::Handle< edm::DetSetVector<TotemTimingLocalTrack> > timingLocalTrack;
+  edm::Handle< edm::DetSetVector<TotemRPLocalTrack> > stripLocalTrack;
   iEvent.getByToken( tokenDigi_, timingDigi );
   iEvent.getByToken( tokenRecHit_, timingRecHit );
   iEvent.getByToken( tokenLocalTrack_, timingLocalTrack );
+  iEvent.getByToken( tokenStripTrack_, stripLocalTrack );
 
   bool multipleTracks = false;
 
@@ -255,6 +277,9 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     const TotemTimingDetId detId( trackSet.detId() );
     if (maindir_map_.find(detId.getArmId()) == maindir_map_.end())
       initTrackHistogram( detId.getArmId() );
+
+    if(scatterPlotDirMap.find(detId.arm()) == scatterPlotDirMap.end())
+      initTrackScatterPlot(detId);
 
     if (trackSet.size() > 1)
       multipleTracks = true;
@@ -269,6 +294,8 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         tmpId.setRP(potId);
         eventTrackPlotAddTrack(eventCounter, track, tmpId);
       }
+
+      scatterPlotMap[detId.arm()]->Fill(track.getX0(), track.getY0());
     }
   }
 
@@ -287,8 +314,21 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
 
+/*  for (const auto& trackSet : *stripLocalTrack) {
+    CTPPSDetId detId( trackSet.detId() );
+    detId.setArm(-1 * detId.arm());
 
+    if(scatterPlotDirMap.find(detId.arm()) == scatterPlotDirMap.end())
+      initTrackScatterPlot(detId);
+
+    for (const auto& track : trackSet ) {
+
+      scatterPlotMap[detId.arm()]->Fill(track.getX0(), track.getY0());
+    }
+  }
+  */
 }
+
 
 
 // ------------ method called once each job just before starting event loop  ------------

@@ -30,7 +30,7 @@ public:
 
   std::vector<float> getTimeSamples(const TotemTimingDigi& digi) const;
 
-  std::vector<float> getVoltSamples(const TotemTimingDigi& digi) const;
+  std::vector<float> getVoltSamples(const TotemTimingDigi& digi);
 
 private:
 
@@ -40,7 +40,7 @@ private:
   static const int SAMPIC_DEFAULT_OFFSET;
 
   bool calibrationFileOk_;
-  TF1 calibrationFormula_;
+  TF1 calibrationFunction_;
   std::string calibrationFile_;
   CalibrationData calibrationData_;
 };

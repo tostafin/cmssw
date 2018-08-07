@@ -27,15 +27,12 @@ TotemTimingConversions::TotemTimingConversions(const std::string& calibrationFil
 
 //----------------------------------------------------------------------------------------------------
 
-void TotemTimingConversions::openCalibrationFile(const std::string& calibrationFile)
-{
-  if (calibrationFile!="/dev/null") // if given, the filename here overwrites the filename in the ctor
-  {
+void TotemTimingConversions::openCalibrationFile(const std::string& calibrationFile){
+  if (calibrationFile!="/dev/null"){ // if given, the filename here overwrites the filename in the ctor
     calibrationFile_ = calibrationFile;
   }
 
-  if (calibrationFile_!="/dev/null")
-  {
+  if (calibrationFile_!="/dev/null"){
     try{
       calibrationData_.openFile(calibrationFile_);
       calibrationFileOk_ = true;
@@ -44,15 +41,12 @@ void TotemTimingConversions::openCalibrationFile(const std::string& calibrationF
       calibrationFileOk_ = false;
     }
   }
-  calibrationFormula_ = TF1("calibrationFormula_",calibrationData_.getFormula().c_str()); //set formula
-  //correctionformula ...
-
+  calibrationFunction_ = TF1("calibrationFunction_",calibrationData_.getFormula().c_str()); //set formula
 }
 
 //----------------------------------------------------------------------------------------------------
 
-const float TotemTimingConversions::getTimeOfFirstSample(const TotemTimingDigi& digi) const
-{
+const float TotemTimingConversions::getTimeOfFirstSample(const TotemTimingDigi& digi) const{
   unsigned int offsetOfSamples = digi.getEventInfo().getOffsetOfSamples();
   if (offsetOfSamples == 0)
     offsetOfSamples = SAMPIC_DEFAULT_OFFSET; // FW 0 is not sending this, FW > 0 yes
@@ -81,18 +75,16 @@ const float TotemTimingConversions::getTimeOfFirstSample(const TotemTimingDigi& 
         (SAMPIC_MAX_NUMBER_OF_SAMPLES - digi.getCellInfo()) *
             SAMPIC_SAMPLING_PERIOD_NS;
 
-  int bd = digi.getHardwareBoardId();
+  int db = digi.getHardwareBoardId();
   int sampic = digi.getHardwareSampicId();
   int channel = digi.getHardwareChannelId();
-  //there was a problem with
-  return firstCellTimeInstant + calibrationData_.getTimeOffset(bd, sampic, channel);
-                                      // if no time offset is set getTimeOffset returns 0
+  //NOTE: If no time offset is set, getTimeOffset returns 0
+  return firstCellTimeInstant + calibrationData_.getTimeOffset(db, sampic, channel);
 }
 
 //----------------------------------------------------------------------------------------------------
 
-const float TotemTimingConversions::getTriggerTime(const TotemTimingDigi& digi) const
-{
+const float TotemTimingConversions::getTriggerTime(const TotemTimingDigi& digi) const{
   unsigned int offsetOfSamples = digi.getEventInfo().getOffsetOfSamples();
   if (offsetOfSamples == 0)
     offsetOfSamples = 30; // FW 0 is not sending this, FW > 0 yes
@@ -106,12 +98,10 @@ const float TotemTimingConversions::getTriggerTime(const TotemTimingDigi& digi) 
 
 //----------------------------------------------------------------------------------------------------
 
-std::vector<float> TotemTimingConversions::getTimeSamples(const TotemTimingDigi& digi) const
-{
+std::vector<float> TotemTimingConversions::getTimeSamples(const TotemTimingDigi& digi) const{
   std::vector<float> time(digi.getNumberOfSamples());
   // firstCellTimeInstant = 0;
-  if (!calibrationFileOk_)
-  {
+  if (!calibrationFileOk_){
     for (unsigned int i = 0; i < time.size(); ++i)
       time.at(i) = getTimeOfFirstSample(digi) + i * SAMPIC_SAMPLING_PERIOD_NS;
   }
@@ -120,13 +110,23 @@ std::vector<float> TotemTimingConversions::getTimeSamples(const TotemTimingDigi&
 
 //----------------------------------------------------------------------------------------------------
 
-std::vector<float> TotemTimingConversions::getVoltSamples(const TotemTimingDigi& digi) const
-{
+std::vector<float> TotemTimingConversions::getVoltSamples(const TotemTimingDigi& digi){
   std::vector<float> data;
-  if (!calibrationFileOk_)
-  {
+  if (!calibrationFileOk_){
     for (auto it = digi.getSamplesBegin(); it != digi.getSamplesEnd(); ++it)
       data.emplace_back(SAMPIC_ADC_V * (*it));
+  }
+  else{
+    unsigned int db = digi.getHardwareBoardId();
+    unsigned int sampic = digi.getHardwareSampicId();
+    unsigned int channel = digi.getHardwareChannelId();
+    unsigned int cell = digi.getCellInfo();
+    for (auto it = digi.getSamplesBegin(); it != digi.getSamplesEnd(); ++it, ++cell){
+      auto parameters = calibrationData_.getParameters(db, sampic, channel, cell);
+      for (unsigned int i=0; i<parameters.size(); ++i)
+        calibrationFunction_.SetParameter(i, parameters.at(i));
+      data.emplace_back(calibrationFunction_.Eval(*it));
+    }
   }
   return data;
 }

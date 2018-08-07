@@ -77,10 +77,7 @@ class TotemTimingTrackRecognition
     float thresholdFromMaximum;
     float resolution;
     float sigma;
-    float startFromX;
-    float stopAtX;
-    float startFromY;
-    float stopAtY;
+    float tolerance;
     TF1 pixelEfficiencyFunction;
 
 

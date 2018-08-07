@@ -47,6 +47,7 @@ TotemTimingTrackRecognition::TotemTimingTrackRecognition(const edm::ParameterSet
     thresholdFromMaximum    ( iConfig.getParameter<double>( "thresholdFromMaximum" ) ),
     resolution              ( iConfig.getParameter<double>( "resolution" ) ),
     sigma                   ( iConfig.getParameter<double>( "sigma" ) ),
+    tolerance               ( iConfig.getParameter<double>( "tolerance" ) ),
     pixelEfficiencyFunction ( "hit_TF1_CTPPS", iConfig.getParameter<std::string>( "pixelEfficiencyFunction" ).c_str() ) {
 }
 
@@ -116,60 +117,36 @@ int TotemTimingTrackRecognition::produceTracks(edm::DetSet<TotemTimingLocalTrack
     float zRangeBegin, zRangeEnd;
     getHitSpatialRange(hits, getZ, getZWidth, zRangeBegin, zRangeEnd);
 
-
-    std::vector< std::vector<int> > xComponents(xPartTracks.size(), std::vector<int>(0));
-    for(unsigned int i = 0; i < xPartTracks.size(); i++) {
-      for(unsigned int j = 0; j < hits.size(); j++) {
-        if(xPartTracks[i].containsHit(hits[j], 0.1, CTPPSTimingLocalTrack::CHECK_X))
-          xComponents[i].push_back(j);
-      }
-    }
-
-    std::vector< std::vector<int> > yComponents(yPartTracks.size(), std::vector<int>(0));
-    for(unsigned int i = 0; i < yPartTracks.size(); i++) {
-      for(unsigned int j = 0; j < hits.size(); j++) {
-        if(yPartTracks[i].containsHit(hits[j], 0.1, CTPPSTimingLocalTrack::CHECK_Y))
-          yComponents[i].push_back(j);
-      }
-    }
-
     // TODO: unify threshold among different dimensions
     int validHitsNumber = (int)(param.threshold + 1.0);
 
-    std::vector<int> commonComponents(0);
-    for(unsigned int i = 0; i < xComponents.size(); i++) {
-      for(unsigned int j = 0; j < yComponents.size(); j++) {
+    for(const auto& xTrack: xPartTracks) {
+      for(const auto& yTrack: yPartTracks) {
 
-        commonComponents.resize(std::max(xComponents[i].size(), yComponents[j].size()));
-        auto commonEndIter = std::set_intersection(
-          xComponents[i].begin(),
-          xComponents[i].end(),
-          yComponents[j].begin(),
-          yComponents[j].end(),
-          commonComponents.begin()
+        math::XYZPoint position(
+          xTrack.getX0(),
+          yTrack.getY0(),
+          (zRangeBegin + zRangeEnd) / 2.0
+        );
+        math::XYZPoint positionSigma(
+          xTrack.getX0Sigma(),
+          yTrack.getY0Sigma(),
+          (zRangeEnd - zRangeBegin) / 2.0
         );
 
-        int commonComponentsNumber = commonEndIter - commonComponents.begin();
+        TotemTimingLocalTrack newTrack;
+        newTrack.setPosition(position);
+        newTrack.setPositionSigma(positionSigma);
+        // TODO: setting validity / time / numHits / numPlanes
 
-        if(commonComponentsNumber >= validHitsNumber) {
-          math::XYZPoint position(
-            xPartTracks[i].getX0(),
-            yPartTracks[j].getY0(),
-            (zRangeBegin + zRangeEnd) / 2.0
-          );
-          math::XYZPoint positionSigma(
-            xPartTracks[i].getX0Sigma(),
-            yPartTracks[j].getY0Sigma(),
-            (zRangeEnd - zRangeBegin) / 2.0
-          );
-
-          // TODO: setting validity / time / numHits / numPlanes
-
-          TotemTimingLocalTrack newTrack;
-          newTrack.setPosition(position);
-          newTrack.setPositionSigma(positionSigma);
-          tracks.push_back(newTrack);
+        int hitCounter = 0;
+        for(auto hit: hits) {
+          if(newTrack.containsHit(hit, tolerance))
+            hitCounter++;
         }
+
+        if(hitCounter >= validHitsNumber)
+          tracks.push_back(newTrack);
       }
     }
   }

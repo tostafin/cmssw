@@ -107,10 +107,15 @@ TotemTimingLocalTrackFitter::fillDescriptions( edm::ConfigurationDescriptions& d
   edm::ParameterSetDescription trackingAlgoParams;
   trackingAlgoParams.add<double>( "threshold", 1.5 )
     ->setComment( "minimal number of rechits to be observed before launching the track recognition algorithm" );
-  trackingAlgoParams.add<double>( "thresholdFromMaximum", 0.5 );
+  trackingAlgoParams.add<double>( "thresholdFromMaximum", 0.5 )
+    ->setComment( "threshold relative to hit profile function local maximum for determining the width of the track" );
   trackingAlgoParams.add<double>( "resolution", 0.01 /* mm */ )
     ->setComment( "spatial resolution on the horizontal coordinate (in mm)" );
-  trackingAlgoParams.add<double>( "sigma", 0.1 );
+  trackingAlgoParams.add<double>( "sigma", 0. )
+    ->setComment( "pixel efficiency function parameter determining the smoothness of the step" );
+  trackingAlgoParams.add<double>( "tolerance", 0.1 /* mm */)
+    ->setComment( "tolerance used for checking if the track contains certain hit" );
+
 
   trackingAlgoParams.add<std::string>( "pixelEfficiencyFunction", "(TMath::Erf((x-[0]+0.5*[1])/([2]/4)+2)+1)*TMath::Erfc((x-[0]-0.5*[1])/([2]/4)-2)/4" )
     ->setComment( "efficiency function for single pixel\n"

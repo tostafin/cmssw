@@ -123,6 +123,9 @@ int TotemTimingTrackRecognition::produceTracks(edm::DetSet<TotemTimingLocalTrack
     for(const auto& xTrack: xPartTracks) {
       for(const auto& yTrack: yPartTracks) {
 
+        //std::cout << "kombinacja x:(" << xTrack.getX0() - xTrack.getX0Sigma() << " : " << xTrack.getX0() + xTrack.getX0Sigma();
+        //std::cout << ") y:(" << yTrack.getY0() - yTrack.getY0Sigma() << " : " << yTrack.getY0() + yTrack.getY0Sigma() << ")" << std::endl;
+
         math::XYZPoint position(
           xTrack.getX0(),
           yTrack.getY0(),
@@ -141,9 +144,12 @@ int TotemTimingTrackRecognition::produceTracks(edm::DetSet<TotemTimingLocalTrack
 
         int hitCounter = 0;
         for(auto hit: hits) {
-          if(newTrack.containsHit(hit, tolerance))
+          if(newTrack.containsHit(hit, tolerance)) {
             hitCounter++;
+          }
         }
+
+        //std::cout << "common hits: " << hitCounter << std::endl;
 
         if(hitCounter >= validHitsNumber)
           tracks.push_back(newTrack);
@@ -213,7 +219,7 @@ void TotemTimingTrackRecognition::producePartialTracks(
     if(underThreshold && hitProfile[i] > param.threshold) {
       underThreshold = false;
       trackRangeBegin = i;
-      rangeMaximum = -1.0;
+      rangeMaximum = hitProfile[i];
     }
 
     // Going under the threshold

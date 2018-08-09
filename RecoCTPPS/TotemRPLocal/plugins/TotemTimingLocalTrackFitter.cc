@@ -37,15 +37,22 @@ class TotemTimingLocalTrackFitter : public edm::stream::EDProducer<>
   private:
     void produce( edm::Event&, const edm::EventSetup& ) override;
 
+    int maxPlaneActiveChannels;
+
     edm::EDGetTokenT<edm::DetSetVector<TotemTimingRecHit> > recHitsToken_;
-    TotemTimingTrackRecognition trk_algo_45_;
-    TotemTimingTrackRecognition trk_algo_56_;
+    TotemTimingTrackRecognition trk_algo_45_rp0;
+    TotemTimingTrackRecognition trk_algo_56_rp0;
+    TotemTimingTrackRecognition trk_algo_45_rp1;
+    TotemTimingTrackRecognition trk_algo_56_rp1;
 };
 
 TotemTimingLocalTrackFitter::TotemTimingLocalTrackFitter( const edm::ParameterSet& iConfig ) :
+  maxPlaneActiveChannels( iConfig.getParameter<int>( "maxPlaneActiveChannels" ) ),
   recHitsToken_( consumes<edm::DetSetVector<TotemTimingRecHit> >( iConfig.getParameter<edm::InputTag>( "recHitsTag" ) ) ),
-  trk_algo_45_ ( iConfig.getParameter<edm::ParameterSet>( "trackingAlgorithmParams" ) ),
-  trk_algo_56_ ( iConfig.getParameter<edm::ParameterSet>( "trackingAlgorithmParams" ) )
+  trk_algo_45_rp0 ( iConfig ),
+  trk_algo_56_rp0 ( iConfig ),
+  trk_algo_45_rp1 ( iConfig ),
+  trk_algo_56_rp1 ( iConfig )
 {
   produces<edm::DetSetVector<TotemTimingLocalTrack> >();
 }
@@ -61,38 +68,70 @@ TotemTimingLocalTrackFitter::produce( edm::Event& iEvent, const edm::EventSetup&
   edm::Handle<edm::DetSetVector<TotemTimingRecHit> > recHits;
   iEvent.getByToken( recHitsToken_, recHits );
 
-  const TotemTimingDetId id_45( 0, 1, 6, 0, 0 ), id_56( 1, 1, 6, 0, 0 );
+  const TotemTimingDetId id_45_rp0( 0, 1, 0, 0, 0 );
+  const TotemTimingDetId id_56_rp0( 1, 1, 0, 0, 0 );
+  const TotemTimingDetId id_45_rp1( 0, 1, 1, 0, 0 );
+  const TotemTimingDetId id_56_rp1( 1, 1, 1, 0, 0 );
 
-  pOut->find_or_insert( id_45 ); // tracks in 4-5
-  edm::DetSet<TotemTimingLocalTrack>& tracks56 = pOut->find_or_insert( id_56 ); // tracks in 5-6
+  pOut->find_or_insert( id_45_rp0 ); // tracks in 4-5
+  pOut->find_or_insert( id_45_rp1 ); // tracks in 4-5
+  pOut->find_or_insert( id_56_rp0 ); // tracks in 4-5
+  pOut->find_or_insert( id_56_rp1 ); // tracks in 4-5
+
+  //edm::DetSet<TotemTimingLocalTrack>& tracks56 = pOut->find_or_insert( id_56 ); // tracks in 5-6
 
   // workaround to retrieve the detset for 4-5 without losing the reference
-  edm::DetSet<TotemTimingLocalTrack>& tracks45 = pOut->operator[]( id_45 );
+  //edm::DetSet<TotemTimingLocalTrack>& tracks45 = pOut->operator[]( id_45 );
 
   // feed hits to the track producers
   for ( const auto& vec : *recHits ) {
-    const TotemTimingDetId detid( vec.detId() );
+
+    if (((int)vec.size()) > maxPlaneActiveChannels)
+      continue;
+
+    const TotemTimingDetId detId(vec.detId());
+
+    // count number of hits for each plane
+    //int planeHitCount[] = {0, 0, 0, 0};
+    //for ( const auto& hit : vec )
+      //planeHitCount[detId.plane()]++;
+
     for ( const auto& hit : vec ) {
 
-      switch ( detid.arm() ) {
-        case 0: { trk_algo_45_.addHit( hit ); } break;
-        case 1: { trk_algo_56_.addHit( hit ); } break;
-        default:
-          edm::LogWarning("TotemTimingLocalTrackFitter") << "Invalid arm for rechit: " << detid.arm();
-          break;
-      }
+
+
+      //std::cout << "arm=" << detId.arm() << ", rp=" << detId.rp();
+
+      if(detId.arm() == 0 && detId.rp() == 0)
+        trk_algo_45_rp0.addHit( hit );
+
+      else if(detId.arm() == 0 && detId.rp() == 1)
+        trk_algo_45_rp1.addHit( hit );
+
+      else if(detId.arm() == 1 && detId.rp() == 0)
+        trk_algo_56_rp0.addHit( hit );
+
+      else if(detId.arm() == 1 && detId.rp() == 1)
+        trk_algo_56_rp1.addHit( hit );
+
+      else
+        edm::LogWarning("TotemTimingLocalTrackFitter") << "Invalid detId for rechit: arm=" << detId.arm() << ", rp=" << detId.rp();
     }
   }
 
   // retrieve the tracks for both arms
-  trk_algo_45_.produceTracks( tracks45 );
-  trk_algo_56_.produceTracks( tracks56 );
+  trk_algo_45_rp0.produceTracks( pOut->operator[](id_45_rp0) );
+  trk_algo_56_rp0.produceTracks( pOut->operator[](id_56_rp0) );
+  trk_algo_45_rp1.produceTracks( pOut->operator[](id_45_rp1) );
+  trk_algo_56_rp1.produceTracks( pOut->operator[](id_56_rp1) );
 
   iEvent.put( std::move( pOut ) );
 
   // remove all hits from the track producers to prepare for the next event
-  trk_algo_45_.clear();
-  trk_algo_56_.clear();
+  trk_algo_45_rp0.clear();
+  trk_algo_45_rp1.clear();
+  trk_algo_56_rp0.clear();
+  trk_algo_56_rp1.clear();
 }
 
 void
@@ -104,20 +143,21 @@ TotemTimingLocalTrackFitter::fillDescriptions( edm::ConfigurationDescriptions& d
   desc.add<int>( "verbosity", 0 )
     ->setComment( "general verbosity of this module" );
 
-  edm::ParameterSetDescription trackingAlgoParams;
-  trackingAlgoParams.add<double>( "threshold", 1.5 )
+  desc.add<double>( "threshold", 1.5 )
     ->setComment( "minimal number of rechits to be observed before launching the track recognition algorithm" );
-  trackingAlgoParams.add<double>( "thresholdFromMaximum", 0.5 )
+  desc.add<double>( "thresholdFromMaximum", 0.5 )
     ->setComment( "threshold relative to hit profile function local maximum for determining the width of the track" );
-  trackingAlgoParams.add<double>( "resolution", 0.01 /* mm */ )
+  desc.add<double>( "resolution", 0.01 /* mm */ )
     ->setComment( "spatial resolution on the horizontal coordinate (in mm)" );
-  trackingAlgoParams.add<double>( "sigma", 0. )
+  desc.add<double>( "sigma", 0. )
     ->setComment( "pixel efficiency function parameter determining the smoothness of the step" );
-  trackingAlgoParams.add<double>( "tolerance", 0.1 /* mm */)
+  desc.add<double>( "tolerance", 0. /* mm */)
     ->setComment( "tolerance used for checking if the track contains certain hit" );
+  desc.add<int>( "maxPlaneActiveChannels", 3 /* mm */)
+    ->setComment( "threshold for discriminating noisy planes" );
 
 
-  trackingAlgoParams.add<std::string>( "pixelEfficiencyFunction", "(TMath::Erf((x-[0]+0.5*[1])/([2]/4)+2)+1)*TMath::Erfc((x-[0]-0.5*[1])/([2]/4)-2)/4" )
+  desc.add<std::string>( "pixelEfficiencyFunction", "(TMath::Erf((x-[0]+0.5*[1])/([2]/4)+2)+1)*TMath::Erfc((x-[0]-0.5*[1])/([2]/4)-2)/4" )
     ->setComment( "efficiency function for single pixel\n"
                   "can be defined as:\n"
                   " * Precise: (TMath::Erf((x-[0]+0.5*[1])/([2]/4)+2)+1)*TMath::Erfc((x-[0]-0.5*[1])/([2]/4)-2)/4\n"
@@ -128,13 +168,10 @@ TotemTimingLocalTrackFitter::fillDescriptions( edm::ConfigurationDescriptions& d
                   "  [1]: width of pad\n"
                   "  [2]: sigma: distance between efficiency ~100 -> 0 outside width" );
 
-  trackingAlgoParams.add<double>( "yPosition", 0.0 )
+  desc.add<double>( "yPosition", 0.0 )
     ->setComment( "vertical offset of the outcoming track centre" );
-  trackingAlgoParams.add<double>( "yWidth", 0.0 )
+  desc.add<double>( "yWidth", 0.0 )
     ->setComment( "vertical track width" );
-
-  desc.add<edm::ParameterSetDescription>( "trackingAlgorithmParams", trackingAlgoParams )
-    ->setComment( "list of parameters associated to the track recognition algorithm" );
 
   descr.add( "totemTimingLocalTracks", desc );
 }

@@ -19,13 +19,14 @@ std::ostream& operator<<(std::ostream &strm, const CalibrationData &data){
     }
     CalibrationData::CalibrationKey k = kv.first;
     k.cell = -1;
-    strm << "] " << data.timeOffsets_.at(k) << "\n";
+    strm << "] " << data.timeInfo_.at(k).first << " " <<  data.timeInfo_.at(k).second << "\n";
   }
   return strm;
 }
 
 CalibrationData::CalibrationData()
-: formula_(""), parameters_(std::map<CalibrationKey, std::vector<double>>()), timeOffsets_(std::map<CalibrationKey, double>()){}
+: formula_(""), parameters_(std::map<CalibrationKey, std::vector<double>>()),
+timeInfo_(std::map<CalibrationKey, std::pair<double, double >>()){}
 
 void CalibrationData::openFile(const std::string &file_name){
   pt::ptree node;
@@ -42,9 +43,10 @@ void CalibrationData::openFile(const std::string &file_name){
       key.sampic = board.second.get<int>("sampic"); // -1
       key.channel = board.second.get<int>("channel");
       double timeOffset = board.second.get<double>("time_offset");
-
+      double timePrecision = board.second.get<double>("time_precision");
+      std::pair<double, double > timeInfo = std::pair<double, double >(timeOffset, timePrecision);
       key.cell = -1;
-      timeOffsets_.insert(std::pair<CalibrationKey, double >(key, timeOffset));
+      timeInfo_.insert(std::pair<CalibrationKey, std::pair<double, double > >(key, timeInfo));
 
       int cell_ct = 0;
       for (pt::ptree::value_type &cell : board.second.get_child("cells")) {
@@ -74,11 +76,20 @@ std::vector<double> CalibrationData::getParameters(int db, int sampic, int chann
 }
 double CalibrationData::getTimeOffset(int db, int sampic, int channel) const{
   CalibrationKey key = CalibrationKey(db, sampic, channel);
-  auto out = timeOffsets_.find(key);
-  if(out == timeOffsets_.end())
+  auto out = timeInfo_.find(key);
+  if(out == timeInfo_.end())
     return 0.0;
   else
-    return out->second;
+    return out->second.first;
+}
+
+double CalibrationData::getTimePrecision(int db, int sampic, int channel) const{
+  CalibrationKey key = CalibrationKey(db, sampic, channel);
+  auto out = timeInfo_.find(key);
+  if(out == timeInfo_.end())
+    return 0.0;
+  else
+    return out->second.second;
 }
 
 std::string CalibrationData::getFormula() const{

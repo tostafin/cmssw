@@ -28,6 +28,7 @@ TotemTimingConversions::TotemTimingConversions(const std::string& calibrationFil
 //----------------------------------------------------------------------------------------------------
 
 void TotemTimingConversions::openCalibrationFile(const std::string& calibrationFile){
+
   if (calibrationFile!="/dev/null"){ // if given, the filename here overwrites the filename in the ctor
     calibrationFile_ = calibrationFile;
   }
@@ -42,6 +43,7 @@ void TotemTimingConversions::openCalibrationFile(const std::string& calibrationF
     }
   }
   calibrationFunction_ = TF1("calibrationFunction_",calibrationData_.getFormula().c_str()); //set formula
+
 }
 
 //----------------------------------------------------------------------------------------------------

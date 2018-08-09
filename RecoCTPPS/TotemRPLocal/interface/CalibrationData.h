@@ -35,7 +35,7 @@ class CalibrationData{
 
   std::string formula_;
   std::map<CalibrationKey, std::vector<double> > parameters_;
-  std::map<CalibrationKey, double> timeOffsets_;
+  std::map<CalibrationKey, std::pair<double,double>> timeInfo_;
 
 public:
   friend std::ostream& operator<<(std::ostream &strm, const CalibrationData &data);
@@ -45,6 +45,7 @@ public:
   void print();
   std::vector<double> getParameters(int db, int sampic, int channel, int cell) const;
   double getTimeOffset(int db, int sampic, int channel) const;
+  double getTimePrecision(int db, int sampic, int channel) const;
   std::string getFormula() const;
 };
 

@@ -57,13 +57,15 @@ process.load("RecoCTPPS.Configuration.recoCTPPS_cff")
 process.load("DQM.CTPPS.ctppsDQM_cff")
 
 # rechits production
-process.load('RecoCTPPS.TotemRPLocal.totemTimingRecHits_cfi')
+#process.load('RecoCTPPS.TotemRPLocal.totemTimingRecHits_cfi')
 process.totemTimingRecHits.baselinePoints = cms.int32(6);
 process.totemTimingRecHits.saturationLimit = cms.double(0.85);
 process.totemTimingRecHits.cfdFraction = cms.double(0.3);
 process.totemTimingRecHits.hysteresis = cms.double(10e-3);
 process.totemTimingRecHits.smoothingPoints = cms.int32(6);
 process.totemTimingRecHits.lowPassFrequency = cms.double(0.6);
+
+#process.totemTimingLocalTracks.tolerance = cms.double(5);
 
 
 process.simpleAnalyzer = cms.EDAnalyzer('SimpleAnalyzer',

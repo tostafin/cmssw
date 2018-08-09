@@ -10,6 +10,8 @@ totemTimingRecHits.hysteresis = cms.double(5e-3)
 
 # local track fitting
 from RecoCTPPS.TotemRPLocal.totemTimingLocalTracks_cfi import totemTimingLocalTracks
+totemTimingLocalTracks.tolerance = cms.double(0.1);
+totemTimingLocalTracks.maxPlaneActiveChannels = cms.int32(2);
 
 totemTimingLocalReconstruction = cms.Sequence(
     totemTimingRecHits *

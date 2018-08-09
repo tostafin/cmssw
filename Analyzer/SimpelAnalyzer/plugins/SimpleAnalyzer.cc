@@ -29,6 +29,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TGraph.h"
+#include "TGraphErrors.h"
 
 class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
    public:
@@ -42,6 +43,8 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
+
+      void initEventPlots(int eventNo, const CTPPSDetId& detId);
 
       void initTrackHistogram(const TotemTimingDetId&);
       void initEventTrackPlot(const int eventNo, const TotemTimingDetId& detId);
@@ -78,6 +81,10 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       // ---------- graphs ---------------------------
       std::map< TotemTimingDetId, TGraph*> samples_graph_map_;
       std::map< TotemTimingDetId, unsigned int> samples_graphCtr_map_;
+      std::map< int, TGraphErrors* > trackGraphErrorsMap;
+
+      std::map< TotemTimingDetId, TGraphErrors*> trackXvsX;
+      std::map< TotemTimingDetId, TGraphErrors*> trackYvsY;
 };
 
 //
@@ -142,6 +149,26 @@ void SimpleAnalyzer::initTrackHistogram(const TotemTimingDetId& detId) {
   }
 }
 
+int getArmHash(int eventNo, const CTPPSDetId& detId) {
+  return 1000*eventNo + 100*detId.station() + 10*detId.arm() + detId.rp();
+}
+
+void SimpleAnalyzer::initEventPlots(int eventNo, const CTPPSDetId& detId) {
+
+  if(trackGraphErrorsMap.find(getArmHash(eventNo, detId)) != trackGraphErrorsMap.end())
+    return;
+
+  edm::Service<TFileService> fs;
+  std::string dirName = "event_" + std::to_string(eventNo);
+  eventDirMap[eventNo] = fs->mkdir(dirName);
+
+  trackGraphErrorsMap[getArmHash(eventNo, detId)] = eventDirMap[eventNo].make<TGraphErrors>(0);
+  std::string title = "tracks_arm" + std::to_string(detId.arm()) + "_st" + std::to_string(detId.station()) + "_rp" + std::to_string(detId.rp());
+
+  trackGraphErrorsMap[getArmHash(eventNo, detId)]->SetTitle(title.c_str());
+  trackGraphErrorsMap[getArmHash(eventNo, detId)]->SetName(title.c_str());
+}
+
 void SimpleAnalyzer::initTrackScatterPlot(const CTPPSDetId& detId) {
   edm::Service<TFileService> fs;
   if (scatterPlotDirMap.find(detId) == scatterPlotDirMap.end())
@@ -162,9 +189,7 @@ int getArmRPHash(int eventNo, const TotemTimingDetId& detId) {
 
 void SimpleAnalyzer::initEventTrackPlot(const int eventNo, const TotemTimingDetId& detId) {
   edm::Service<TFileService> fs;
-
-  //std::string dirName = "event_" + std::to_string(eventNo) + "_track_plot";
-  std::string dirName = "event_" + std::to_string(eventNo) + "_track_plots";
+  std::string dirName = "event_" + std::to_string(eventNo);
 
   // create directory for the detector, if not already done
   eventDirMap[eventNo] = fs->mkdir( dirName );
@@ -172,7 +197,7 @@ void SimpleAnalyzer::initEventTrackPlot(const int eventNo, const TotemTimingDetI
   float yOffset = (detId.rp() == 0 ? 45. : -65.);
   // create all histograms
   std::string plotName = "arm" + std::to_string(detId.arm()) + "_rp" + std::to_string(detId.rp()) + "_hits";
-  eventTrackMap[getArmRPHash(eventNo, detId)] = eventDirMap[eventNo].make<TH2F>(plotName.c_str(), plotName.c_str(), 1500, 0, 51, 500, yOffset, yOffset + 20);
+  eventTrackMap[getArmRPHash(eventNo, detId)] = eventDirMap[eventNo].make<TH2F>(plotName.c_str(), plotName.c_str(), 1500, -5, 51, 500, yOffset, yOffset + 20);
 
 
   // drawing vertical plane separators
@@ -217,7 +242,7 @@ void SimpleAnalyzer::eventTrackPlotAddHit(int eventNo, const TotemTimingRecHit& 
 
   for(int i = 0; i < xBins; i++)
     for(int j = 0; j < yBins; j++)
-      for(unsigned int value = 0; value < detId.channel()+1; value++)
+      for(unsigned int value = 0; value < 1; value++)
         plot->Fill(leftX + i*X_RESOLUTION + X_RESOLUTION/2.0, bottomY + j*Y_RESOLUTION + Y_RESOLUTION/2.0);
 }
 
@@ -227,8 +252,6 @@ void SimpleAnalyzer::eventTrackPlotAddTrack(int eventNo, const TotemTimingLocalT
     initEventTrackPlot(eventNo, detId);
 
   auto plot = eventTrackMap[getArmRPHash(eventNo, detId)];
-
-  std::cout << "dodaje tracka " << track.getX0() << "," << track.getY0() << " do pota " << detId.rp() << ", arm " << detId.arm() << std::endl;
 
   float X_OFFSET = 10.0;
 
@@ -240,16 +263,13 @@ void SimpleAnalyzer::eventTrackPlotAddTrack(int eventNo, const TotemTimingLocalT
   float leftX = (1.0 + track.getX0() - track.getX0Sigma()) + X_OFFSET * 4.0;
   float bottomY = track.getY0() - track.getY0Sigma();
 
-  std::cout << "leftX:" << leftX << " bottomY:" << bottomY << std::endl;
-
   int xBins = track.getX0Sigma() * 2.0 / X_RESOLUTION;
   int yBins = track.getY0Sigma() * 2.0 / Y_RESOLUTION;
 
-  std::cout << "xBins:" << xBins << " yBins:" << yBins << std::endl;
-
   for(int i = 0; i < xBins; i++)
     for(int j = 0; j < yBins; j++)
-      plot->Fill(leftX + i*X_RESOLUTION + X_RESOLUTION/2.0, bottomY + j*Y_RESOLUTION + Y_RESOLUTION/2.0);
+      for(int val = 0; val < 10; val++)
+        plot->Fill(leftX + i*X_RESOLUTION + X_RESOLUTION/2.0, bottomY + j*Y_RESOLUTION + Y_RESOLUTION/2.0);
 }
 
 
@@ -271,7 +291,45 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByToken( tokenLocalTrack_, timingLocalTrack );
   iEvent.getByToken( tokenStripTrack_, stripLocalTrack );
 
+
+
+
+  unsigned int validStripStation = 2;
+  for(const auto& timingTrackSet: *timingLocalTrack) {
+    for(const auto& stripTrackSet: *stripLocalTrack) {
+
+      CTPPSDetId timingId(timingTrackSet.detId());
+      CTPPSDetId stripId(stripTrackSet.detId());
+
+      if(stripId.station() != validStripStation)
+        continue;
+
+      if(timingId.arm() != stripId.arm() ||
+          timingId.rp() % 2 != stripId.rp() % 2)
+        continue;
+
+      TotemTimingDetId tmpId(0, 0, 0, 0, 0);
+      tmpId.setArm(timingId.arm());
+      tmpId.setRP(timingId.rp() % 2);
+
+      for(const auto& timingTrack: timingTrackSet)
+        for(const auto& stripTrack: stripTrackSet) {
+          int n = trackXvsX[tmpId]->GetN();
+          trackXvsX[tmpId]->SetPoint(n, timingTrack.getX0(), stripTrack.getX0());
+          //trackXvsX[tmpId]->SetPointError(n, timingTrack.getX0Sigma(), stripTrack.getX0Sigma());
+          trackYvsY[tmpId]->SetPoint(n, timingTrack.getY0(), stripTrack.getY0());
+          //trackYvsY[tmpId]->SetPointError(n, timingTrack.getY0Sigma(), stripTrack.getY0Sigma());
+        }
+    }
+  }
+
+
+
   bool multipleTracks = false;
+
+  for (const auto& trackSet : *timingLocalTrack)
+    if(trackSet.size() > 1)
+      multipleTracks = true;
 
   for (const auto& trackSet : *timingLocalTrack) {
     const TotemTimingDetId detId( trackSet.detId() );
@@ -281,18 +339,21 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(scatterPlotDirMap.find(detId.arm()) == scatterPlotDirMap.end())
       initTrackScatterPlot(detId);
 
-    if (trackSet.size() > 1)
-      multipleTracks = true;
+
+
 
     for (const auto& track : trackSet ) {
       trackXHistoMap[detId.getArmId()]->Fill(track.getX0());
       trackYHistoMap[detId.getArmId()]->Fill(track.getY0());
 
       if(eventCounter <= 10 || multipleTracks) {
-        TotemTimingDetId tmpId(detId);
-        int potId = (track.getY0() > 0 ? 0 : 1);
-        tmpId.setRP(potId);
-        eventTrackPlotAddTrack(eventCounter, track, tmpId);
+        eventTrackPlotAddTrack(eventCounter, track, detId);
+
+        initEventPlots(eventCounter, detId);
+        int n = trackGraphErrorsMap[getArmHash(eventCounter, detId)]->GetN();
+        trackGraphErrorsMap[getArmHash(eventCounter, detId)]->Set(n+1);
+        trackGraphErrorsMap[getArmHash(eventCounter, detId)]->SetPoint(n, track.getX0(), track.getY0());
+        trackGraphErrorsMap[getArmHash(eventCounter, detId)]->SetPointError(n, track.getX0Sigma(), track.getY0Sigma());
       }
 
       scatterPlotMap[detId.arm()]->Fill(track.getX0(), track.getY0());
@@ -314,19 +375,21 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
 
-/*  for (const auto& trackSet : *stripLocalTrack) {
+  for (const auto& trackSet : *stripLocalTrack) {
     CTPPSDetId detId( trackSet.detId() );
-    detId.setArm(-1 * detId.arm());
 
-    if(scatterPlotDirMap.find(detId.arm()) == scatterPlotDirMap.end())
-      initTrackScatterPlot(detId);
+    if(eventCounter > 10)
+      break;
 
-    for (const auto& track : trackSet ) {
-
-      scatterPlotMap[detId.arm()]->Fill(track.getX0(), track.getY0());
+    for(const auto& track: trackSet) {
+      initEventPlots(eventCounter, detId);
+      int n = trackGraphErrorsMap[getArmHash(eventCounter, detId)]->GetN();
+      trackGraphErrorsMap[getArmHash(eventCounter, detId)]->Set(n+1);
+      trackGraphErrorsMap[getArmHash(eventCounter, detId)]->SetPoint(n, track.getX0(), track.getY0());
+      trackGraphErrorsMap[getArmHash(eventCounter, detId)]->SetPointError(n, track.getX0Sigma(), track.getY0Sigma());
     }
   }
-  */
+
 }
 
 
@@ -335,6 +398,26 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 void
 SimpleAnalyzer::beginJob()
 {
+  edm::Service<TFileService> fs;
+  auto trackDir = fs->mkdir("TotemTiming_vs_TotemRP");
+
+  for(int i = 0; i < 4; i++) {
+    int arm = i / 2;
+    int rp = i % 2;
+    std::string str_pot = (rp == 0 ? "top" : "bottom");
+    std::string str_arm = std::to_string(arm);
+    TotemTimingDetId tmpId(arm, 0, rp, 0, 0);
+
+    trackXvsX[tmpId] = trackDir.make<TGraphErrors>(0);
+    std::string xName = "X_vs_X_" + str_arm + str_pot;
+    trackXvsX[tmpId]->SetName(xName.c_str());
+    trackXvsX[tmpId]->SetTitle(xName.c_str());
+
+    trackYvsY[tmpId] = trackDir.make<TGraphErrors>(0);
+    std::string yName = "Y_vs_Y_" + str_arm + str_pot;
+    trackYvsY[tmpId]->SetName(yName.c_str());
+    trackYvsY[tmpId]->SetTitle(yName.c_str());
+  }
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

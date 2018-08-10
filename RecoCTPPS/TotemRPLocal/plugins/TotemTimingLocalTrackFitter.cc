@@ -83,11 +83,16 @@ TotemTimingLocalTrackFitter::produce( edm::Event& iEvent, const edm::EventSetup&
   // workaround to retrieve the detset for 4-5 without losing the reference
   //edm::DetSet<TotemTimingLocalTrack>& tracks45 = pOut->operator[]( id_45 );
 
+  std::map< TotemTimingDetId, int > planeActivityMap;
+
+  for (const auto& vec: *recHits) {
+    TotemTimingDetId tmpId(vec.detId());
+    tmpId.setChannel(0);
+    planeActivityMap[tmpId] += vec.size();
+  }
+
   // feed hits to the track producers
   for ( const auto& vec : *recHits ) {
-
-    if (((int)vec.size()) > maxPlaneActiveChannels)
-      continue;
 
     const TotemTimingDetId detId(vec.detId());
 
@@ -98,7 +103,10 @@ TotemTimingLocalTrackFitter::produce( edm::Event& iEvent, const edm::EventSetup&
 
     for ( const auto& hit : vec ) {
 
-
+      TotemTimingDetId tmpId(detId);
+      tmpId.setChannel(0);
+      if (planeActivityMap[tmpId] > maxPlaneActiveChannels)
+        continue;
 
       //std::cout << "arm=" << detId.arm() << ", rp=" << detId.rp();
 

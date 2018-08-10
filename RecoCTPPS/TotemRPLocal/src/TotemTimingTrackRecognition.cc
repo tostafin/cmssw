@@ -60,7 +60,8 @@ void TotemTimingTrackRecognition::clear() {
 
 
 void TotemTimingTrackRecognition::addHit(const TotemTimingRecHit& recHit) {
-  hitVectorMap[getHitKey(recHit)].push_back(recHit);
+  if(recHit.getT() != TotemTimingRecHit::NO_T_AVAILABLE)
+    hitVectorMap[getHitKey(recHit)].push_back(recHit);
 }
 
 

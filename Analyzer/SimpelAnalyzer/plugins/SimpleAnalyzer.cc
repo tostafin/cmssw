@@ -76,9 +76,9 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       std::map< TotemTimingDetId, TH1F*> hitXHistoMap;
       std::map< TotemTimingDetId, TH1F*> hitYHistoMap;
       std::map< int, TH2F*> eventTrackMap;
-      std::map< int, TH2F*> scatterPlotMap;
       std::map< int, TH2F*> matchedStripTracks;
       std::map< int, TH2F*> unmatchedStripTracks;
+      std::map< int, TH2F*> allStripTracks;
 
       // ---------- graphs ---------------------------
       std::map< TotemTimingDetId, TGraph*> samples_graph_map_;
@@ -126,35 +126,6 @@ SimpleAnalyzer::~SimpleAnalyzer()
 // member functions
 //
 
-void SimpleAnalyzer::initTrackHistogram(const TotemTimingDetId& detId) {
-  edm::Service<TFileService> fs;
-  if (maindir_map_.find(detId) == maindir_map_.end())
-  {
-    std::string dirName;
-    detId.armName(dirName, TotemTimingDetId::nPath);
-
-    // create directory for the detector, if not already done
-    maindir_map_[ detId ] = fs->mkdir( dirName );
-
-    // create all histograms
-    std::string trackXHistName;
-    trackXHistName.insert(0, "xTrackDistribution");
-    trackXHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(trackXHistName.c_str(), trackXHistName.c_str(), 18, 0, 9 );
-
-    std::string trackYHistName;
-    trackYHistName.insert(0, "yTrackDistribution");
-    trackYHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(trackYHistName.c_str(), trackYHistName.c_str(), 40, 45, 65 );
-
-    std::string hitXHistName;
-    hitXHistName.insert(0, "xHitDistribution");
-    hitXHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(hitXHistName.c_str(), hitXHistName.c_str(), 18, 0, 9 );
-
-    std::string hitYHistName;
-    hitYHistName.insert(0, "yHitDistribution");
-    hitYHistoMap[ detId ] = maindir_map_[ detId ].make<TH1F>(hitYHistName.c_str(), hitYHistName.c_str(), 40, 45, 65 );
-  }
-}
-
 int getArmHash(int eventNo, const CTPPSDetId& detId) {
   return 1000*eventNo + 100*detId.station() + 10*detId.arm() + detId.rp();
 }
@@ -173,21 +144,6 @@ void SimpleAnalyzer::initEventPlots(int eventNo, const CTPPSDetId& detId) {
 
   trackGraphErrorsMap[getArmHash(eventNo, detId)]->SetTitle(title.c_str());
   trackGraphErrorsMap[getArmHash(eventNo, detId)]->SetName(title.c_str());
-}
-
-void SimpleAnalyzer::initTrackScatterPlot(const CTPPSDetId& detId) {
-  edm::Service<TFileService> fs;
-  if (scatterPlotDirMap.find(detId) == scatterPlotDirMap.end())
-  {
-    std::string dirName = "tracks_arm" + std::to_string(detId.arm());
-
-    // create directory for the detector, if not already done
-    scatterPlotDirMap[ detId.arm() ] = fs->mkdir( dirName );
-
-    //scatterPlotMap[ detId.arm() ] = scatterPlotDirMap[ detId.arm() ].make<TH2F>("strip track distribution", "strip track distribution", 50, -15, 15, 100, -70, 70 );
-    //matchedStripTracks[ detId.arm() ] = scatterPlotDirMap[ detId.arm() ].make<TH2F>("matched strip track distribution", "matched strip track distribution", 50, -15, 15, 100, -70, 70 );
-    //unmatchedStripTracks[ detId.arm() ] = scatterPlotDirMap[ detId.arm() ].make<TH2F>("unmatched strip track distribution", "unmatched strip track distribution", 50, -15, 15, 100, -70, 70 );
-  }
 }
 
 int getArmRPHash(int eventNo, const TotemTimingDetId& detId) {
@@ -332,7 +288,15 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         }
       }
 
-      for(const auto& timingTrack: timingTrackSet)
+      for(const auto& stripTrack: stripTrackSet) {
+        allStripTracks[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
+      }
+
+      for(const auto& timingTrack: timingTrackSet) {
+
+        trackXHistoMap[tmpId]->Fill(timingTrack.getX0());
+        trackYHistoMap[tmpId]->Fill(timingTrack.getY0());
+
         for(const auto& stripTrack: stripTrackSet) {
           matchedStripTracks[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
           int n = trackXvsX[tmpId]->GetN();
@@ -341,6 +305,7 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
           trackYvsY[tmpId]->SetPoint(n, timingTrack.getY0(), stripTrack.getY0());
           //trackYvsY[tmpId]->SetPointError(n, timingTrack.getY0Sigma(), stripTrack.getY0Sigma());
         }
+      }
     }
   }
 
@@ -358,18 +323,8 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     timingTrackCounter += trackSet.size();
 
     const TotemTimingDetId detId( trackSet.detId() );
-    if (maindir_map_.find(detId.getArmId()) == maindir_map_.end())
-      initTrackHistogram( detId.getArmId() );
-
-    if(scatterPlotDirMap.find(detId.arm()) == scatterPlotDirMap.end())
-      initTrackScatterPlot(detId);
-
-
-
 
     for (const auto& track : trackSet ) {
-      trackXHistoMap[detId.getArmId()]->Fill(track.getX0());
-      trackYHistoMap[detId.getArmId()]->Fill(track.getY0());
 
       if(eventCounter <= 10 || multipleTracks) {
         eventTrackPlotAddTrack(eventCounter, track, detId);
@@ -387,13 +342,15 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   for (const auto& recHits : *timingRecHit) {
     const TotemTimingDetId detId( recHits.detId() );
-    if (maindir_map_.find(detId.getArmId()) == maindir_map_.end())
-      initTrackHistogram( detId.getArmId() );
+
+    TotemTimingDetId tmpId(0, 0, 0, 0, 0);
+    tmpId.setArm(detId.arm());
+    tmpId.setRP(detId.rp() % 2);
 
     for (const auto& recHit : recHits ) {
-      // Do stuff on recHits
-      hitXHistoMap[ detId.getArmId() ]->Fill( recHit.getX() );
-      hitYHistoMap[ detId.getArmId() ]->Fill( recHit.getY() );
+
+      hitXHistoMap[tmpId]->Fill(recHit.getX());
+      hitYHistoMap[tmpId]->Fill(recHit.getY());
 
       if(eventCounter <= 10 || multipleTracks)
         eventTrackPlotAddHit(eventCounter, recHit, detId);
@@ -428,45 +385,63 @@ void
 SimpleAnalyzer::beginJob()
 {
   edm::Service<TFileService> fs;
-  auto trackDir = fs->mkdir("TotemTiming_vs_TotemRP");
+  std::string topDir = "TotemTiming_vs_TotemRP";
+
 
   for(int i = 0; i < 4; i++) {
+
     int arm = i / 2;
     int rp = i % 2;
+
     std::string str_pot = (rp == 0 ? "top" : "bottom");
     std::string str_arm = std::to_string(arm);
+
+    std::string dirName = topDir + "/" + str_pot + str_arm;
+    auto trackDir = fs->mkdir(dirName);
+
     TotemTimingDetId tmpId(arm, 0, rp, 0, 0);
 
     trackXvsX[tmpId] = trackDir.make<TGraphErrors>(0);
-    std::string xName = "X_vs_X_" + str_arm + str_pot;
-    trackXvsX[tmpId]->SetName(xName.c_str());
-    trackXvsX[tmpId]->SetTitle(xName.c_str());
+    std::string name = "X_vs_X";
+    trackXvsX[tmpId]->SetName(name.c_str());
+    trackXvsX[tmpId]->SetTitle(name.c_str());
 
-    xName = "strip_unmatched_X_" + str_arm + str_pot;
-    stripTrackUnmatchedX[tmpId] = trackDir.make<TH1F>(xName.c_str(), xName.c_str(), 40, -20, 20);
+    name = "strip_unmatched_X";
+    stripTrackUnmatchedX[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 40, -20, 20);
 
-    xName = "timing_unmatched_X_" + str_arm + str_pot;
-    timingTrackUnmatchedX[tmpId] = trackDir.make<TH1F>(xName.c_str(), xName.c_str(), 20, 0, 9);
+    name = "timing_unmatched_X";
+    timingTrackUnmatchedX[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 20, 0, 9);
 
     trackYvsY[tmpId] = trackDir.make<TGraphErrors>(0);
-    std::string yName = "Y_vs_Y_" + str_arm + str_pot;
-    trackYvsY[tmpId]->SetName(yName.c_str());
-    trackYvsY[tmpId]->SetTitle(yName.c_str());
+    name = "Y_vs_Y";
+    trackYvsY[tmpId]->SetName(name.c_str());
+    trackYvsY[tmpId]->SetTitle(name.c_str());
 
     float yOffsetStrip = (tmpId.rp() == 0 ? 5. : -35.);
     float yRangeStrip = (tmpId.rp() == 0 ? 40. : 30.);
     float yOffsetTiming = (tmpId.rp() == 0 ? 45. : -65.);
 
-    yName = "strip_unmatched_Y_" + str_arm + str_pot;
-    stripTrackUnmatchedY[tmpId] = trackDir.make<TH1F>(yName.c_str(), yName.c_str(), ((int)yRangeStrip) * 2, yOffsetStrip, yOffsetStrip + yRangeStrip);
+    name = "strip_unmatched_Y";
+    stripTrackUnmatchedY[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), ((int)yRangeStrip) * 2, yOffsetStrip, yOffsetStrip + yRangeStrip);
 
-    yName = "timing_unmatched_Y_" + str_arm + str_pot;
-    timingTrackUnmatchedY[tmpId] = trackDir.make<TH1F>(yName.c_str(), yName.c_str(), 40, yOffsetTiming, yOffsetTiming + 20);
+    name = "timing_unmatched_Y";
+    timingTrackUnmatchedY[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 40, yOffsetTiming, yOffsetTiming + 20);
 
-    std::string name = "matchedStripTrackDistribution_" + str_arm + str_pot;
+    name = "stripTrackDistribution";
+    allStripTracks[tmpId] = trackDir.make<TH2F>(name.c_str(), name.c_str(), 100, -15, 15, 100, -70, 70 );
+    name = "matchedStripTrackDistribution";
     matchedStripTracks[tmpId] = trackDir.make<TH2F>(name.c_str(), name.c_str(), 100, -15, 15, 100, -70, 70 );
-    name = "unmatchedStripTrackDistribution_" + str_arm + str_pot;
+    name = "unmatchedStripTrackDistribution";
     unmatchedStripTracks[tmpId] = trackDir.make<TH2F>(name.c_str(), name.c_str(), 100, -15, 15, 100, -70, 70 );
+
+    name = "timingTrackDistributionX";
+    trackXHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 20, 0, 9 );
+    name = "timingTrackDistributionY";
+    trackYHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 40, yOffsetTiming, yOffsetTiming + 20);
+    name = "timingRecHitDistributionX";
+    hitXHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 20, 0, 9 );
+    name = "timingRecHitDistributionY";
+    hitYHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 40, yOffsetTiming, yOffsetTiming + 20);
   }
 }
 

@@ -3,7 +3,7 @@ import string
 
 process = cms.Process('RECODQM')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )
 process.verbosity = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 # minimum of logs
@@ -79,17 +79,18 @@ process.totemTimingRecHits.hysteresis = cms.double(10e-3);
 process.totemTimingRecHits.smoothingPoints = cms.int32(6);
 process.totemTimingRecHits.lowPassFrequency = cms.double(0.6);
 
-process.totemTimingLocalTracks.maxPlaneActiveChannels = cms.int32(1);
+process.totemTimingLocalTracks.maxPlaneActiveChannels = cms.int32(2);
 process.totemTimingLocalTracks.tolerance = cms.double(0.);
-process.totemTimingLocalTracks.resolution = cms.double(0.1);
+process.totemTimingLocalTracks.resolution = cms.double(0.01);
 process.totemTimingLocalTracks.threshold = cms.double(1.5);
-process.totemTimingLocalTracks.thresholdFromMaximum = cms.double(0.55);
+#process.totemTimingLocalTracks.thresholdFromMaximum = cms.double(0.5);
 process.totemTimingLocalTracks.sigma = cms.double(0.);
 
 
 process.simpleAnalyzer = cms.EDAnalyzer('SimpleAnalyzer',
  tagDigi = cms.InputTag("totemTimingRawToDigi", "TotemTiming"),
  tagRecHit = cms.InputTag("totemTimingRecHits"),
+ tagRPHit = cms.InputTag("totemRPRecHits"),
  tagLocalTrack = cms.InputTag("totemTimingLocalTracks"),
  tagStripTrack = cms.InputTag("totemRPLocalTrackFitter")
 )

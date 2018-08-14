@@ -20,6 +20,7 @@
 #include "DataFormats/CTPPSDetId/interface/TotemTimingDetId.h"
 
 #include "DataFormats/CTPPSReco/interface/TotemTimingRecHit.h"
+#include "DataFormats/CTPPSReco/interface/TotemRPRecHit.h"
 #include "DataFormats/CTPPSReco/interface/TotemTimingLocalTrack.h"
 #include "DataFormats/CTPPSReco/interface/TotemRPLocalTrack.h"
 
@@ -61,6 +62,7 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       // ---------- objects to retrieve ---------------------------
       edm::EDGetTokenT< edm::DetSetVector<TotemTimingDigi> > tokenDigi_;
       edm::EDGetTokenT< edm::DetSetVector<TotemTimingRecHit> > tokenRecHit_;
+      edm::EDGetTokenT< edm::DetSetVector<TotemRPRecHit> > tokenRPHit_;
       edm::EDGetTokenT< edm::DetSetVector<TotemTimingLocalTrack> > tokenLocalTrack_;
       edm::EDGetTokenT< edm::DetSetVector<TotemRPLocalTrack> > tokenStripTrack_;
 
@@ -91,6 +93,9 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       std::map< TotemTimingDetId, TGraphErrors*> trackYvsY;
       std::map< TotemTimingDetId, TH1F*> stripTrackUnmatchedY;
       std::map< TotemTimingDetId, TH1F*> timingTrackUnmatchedY;
+
+      std::map< TotemTimingDetId, TH2F*> matchedStripPlaneHits;
+      std::map< TotemTimingDetId, TH2F*> unmatchedStripPlaneHits;
 };
 
 //
@@ -111,6 +116,7 @@ SimpleAnalyzer::SimpleAnalyzer(const edm::ParameterSet& iConfig)
  :
  tokenDigi_            ( consumes< edm::DetSetVector<TotemTimingDigi> >      ( iConfig.getParameter<edm::InputTag>( "tagDigi" ) ) ),
  tokenRecHit_          ( consumes< edm::DetSetVector<TotemTimingRecHit> >      ( iConfig.getParameter<edm::InputTag>( "tagRecHit" ) ) ),
+ tokenRPHit_          ( consumes< edm::DetSetVector<TotemRPRecHit> >      ( iConfig.getParameter<edm::InputTag>( "tagRPHit" ) ) ),
  tokenLocalTrack_      ( consumes< edm::DetSetVector<TotemTimingLocalTrack> >      ( iConfig.getParameter<edm::InputTag>( "tagLocalTrack" ) ) ),
  tokenStripTrack_      ( consumes< edm::DetSetVector<TotemRPLocalTrack> >      ( iConfig.getParameter<edm::InputTag>( "tagStripTrack" ) ) )
 {
@@ -248,10 +254,12 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   edm::Handle< edm::DetSetVector<TotemTimingDigi> > timingDigi;
   edm::Handle< edm::DetSetVector<TotemTimingRecHit> > timingRecHit;
+  edm::Handle< edm::DetSetVector<TotemRPRecHit> > stripRecHit;
   edm::Handle< edm::DetSetVector<TotemTimingLocalTrack> > timingLocalTrack;
   edm::Handle< edm::DetSetVector<TotemRPLocalTrack> > stripLocalTrack;
   iEvent.getByToken( tokenDigi_, timingDigi );
   iEvent.getByToken( tokenRecHit_, timingRecHit );
+  iEvent.getByToken( tokenRPHit_, stripRecHit );
   iEvent.getByToken( tokenLocalTrack_, timingLocalTrack );
   iEvent.getByToken( tokenStripTrack_, stripLocalTrack );
 
@@ -265,8 +273,8 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       if(stripId.station() != validStripStation)
         continue;
 
-      if(timingId.arm() != stripId.arm() ||
-          timingId.rp() % 2 != stripId.rp() % 2)
+      if((timingId.arm() != stripId.arm()) ||
+          ((timingId.rp() % 2) != (stripId.rp() % 2)))
         continue;
 
       TotemTimingDetId tmpId(0, 0, 0, 0, 0);
@@ -375,6 +383,59 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       trackGraphErrorsMap[getArmHash(eventCounter, detId)]->SetPointError(n, track.getX0Sigma(), track.getY0Sigma());
     }
   }
+/*
+  for(const auto& stripHitSet: *stripRecHit) {
+    CTPPSDetId stripId(stripHitSet.detId());
+    TotemTimingDetId tmpId(0, 0, 0, 0, 0);
+    tmpId.setArm(timingId.arm());
+    tmpId.setRP(timingId.rp() % 2);
+    tmpId.setPlane(stripId.plane());
+
+    for(const auto& hit: stripHitSet) {
+
+    }
+
+  }
+
+
+  for(const auto& timingHitSet: *timingRecHit) {
+    for(const auto& stripHitSet: *stripRecHit) {
+
+      CTPPSDetId timingId(timingHitSet.detId());
+      CTPPSDetId stripId(stripHitSet.detId());
+
+      if(stripId.station() != validStripStation)
+        continue;
+
+      if((timingId.arm() != stripId.arm()) ||
+          ((timingId.rp() % 2) != (stripId.rp() % 2)))
+        continue;
+
+      TotemTimingDetId tmpId(0, 0, 0, 0, 0);
+      tmpId.setArm(timingId.arm());
+      tmpId.setRP(timingId.rp() % 2);
+
+      for(const auto& stripTrack: stripTrackSet) {
+        allStripTracks[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
+      }
+
+      for(const auto& timingTrack: timingTrackSet) {
+
+        trackXHistoMap[tmpId]->Fill(timingTrack.getX0());
+        trackYHistoMap[tmpId]->Fill(timingTrack.getY0());
+
+        for(const auto& stripTrack: stripTrackSet) {
+          matchedStripTracks[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
+          int n = trackXvsX[tmpId]->GetN();
+          trackXvsX[tmpId]->SetPoint(n, timingTrack.getX0(), stripTrack.getX0());
+          //trackXvsX[tmpId]->SetPointError(n, timingTrack.getX0Sigma(), stripTrack.getX0Sigma());
+          trackYvsY[tmpId]->SetPoint(n, timingTrack.getY0(), stripTrack.getY0());
+          //trackYvsY[tmpId]->SetPointError(n, timingTrack.getY0Sigma(), stripTrack.getY0Sigma());
+        }
+      }
+    }
+  }
+  */
 
 }
 
@@ -435,13 +496,27 @@ SimpleAnalyzer::beginJob()
     unmatchedStripTracks[tmpId] = trackDir.make<TH2F>(name.c_str(), name.c_str(), 100, -15, 15, 100, -70, 70 );
 
     name = "timingTrackDistributionX";
-    trackXHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 20, 0, 9 );
+    trackXHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 40, 0, 9 );
     name = "timingTrackDistributionY";
-    trackYHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 40, yOffsetTiming, yOffsetTiming + 20);
+    trackYHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 60, yOffsetTiming, yOffsetTiming + 20);
     name = "timingRecHitDistributionX";
-    hitXHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 20, 0, 9 );
+    hitXHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 40, 0, 9 );
     name = "timingRecHitDistributionY";
-    hitYHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 40, yOffsetTiming, yOffsetTiming + 20);
+    hitYHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 60, yOffsetTiming, yOffsetTiming + 20);
+
+    std::string planeDirName = dirName + "/planeEfficiency";
+    auto planeDir = fs->mkdir(planeDirName);
+
+    for(int planeNo = 0; planeNo < 4; planeNo++) {
+
+      tmpId.setPlane(planeNo);
+
+      name = "plane" + std::to_string(planeNo) + "matchedStripHits";
+      matchedStripPlaneHits[tmpId] = planeDir.make<TH2F>(name.c_str(), name.c_str(), 100, -15, 15, 100, -70, 70 );
+
+      name = "plane" + std::to_string(planeNo) + "unmatchedStripHits";
+      matchedStripPlaneHits[tmpId] = planeDir.make<TH2F>(name.c_str(), name.c_str(), 100, -15, 15, 100, -70, 70 );
+    }
   }
 }
 

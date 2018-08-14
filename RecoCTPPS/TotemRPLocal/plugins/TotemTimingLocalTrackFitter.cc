@@ -9,6 +9,7 @@
  ****************************************************************************/
 
 #include <memory>
+#include <utility>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h"
@@ -40,21 +41,22 @@ class TotemTimingLocalTrackFitter : public edm::stream::EDProducer<>
     int maxPlaneActiveChannels;
 
     edm::EDGetTokenT<edm::DetSetVector<TotemTimingRecHit> > recHitsToken_;
-    TotemTimingTrackRecognition trk_algo_45_rp0;
-    TotemTimingTrackRecognition trk_algo_56_rp0;
-    TotemTimingTrackRecognition trk_algo_45_rp1;
-    TotemTimingTrackRecognition trk_algo_56_rp1;
+    std::map<TotemTimingDetId, TotemTimingTrackRecognition> trk_algo_map;
 };
 
 TotemTimingLocalTrackFitter::TotemTimingLocalTrackFitter( const edm::ParameterSet& iConfig ) :
   maxPlaneActiveChannels( iConfig.getParameter<int>( "maxPlaneActiveChannels" ) ),
-  recHitsToken_( consumes<edm::DetSetVector<TotemTimingRecHit> >( iConfig.getParameter<edm::InputTag>( "recHitsTag" ) ) ),
-  trk_algo_45_rp0 ( iConfig ),
-  trk_algo_56_rp0 ( iConfig ),
-  trk_algo_45_rp1 ( iConfig ),
-  trk_algo_56_rp1 ( iConfig )
+  recHitsToken_( consumes<edm::DetSetVector<TotemTimingRecHit> >( iConfig.getParameter<edm::InputTag>( "recHitsTag" ) ) )
 {
   produces<edm::DetSetVector<TotemTimingLocalTrack> >();
+
+  for(int armNo = 0; armNo < 2; armNo++) {
+    for(int rpNo = 0; rpNo < 2; rpNo++) {
+      TotemTimingDetId id(armNo, 1, rpNo, 0, 0);
+      TotemTimingTrackRecognition trk_algo(iConfig);
+      trk_algo_map.insert(std::make_pair(id, trk_algo));
+    }
+  }
 }
 
 TotemTimingLocalTrackFitter::~TotemTimingLocalTrackFitter()
@@ -68,26 +70,17 @@ TotemTimingLocalTrackFitter::produce( edm::Event& iEvent, const edm::EventSetup&
   edm::Handle<edm::DetSetVector<TotemTimingRecHit> > recHits;
   iEvent.getByToken( recHitsToken_, recHits );
 
-  const TotemTimingDetId id_45_rp0( 0, 1, 0, 0, 0 );
-  const TotemTimingDetId id_56_rp0( 1, 1, 0, 0, 0 );
-  const TotemTimingDetId id_45_rp1( 0, 1, 1, 0, 0 );
-  const TotemTimingDetId id_56_rp1( 1, 1, 1, 0, 0 );
-
-  pOut->find_or_insert( id_45_rp0 ); // tracks in 4-5
-  pOut->find_or_insert( id_45_rp1 ); // tracks in 4-5
-  pOut->find_or_insert( id_56_rp0 ); // tracks in 4-5
-  pOut->find_or_insert( id_56_rp1 ); // tracks in 4-5
-
-  //edm::DetSet<TotemTimingLocalTrack>& tracks56 = pOut->find_or_insert( id_56 ); // tracks in 5-6
-
-  // workaround to retrieve the detset for 4-5 without losing the reference
-  //edm::DetSet<TotemTimingLocalTrack>& tracks45 = pOut->operator[]( id_45 );
+  for(const auto& trk_algo_entry: trk_algo_map)
+    pOut->find_or_insert(trk_algo_entry.first);
 
   std::map< TotemTimingDetId, int > planeActivityMap;
 
   for (const auto& vec: *recHits) {
-    TotemTimingDetId tmpId(vec.detId());
-    tmpId.setChannel(0);
+    const TotemTimingDetId detId(vec.detId());
+    TotemTimingDetId tmpId(0, 1, 0, 0, 0);
+    tmpId.setArm(detId.arm());
+    tmpId.setRP(detId.rp());
+    tmpId.setPlane(detId.plane());
     planeActivityMap[tmpId] += vec.size();
   }
 
@@ -96,50 +89,34 @@ TotemTimingLocalTrackFitter::produce( edm::Event& iEvent, const edm::EventSetup&
 
     const TotemTimingDetId detId(vec.detId());
 
-    // count number of hits for each plane
-    //int planeHitCount[] = {0, 0, 0, 0};
-    //for ( const auto& hit : vec )
-      //planeHitCount[detId.plane()]++;
+    TotemTimingDetId tmpId(0, 1, 0, 0, 0);
+    tmpId.setArm(detId.arm());
+    tmpId.setRP(detId.rp());
+    tmpId.setPlane(detId.plane());
+    if (planeActivityMap[tmpId] > maxPlaneActiveChannels)
+      continue;
 
     for ( const auto& hit : vec ) {
 
-      TotemTimingDetId tmpId(detId);
-      tmpId.setChannel(0);
-      if (planeActivityMap[tmpId] > maxPlaneActiveChannels)
-        continue;
+      tmpId.setPlane(0);
 
-      //std::cout << "arm=" << detId.arm() << ", rp=" << detId.rp();
-
-      if(detId.arm() == 0 && detId.rp() == 0)
-        trk_algo_45_rp0.addHit( hit );
-
-      else if(detId.arm() == 0 && detId.rp() == 1)
-        trk_algo_45_rp1.addHit( hit );
-
-      else if(detId.arm() == 1 && detId.rp() == 0)
-        trk_algo_56_rp0.addHit( hit );
-
-      else if(detId.arm() == 1 && detId.rp() == 1)
-        trk_algo_56_rp1.addHit( hit );
+      if(trk_algo_map.find(tmpId) != trk_algo_map.end())
+        trk_algo_map.find(tmpId)->second.addHit(hit);
 
       else
         edm::LogWarning("TotemTimingLocalTrackFitter") << "Invalid detId for rechit: arm=" << detId.arm() << ", rp=" << detId.rp();
     }
   }
 
-  // retrieve the tracks for both arms
-  trk_algo_45_rp0.produceTracks( pOut->operator[](id_45_rp0) );
-  trk_algo_56_rp0.produceTracks( pOut->operator[](id_56_rp0) );
-  trk_algo_45_rp1.produceTracks( pOut->operator[](id_45_rp1) );
-  trk_algo_56_rp1.produceTracks( pOut->operator[](id_56_rp1) );
+  // retrieves tracks for all hit sets
+  for(auto& trk_algo_entry: trk_algo_map)
+    trk_algo_entry.second.produceTracks(pOut->operator[](trk_algo_entry.first));
 
   iEvent.put( std::move( pOut ) );
 
   // remove all hits from the track producers to prepare for the next event
-  trk_algo_45_rp0.clear();
-  trk_algo_45_rp1.clear();
-  trk_algo_56_rp0.clear();
-  trk_algo_56_rp1.clear();
+  for(auto& trk_algo_entry: trk_algo_map)
+    trk_algo_entry.second.clear();
 }
 
 void

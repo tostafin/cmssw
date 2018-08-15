@@ -26,6 +26,7 @@
 
 
 #include <map>
+#include <cmath>
 
 #include "TH1.h"
 #include "TH2.h"
@@ -96,6 +97,29 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
       std::map< TotemTimingDetId, TH2F*> matchedStripPlaneHits;
       std::map< TotemTimingDetId, TH2F*> unmatchedStripPlaneHits;
+
+
+      struct TrackMatchParameters {
+        float xMainCoeff;
+        float xOffset;
+        float xTolerance;
+        float yMainCoeff;
+        float yOffset;
+        float yTolerance;
+
+        TrackMatchParameters(double xmc = 0, double xo = 0, double xt = 0, double ymc = 0, double yo = 0, double yt = 0) {
+          xMainCoeff = xmc;
+          xOffset = xo;
+          xTolerance = xt;
+          yMainCoeff = ymc;
+          yOffset = yo;
+          yTolerance = yt;
+        }
+      };
+
+      std::map< TotemTimingDetId, TrackMatchParameters > trackMatchParamsMap;
+      bool trackMatch(const TotemTimingLocalTrack& timingTrack, const TotemRPLocalTrack& stripTrack, const CTPPSDetId& detId);
+      bool hitMatch(const TotemTimingRecHit& timingHit, const TotemRPLocalTrack& stripTrack, const CTPPSDetId& detId);
 };
 
 //
@@ -281,6 +305,7 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       tmpId.setArm(timingId.arm());
       tmpId.setRP(timingId.rp() % 2);
 
+/*
       if(timingTrackSet.size() == 0) {
         for(const auto& stripTrack: stripTrackSet) {
           unmatchedStripTracks[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
@@ -288,18 +313,21 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
           stripTrackUnmatchedY[tmpId]->Fill(stripTrack.getY0());
         }
       }
-
+*/
+/*
       if(stripTrackSet.size() == 0) {
         for(const auto& timingTrack: timingTrackSet) {
           timingTrackUnmatchedX[tmpId]->Fill(timingTrack.getX0());
           timingTrackUnmatchedY[tmpId]->Fill(timingTrack.getY0());
         }
       }
+*/
 
-      for(const auto& stripTrack: stripTrackSet) {
-        allStripTracks[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
+      for(const auto& timingTrack: timingTrackSet) {
+        trackXHistoMap[tmpId]->Fill(timingTrack.getX0());
+        trackYHistoMap[tmpId]->Fill(timingTrack.getY0());
       }
-
+/*
       for(const auto& timingTrack: timingTrackSet) {
 
         trackXHistoMap[tmpId]->Fill(timingTrack.getX0());
@@ -314,6 +342,48 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
           //trackYvsY[tmpId]->SetPointError(n, timingTrack.getY0Sigma(), stripTrack.getY0Sigma());
         }
       }
+*/
+      for(const auto& stripTrack: stripTrackSet) {
+
+        bool matched = false;
+
+        for(const auto& timingTrack: timingTrackSet) {
+
+          if(trackMatch(timingTrack, stripTrack, tmpId)) {
+            int n = trackXvsX[tmpId]->GetN();
+            trackXvsX[tmpId]->SetPoint(n, timingTrack.getX0(), stripTrack.getX0());
+            trackYvsY[tmpId]->SetPoint(n, timingTrack.getY0(), stripTrack.getY0());
+            matched = true;
+          }
+        }
+
+        if(matched)
+          matchedStripTracks[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
+        else {
+          unmatchedStripTracks[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
+          stripTrackUnmatchedX[tmpId]->Fill(stripTrack.getX0());
+          stripTrackUnmatchedY[tmpId]->Fill(stripTrack.getY0());
+        }
+      }
+
+      for(const auto& timingTrack: timingTrackSet) {
+
+        bool matched = false;
+
+        for(const auto& stripTrack: stripTrackSet) {
+
+          if(trackMatch(timingTrack, stripTrack, tmpId)) {
+            matched = true;
+            break;
+          }
+        }
+
+        if(!matched) {
+          timingTrackUnmatchedX[tmpId]->Fill(timingTrack.getX0());
+          timingTrackUnmatchedY[tmpId]->Fill(timingTrack.getY0());
+        }
+      }
+
     }
   }
 
@@ -383,21 +453,63 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       trackGraphErrorsMap[getArmHash(eventCounter, detId)]->SetPointError(n, track.getX0Sigma(), track.getY0Sigma());
     }
   }
-/*
-  for(const auto& stripHitSet: *stripRecHit) {
-    CTPPSDetId stripId(stripHitSet.detId());
-    TotemTimingDetId tmpId(0, 0, 0, 0, 0);
-    tmpId.setArm(timingId.arm());
-    tmpId.setRP(timingId.rp() % 2);
-    tmpId.setPlane(stripId.plane());
 
-    for(const auto& hit: stripHitSet) {
 
+  for(const auto& stripTrackSet: *stripLocalTrack) {
+    for(const auto& stripTrack: stripTrackSet) {
+
+      CTPPSDetId stripId(stripTrackSet.detId());
+
+      if(stripId.station() != validStripStation)
+        continue;
+
+      TotemTimingDetId tmpId(0, 0, 0, 0, 0);
+      tmpId.setArm(stripId.arm());
+      tmpId.setRP(stripId.rp() % 2);
+      allStripTracks[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
+
+      for(unsigned int planeNo = 0; planeNo < 4; planeNo++) {
+
+        bool matched = false;
+        tmpId.setPlane(planeNo);
+
+        for(const auto& timingHitSet: *timingRecHit) {
+
+          TotemTimingDetId timingId(timingHitSet.detId());
+
+          if(stripId.station() != validStripStation)
+            continue;
+
+          if((timingId.arm() != stripId.arm()) ||
+              ((timingId.rp() % 2) != (stripId.rp() % 2)))
+            continue;
+
+          if(timingId.plane() != planeNo)
+            continue;
+
+          for(const auto& timingHit: timingHitSet) {
+            if(hitMatch(timingHit, stripTrack, tmpId)) {
+              matched = true;
+              break;
+            }
+          }
+          if(matched)
+            break;
+        }
+
+        if(matched) {
+          //std::cout << "match " << tmpId.arm() << ", " << tmpId.rp() << ", " << tmpId.plane() << std::endl;
+          matchedStripPlaneHits[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
+        }
+        else {
+          //std::cout << "unmatch " << tmpId.arm() << ", " << tmpId.rp() << ", " << tmpId.plane() << std::endl;
+          unmatchedStripPlaneHits[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
+        }
+      }
     }
-
   }
 
-
+  /*
   for(const auto& timingHitSet: *timingRecHit) {
     for(const auto& stripHitSet: *stripRecHit) {
 
@@ -439,12 +551,80 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 }
 
+bool SimpleAnalyzer::trackMatch(const TotemTimingLocalTrack& timingTrack, const TotemRPLocalTrack& stripTrack, const CTPPSDetId& detId){
 
+  TotemTimingDetId tmpId(0, 0, 0, 0, 0);
+  tmpId.setArm(detId.arm());
+  tmpId.setRP(detId.rp());
+
+  TrackMatchParameters params = trackMatchParamsMap[tmpId];
+
+  float topTimingX = params.xMainCoeff * (timingTrack.getX0() + timingTrack.getX0Sigma()) + params.xOffset;
+  float bottomTimingX = params.xMainCoeff * (timingTrack.getX0() - timingTrack.getX0Sigma()) + params.xOffset;
+  float topTimingY = params.yMainCoeff * (timingTrack.getY0() + timingTrack.getY0Sigma()) + params.yOffset;
+  float bottomTimingY = params.yMainCoeff * (timingTrack.getY0() - timingTrack.getY0Sigma()) + params.yOffset;
+
+  float topStripX = stripTrack.getX0() + stripTrack.getX0Sigma();
+  float bottomStripX = stripTrack.getX0() - stripTrack.getX0Sigma();
+  float topStripY = stripTrack.getY0() + stripTrack.getY0Sigma();
+  float bottomStripY = stripTrack.getY0() - stripTrack.getY0Sigma();
+
+  float xDiff = std::fabs((topTimingX + bottomTimingX)/2.0 - (topStripX + bottomStripX)/2.0);
+  float yDiff = std::fabs((topTimingY + bottomTimingY)/2.0 - (topStripY + bottomStripY)/2.0);
+
+  float xTolerance = (topTimingX - bottomTimingX)/2.0 + (topStripX - bottomStripX)/2.0 + params.xTolerance;
+  float yTolerance = (topTimingY - bottomTimingY)/2.0 + (topStripY - bottomStripY)/2.0 + params.yTolerance;
+
+  //std::cout << "timing: (" << timingTrack.getX0() << ", " << timingTrack.getY0() << ") +- (" << timingTrack.getX0Sigma() << ", " << timingTrack.getY0Sigma() << ")" << std::endl;
+  //std::cout << "timing projected: x (" << bottomTimingX << ", " << topTimingX << "), y (" << bottomTimingY << ", " << topTimingY << ")" << std::endl;
+  //std::cout << "strip: (" << stripTrack.getX0() << ", " << stripTrack.getY0() << ") +- (" << stripTrack.getX0Sigma() << ", " << stripTrack.getY0Sigma() << ")" << std::endl;
+  //std::cout << std::endl;
+
+  return (xDiff < xTolerance) && (yDiff < yTolerance);
+}
+bool SimpleAnalyzer::hitMatch(const TotemTimingRecHit& timingHit, const TotemRPLocalTrack& stripTrack, const CTPPSDetId& detId){
+
+  TotemTimingDetId tmpId(0, 0, 0, 0, 0);
+  tmpId.setArm(detId.arm());
+  tmpId.setRP(detId.rp());
+
+  TrackMatchParameters params = trackMatchParamsMap[tmpId];
+
+  float topTimingX = params.xMainCoeff * (timingHit.getX() + timingHit.getXWidth()) + params.xOffset;
+  float bottomTimingX = params.xMainCoeff * (timingHit.getX() - timingHit.getXWidth()) + params.xOffset;
+  float topTimingY = params.yMainCoeff * (timingHit.getY() + timingHit.getYWidth()) + params.yOffset;
+  float bottomTimingY = params.yMainCoeff * (timingHit.getY() - timingHit.getYWidth()) + params.yOffset;
+
+  float topStripX = stripTrack.getX0() + stripTrack.getX0Sigma();
+  float bottomStripX = stripTrack.getX0() - stripTrack.getX0Sigma();
+  float topStripY = stripTrack.getY0() + stripTrack.getY0Sigma();
+  float bottomStripY = stripTrack.getY0() - stripTrack.getY0Sigma();
+
+  float xDiff = std::fabs((topTimingX + bottomTimingX)/2.0 - (topStripX + bottomStripX)/2.0);
+  float yDiff = std::fabs((topTimingY + bottomTimingY)/2.0 - (topStripY + bottomStripY)/2.0);
+
+  float xTolerance = (topTimingX - bottomTimingX)/2.0 + (topStripX - bottomStripX)/2.0;// + params.xTolerance;
+  float yTolerance = (topTimingY - bottomTimingY)/2.0 + (topStripY - bottomStripY)/2.0;// + params.yTolerance;
+
+  //std::cout << "timing: (" << timingTrack.getX0() << ", " << timingTrack.getY0() << ") +- (" << timingTrack.getX0Sigma() << ", " << timingTrack.getY0Sigma() << ")" << std::endl;
+  //std::cout << "timing projected: x (" << bottomTimingX << ", " << topTimingX << "), y (" << bottomTimingY << ", " << topTimingY << ")" << std::endl;
+  //std::cout << "strip: (" << stripTrack.getX0() << ", " << stripTrack.getY0() << ") +- (" << stripTrack.getX0Sigma() << ", " << stripTrack.getY0Sigma() << ")" << std::endl;
+  //std::cout << std::endl;
+
+  return (xDiff < xTolerance) && (yDiff < yTolerance);
+}
 
 // ------------ method called once each job just before starting event loop  ------------
 void
 SimpleAnalyzer::beginJob()
 {
+
+  trackMatchParamsMap[TotemTimingDetId(0, 0, 0, 0, 0)] = TrackMatchParameters(0.81, -1.16, 1.0, 0.95, -36.81, 0.3);
+  trackMatchParamsMap[TotemTimingDetId(0, 0, 1, 0, 0)] = TrackMatchParameters(1.17, -1.82, 1.0, 0.95, 36.48, 0.3);
+  trackMatchParamsMap[TotemTimingDetId(1, 0, 0, 0, 0)] = TrackMatchParameters(0.25, -1.0, 100.0, 0.91, -34.14, 2.0);
+  trackMatchParamsMap[TotemTimingDetId(1, 0, 1, 0, 0)] = TrackMatchParameters(0.53, -1.35, 100.0, 0.94, 35.46, 2.0);
+
+
   edm::Service<TFileService> fs;
   std::string topDir = "TotemTiming_vs_TotemRP";
 
@@ -489,11 +669,11 @@ SimpleAnalyzer::beginJob()
     timingTrackUnmatchedY[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 40, yOffsetTiming, yOffsetTiming + 20);
 
     name = "stripTrackDistribution";
-    allStripTracks[tmpId] = trackDir.make<TH2F>(name.c_str(), name.c_str(), 100, -15, 15, 100, -70, 70 );
+    allStripTracks[tmpId] = trackDir.make<TH2F>(name.c_str(), name.c_str(), 600, -15, 15, 2800, -70, 70 );
     name = "matchedStripTrackDistribution";
-    matchedStripTracks[tmpId] = trackDir.make<TH2F>(name.c_str(), name.c_str(), 100, -15, 15, 100, -70, 70 );
+    matchedStripTracks[tmpId] = trackDir.make<TH2F>(name.c_str(), name.c_str(), 600, -15, 15, 2800, -70, 70 );
     name = "unmatchedStripTrackDistribution";
-    unmatchedStripTracks[tmpId] = trackDir.make<TH2F>(name.c_str(), name.c_str(), 100, -15, 15, 100, -70, 70 );
+    unmatchedStripTracks[tmpId] = trackDir.make<TH2F>(name.c_str(), name.c_str(), 600, -15, 15, 2800, -70, 70 );
 
     name = "timingTrackDistributionX";
     trackXHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 40, 0, 9 );
@@ -511,11 +691,11 @@ SimpleAnalyzer::beginJob()
 
       tmpId.setPlane(planeNo);
 
-      name = "plane" + std::to_string(planeNo) + "matchedStripHits";
-      matchedStripPlaneHits[tmpId] = planeDir.make<TH2F>(name.c_str(), name.c_str(), 100, -15, 15, 100, -70, 70 );
+      name = "plane" + std::to_string(planeNo) + "stripTracksMatchedWithTimingHits";
+      matchedStripPlaneHits[tmpId] = planeDir.make<TH2F>(name.c_str(), name.c_str(), 600, -15, 15, 2800, -70, 70 );
 
-      name = "plane" + std::to_string(planeNo) + "unmatchedStripHits";
-      matchedStripPlaneHits[tmpId] = planeDir.make<TH2F>(name.c_str(), name.c_str(), 100, -15, 15, 100, -70, 70 );
+      name = "plane" + std::to_string(planeNo) + "stripTracksNotMatchedWithTimingHits";
+      unmatchedStripPlaneHits[tmpId] = planeDir.make<TH2F>(name.c_str(), name.c_str(), 600, -15, 15, 2800, -70, 70 );
     }
   }
 }

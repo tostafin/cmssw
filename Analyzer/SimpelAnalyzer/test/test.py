@@ -3,7 +3,7 @@ import string
 
 process = cms.Process('RECODQM')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.verbosity = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 # minimum of logs
@@ -52,6 +52,7 @@ process.source = cms.Source("PoolSource",
         'file:///eos/user/n/nminafra/Sampic/319176/D41C73B1-F280-E811-8682-FA163E048308.root',
         'file:///eos/user/n/nminafra/Sampic/319176/E25531B6-F280-E811-8AA5-FA163E490F23.root',
         'file:///eos/user/n/nminafra/Sampic/319176/F25044C7-E680-E811-BCA5-FA163E8A2D90.root',
+        'file:///eos/user/n/nminafra/Sampic/319176/F6BADB7B-EB80-E811-87D4-FA163E333059.root',
     # 'root:///afs/cern.ch/user/n/nminafra/Work/public/SampicCMS/319190_testAOD.root',
     # '/store/data/Run2018B/TOTEM40/RECO/PromptReco-v2/000/319/190/00000/00A9F18A-B481-E811-9ECD-02163E014BBF.root ',
     )

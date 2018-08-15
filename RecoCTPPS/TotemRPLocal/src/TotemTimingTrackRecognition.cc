@@ -30,18 +30,6 @@
 #include "TF1.h"
 
 
-/* General parameters in the set:
- * "threshold": float
- * "thresholdFromMaximum": float
- * "resolution": float
- * "sigma": float
- * "pixelEfficiencyFunction": TF1
- * Parameters specific to TotemTimingLocalTrack:
- * "startFromX": float
- * "stopAtX": float
- * "startFromY": float
- * "stopAtY": float
- */
 TotemTimingTrackRecognition::TotemTimingTrackRecognition(const edm::ParameterSet& iConfig) :
     threshold               ( iConfig.getParameter<double>( "threshold" ) ),
     thresholdFromMaximum    ( iConfig.getParameter<double>( "thresholdFromMaximum" ) ),
@@ -123,9 +111,6 @@ int TotemTimingTrackRecognition::produceTracks(edm::DetSet<TotemTimingLocalTrack
 
     for(const auto& xTrack: xPartTracks) {
       for(const auto& yTrack: yPartTracks) {
-
-        //std::cout << "kombinacja x:(" << xTrack.getX0() - xTrack.getX0Sigma() << " : " << xTrack.getX0() + xTrack.getX0Sigma();
-        //std::cout << ") y:(" << yTrack.getY0() - yTrack.getY0Sigma() << " : " << yTrack.getY0() + yTrack.getY0Sigma() << ")" << std::endl;
 
         math::XYZPoint position(
           xTrack.getX0(),

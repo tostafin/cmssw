@@ -15,24 +15,25 @@
 #include "TF1.h"
 
 #include "DataFormats/CTPPSDigi/interface/TotemTimingDigi.h"
-#include "RecoCTPPS/TotemRPLocal/interface/CalibrationData.h"
+#include "RecoCTPPS/TotemRPLocal/interface/TotemTimingParser.h"
 
 class TotemTimingConversions {
 public:
   TotemTimingConversions();
   TotemTimingConversions(const std::string& calibrationFile);
 
-  void openCalibrationFile(const std::string& calibrationFile="/dev/null");
-
-  const float getTimeOfFirstSample(const TotemTimingDigi& digi) const;
-
-  const float getTriggerTime(const TotemTimingDigi& digi) const;
-
-  std::vector<float> getTimeSamples(const TotemTimingDigi& digi) const;
-
+  const float getTimeOfFirstSample(const TotemTimingDigi& digi);
+  const float getTriggerTime(const TotemTimingDigi& digi);
+  std::vector<float> getTimeSamples(const TotemTimingDigi& digi);
   std::vector<float> getVoltSamples(const TotemTimingDigi& digi);
 
+  //public for tests
+  void openCalibrationFile();
+  void openCalibrationFile(const std::string& calibrationFile);
+
 private:
+
+
 
   static const float SAMPIC_SAMPLING_PERIOD_NS;
   static const float SAMPIC_ADC_V;
@@ -40,9 +41,10 @@ private:
   static const int SAMPIC_DEFAULT_OFFSET;
 
   bool calibrationFileOk_;
+  bool calibrationFileOpened_;
   TF1 calibrationFunction_;
   std::string calibrationFile_;
-  CalibrationData calibrationData_;
+  TotemTimingParser parsedData_;
 };
 
 #endif

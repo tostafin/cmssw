@@ -7,7 +7,7 @@ totemTimingRecHits.cfdFraction = cms.double(0.3)
 totemTimingRecHits.smoothingPoints = cms.int32(20)
 totemTimingRecHits.lowPassFrequency = cms.double(0.7)
 totemTimingRecHits.hysteresis = cms.double(5e-3)
-totemTimingRecHits.calibrationFile = cms.string("/afs/cern.ch/user/f/fdej/sampic_cal/all_pol9.cal.json")
+totemTimingRecHits.calibrationFile = cms.string("/afs/cern.ch/user/f/fdej/sampic_cal/correct.cal.json")
 
 totemTimingLocalReconstruction = cms.Sequence(
     totemTimingRecHits

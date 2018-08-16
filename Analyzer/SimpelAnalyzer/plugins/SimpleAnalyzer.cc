@@ -97,6 +97,11 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
       std::map< TotemTimingDetId, TH2F*> matchedStripPlaneHits;
       std::map< TotemTimingDetId, TH2F*> unmatchedStripPlaneHits;
+      std::map< TotemTimingDetId, TH2F*> efficiencyPlaneHits;
+
+      std::map< TotemTimingDetId, TH2F*> matchedStripChannelHits;
+      std::map< TotemTimingDetId, TH2F*> unmatchedStripChannelHits;
+      std::map< TotemTimingDetId, TH2F*> efficiencyChannelHits;
 
 
       struct TrackMatchParameters {
@@ -505,50 +510,45 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
           //std::cout << "unmatch " << tmpId.arm() << ", " << tmpId.rp() << ", " << tmpId.plane() << std::endl;
           unmatchedStripPlaneHits[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
         }
-      }
-    }
-  }
 
-  /*
-  for(const auto& timingHitSet: *timingRecHit) {
-    for(const auto& stripHitSet: *stripRecHit) {
+        for(unsigned int channelNo = 0; channelNo < 12; channelNo++) {
+          matched = false;
+          tmpId.setChannel(channelNo);
 
-      CTPPSDetId timingId(timingHitSet.detId());
-      CTPPSDetId stripId(stripHitSet.detId());
+          for(const auto& timingHitSet: *timingRecHit) {
+            TotemTimingDetId timingId(timingHitSet.detId());
 
-      if(stripId.station() != validStripStation)
-        continue;
+            if(stripId.station() != validStripStation)
+              continue;
 
-      if((timingId.arm() != stripId.arm()) ||
-          ((timingId.rp() % 2) != (stripId.rp() % 2)))
-        continue;
+            if((timingId.arm() != stripId.arm()) ||
+                ((timingId.rp() % 2) != (stripId.rp() % 2)))
+              continue;
 
-      TotemTimingDetId tmpId(0, 0, 0, 0, 0);
-      tmpId.setArm(timingId.arm());
-      tmpId.setRP(timingId.rp() % 2);
+            if(timingId.plane() != planeNo)
+              continue;
 
-      for(const auto& stripTrack: stripTrackSet) {
-        allStripTracks[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
-      }
+            if(timingId.channel() != channelNo)
+              continue;
 
-      for(const auto& timingTrack: timingTrackSet) {
-
-        trackXHistoMap[tmpId]->Fill(timingTrack.getX0());
-        trackYHistoMap[tmpId]->Fill(timingTrack.getY0());
-
-        for(const auto& stripTrack: stripTrackSet) {
-          matchedStripTracks[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
-          int n = trackXvsX[tmpId]->GetN();
-          trackXvsX[tmpId]->SetPoint(n, timingTrack.getX0(), stripTrack.getX0());
-          //trackXvsX[tmpId]->SetPointError(n, timingTrack.getX0Sigma(), stripTrack.getX0Sigma());
-          trackYvsY[tmpId]->SetPoint(n, timingTrack.getY0(), stripTrack.getY0());
-          //trackYvsY[tmpId]->SetPointError(n, timingTrack.getY0Sigma(), stripTrack.getY0Sigma());
+            for(const auto& timingHit: timingHitSet) {
+              if(hitMatch(timingHit, stripTrack, tmpId)) {
+                matched = true;
+                break;
+              }
+            }
+            if(matched)
+              break;
+          }
+          if(matched)
+            matchedStripChannelHits[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
+          else
+            unmatchedStripChannelHits[tmpId]->Fill(stripTrack.getX0(), stripTrack.getY0());
         }
+        tmpId.setChannel(0);
       }
     }
   }
-  */
-
 }
 
 bool SimpleAnalyzer::trackMatch(const TotemTimingLocalTrack& timingTrack, const TotemRPLocalTrack& stripTrack, const CTPPSDetId& detId){
@@ -618,7 +618,6 @@ bool SimpleAnalyzer::hitMatch(const TotemTimingRecHit& timingHit, const TotemRPL
 void
 SimpleAnalyzer::beginJob()
 {
-
   trackMatchParamsMap[TotemTimingDetId(0, 0, 0, 0, 0)] = TrackMatchParameters(0.81, -1.16, 1.0, 0.95, -36.81, 0.3);
   trackMatchParamsMap[TotemTimingDetId(0, 0, 1, 0, 0)] = TrackMatchParameters(1.17, -1.82, 1.0, 0.95, 36.48, 0.3);
   trackMatchParamsMap[TotemTimingDetId(1, 0, 0, 0, 0)] = TrackMatchParameters(0.25, -1.0, 100.0, 0.91, -34.14, 2.0);
@@ -689,13 +688,31 @@ SimpleAnalyzer::beginJob()
 
     for(int planeNo = 0; planeNo < 4; planeNo++) {
 
+      tmpId.setChannel(0);
+      std::string certainPlaneDirName = planeDirName + "/plane" + std::to_string(planeNo);
+      auto certainPlaneDir = fs->mkdir(certainPlaneDirName);
+
       tmpId.setPlane(planeNo);
 
       name = "plane" + std::to_string(planeNo) + "stripTracksMatchedWithTimingHits";
-      matchedStripPlaneHits[tmpId] = planeDir.make<TH2F>(name.c_str(), name.c_str(), 600, -15, 15, 2800, -70, 70 );
+      matchedStripPlaneHits[tmpId] = certainPlaneDir.make<TH2F>(name.c_str(), name.c_str(), 600, -15, 15, 2800, -70, 70 );
 
       name = "plane" + std::to_string(planeNo) + "stripTracksNotMatchedWithTimingHits";
-      unmatchedStripPlaneHits[tmpId] = planeDir.make<TH2F>(name.c_str(), name.c_str(), 600, -15, 15, 2800, -70, 70 );
+      unmatchedStripPlaneHits[tmpId] = certainPlaneDir.make<TH2F>(name.c_str(), name.c_str(), 600, -15, 15, 2800, -70, 70 );
+
+      name = "plane" + std::to_string(planeNo) + "efficiency";
+      efficiencyPlaneHits[tmpId] = certainPlaneDir.make<TH2F>(name.c_str(), name.c_str(), 600, -15, 15, 2800, -70, 70 );
+
+      for(int channelNo = 0; channelNo < 12; channelNo++) {
+        std::string channelDirName = certainPlaneDirName + "/channel" + std::to_string(channelNo);
+        auto channelDir = fs->mkdir(channelDirName);
+
+        tmpId.setChannel(channelNo);
+        name = "stripTracksMatchedWithTimingHits";
+        matchedStripChannelHits[tmpId] = channelDir.make<TH2F>(name.c_str(), name.c_str(), 500, -5, 10, 2000, -25, 25 );
+        name = "stripTracksNotMatchedWithTimingHits";
+        unmatchedStripChannelHits[tmpId] = channelDir.make<TH2F>(name.c_str(), name.c_str(), 500, -5, 10, 2000, -25, 25 );
+      }
     }
   }
 }
@@ -714,6 +731,29 @@ SimpleAnalyzer::endJob() {
     std::cout << str_arm + str_pot + ": " << std::endl;
     std::cout << "Xmatched: " << trackXvsX[tmpId]->GetN() << std::endl;
     std::cout << "Ymatched: " << trackYvsY[tmpId]->GetN() << std::endl;
+  }
+
+
+  for(int i = 0; i < 4; i++) {
+
+    int arm = i / 2;
+    int rp = i % 2;
+    TotemTimingDetId tmpId(arm, 0, rp, 0, 0);
+
+    for(int planeNo = 0; planeNo < 4; planeNo++) {
+
+      tmpId.setPlane(planeNo);
+
+      int cellsNo = matchedStripPlaneHits[tmpId]->GetNcells();
+      for(int binIter = 1; binIter <= cellsNo; binIter++) {
+        float unmatchedCount = unmatchedStripPlaneHits[tmpId]->GetBinContent(binIter);
+        float matchedCount = matchedStripPlaneHits[tmpId]->GetBinContent(binIter);
+        if(unmatchedCount + matchedCount > 0) {
+          float efficiency = (matchedCount) / (matchedCount + unmatchedCount);
+          efficiencyPlaneHits[tmpId]->SetBinContent(binIter, efficiency);
+        }
+      }
+    }
   }
 }
 

@@ -82,6 +82,7 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       std::map< int, TH2F*> matchedStripTracks;
       std::map< int, TH2F*> unmatchedStripTracks;
       std::map< int, TH2F*> allStripTracks;
+      std::map< int, TH2F*> detectorEfficiency;
 
       // ---------- graphs ---------------------------
       std::map< TotemTimingDetId, TGraph*> samples_graph_map_;
@@ -102,6 +103,11 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       std::map< TotemTimingDetId, TH2F*> matchedStripChannelHits;
       std::map< TotemTimingDetId, TH2F*> unmatchedStripChannelHits;
       std::map< TotemTimingDetId, TH2F*> efficiencyChannelHits;
+
+      std::map< TotemTimingDetId, TH1F*> matchedStripChannelHitsX;
+      std::map< TotemTimingDetId, TH1F*> matchedStripChannelHitsY;
+      std::map< TotemTimingDetId, TH1F*> efficiencyChannelHitsX;
+      std::map< TotemTimingDetId, TH1F*> efficiencyChannelHitsY;
 
 
       struct TrackMatchParameters {
@@ -392,7 +398,7 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
 
-
+  /*
 
   bool multipleTracks = false;
 
@@ -458,7 +464,7 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       trackGraphErrorsMap[getArmHash(eventCounter, detId)]->SetPointError(n, track.getX0Sigma(), track.getY0Sigma());
     }
   }
-
+*/
 
   for(const auto& stripTrackSet: *stripLocalTrack) {
     for(const auto& stripTrack: stripTrackSet) {
@@ -673,6 +679,8 @@ SimpleAnalyzer::beginJob()
     matchedStripTracks[tmpId] = trackDir.make<TH2F>(name.c_str(), name.c_str(), 600, -15, 15, 2800, -70, 70 );
     name = "unmatchedStripTrackDistribution";
     unmatchedStripTracks[tmpId] = trackDir.make<TH2F>(name.c_str(), name.c_str(), 600, -15, 15, 2800, -70, 70 );
+    name = "detectorEfficiency";
+    detectorEfficiency[tmpId] = trackDir.make<TH2F>(name.c_str(), name.c_str(), 600, -15, 15, 2800, -70, 70 );
 
     name = "timingTrackDistributionX";
     trackXHistoMap[tmpId] = trackDir.make<TH1F>(name.c_str(), name.c_str(), 40, 0, 9 );
@@ -712,6 +720,17 @@ SimpleAnalyzer::beginJob()
         matchedStripChannelHits[tmpId] = channelDir.make<TH2F>(name.c_str(), name.c_str(), 500, -5, 10, 2000, -25, 25 );
         name = "stripTracksNotMatchedWithTimingHits";
         unmatchedStripChannelHits[tmpId] = channelDir.make<TH2F>(name.c_str(), name.c_str(), 500, -5, 10, 2000, -25, 25 );
+        name = "efficiency";
+        efficiencyChannelHits[tmpId] = channelDir.make<TH2F>(name.c_str(), name.c_str(), 500, -5, 10, 2000, -25, 25 );
+
+        name = "stripTracksMatchedDistributionX";
+        matchedStripChannelHitsX[tmpId] = channelDir.make<TH1F>(name.c_str(), name.c_str(), 500, -5, 10 );
+        name = "stripTracksMatchedDistributionY";
+        matchedStripChannelHitsY[tmpId] = channelDir.make<TH1F>(name.c_str(), name.c_str(), 2000, -25, 25 );
+        name = "efficiencyX";
+        efficiencyChannelHitsX[tmpId] = channelDir.make<TH1F>(name.c_str(), name.c_str(), 500, -5, 10 );
+        name = "efficiencyY";
+        efficiencyChannelHitsY[tmpId] = channelDir.make<TH1F>(name.c_str(), name.c_str(), 2000, -25, 25 );
       }
     }
   }
@@ -740,18 +759,48 @@ SimpleAnalyzer::endJob() {
     int rp = i % 2;
     TotemTimingDetId tmpId(arm, 0, rp, 0, 0);
 
+    auto totalPlot = (TH2F*)matchedStripTracks[tmpId]->Clone();
+    totalPlot->Add(unmatchedStripTracks[tmpId]);
+    detectorEfficiency[tmpId]->Add(matchedStripTracks[tmpId]);
+    detectorEfficiency[tmpId]->Divide(totalPlot);
+
     for(int planeNo = 0; planeNo < 4; planeNo++) {
 
       tmpId.setPlane(planeNo);
+      tmpId.setChannel(0);
 
-      int cellsNo = matchedStripPlaneHits[tmpId]->GetNcells();
-      for(int binIter = 1; binIter <= cellsNo; binIter++) {
-        float unmatchedCount = unmatchedStripPlaneHits[tmpId]->GetBinContent(binIter);
-        float matchedCount = matchedStripPlaneHits[tmpId]->GetBinContent(binIter);
-        if(unmatchedCount + matchedCount > 0) {
-          float efficiency = (matchedCount) / (matchedCount + unmatchedCount);
-          efficiencyPlaneHits[tmpId]->SetBinContent(binIter, efficiency);
+      efficiencyPlaneHits[tmpId]->Add(matchedStripPlaneHits[tmpId]);
+      auto totalPlot = (TH2F*)matchedStripPlaneHits[tmpId]->Clone();
+      totalPlot->Add(unmatchedStripPlaneHits[tmpId]);
+      efficiencyPlaneHits[tmpId]->Divide(totalPlot);
+
+      for(int channelNo = 0; channelNo < 12; channelNo++) {
+        tmpId.setChannel(channelNo);
+
+        matchedStripChannelHitsX[tmpId]->Add(matchedStripChannelHits[tmpId]->ProjectionX());
+        matchedStripChannelHitsY[tmpId]->Add(matchedStripChannelHits[tmpId]->ProjectionY());
+
+        efficiencyChannelHits[tmpId]->Add(matchedStripChannelHits[tmpId]);
+        auto totalPlot = (TH2F*)matchedStripChannelHits[tmpId]->Clone();
+        totalPlot->Add(unmatchedStripChannelHits[tmpId]);
+        efficiencyChannelHits[tmpId]->Divide(totalPlot);
+/*
+        efficiencyChannelHitsX[tmpId]->Add(matchedStripChannelHits[tmpId]->ProjectionX());
+        efficiencyChannelHitsY[tmpId]->Add(matchedStripChannelHits[tmpId]->ProjectionY());
+
+
+        auto totalPlotCut = (TH2F*)totalPlot->Clone();
+        for(int binIter = 1; binIter <= totalPlot->GetNcells(); binIter++) {
+          int matchedBinContent = matchedStripChannelHits[tmpId]->GetBinContent(binIter);
+          if(matchedBinContent == 0)
+            totalPlotCut->SetBinContent(binIter, 0);
         }
+
+        auto xTotal = totalPlotCut->ProjectionX();
+        auto yTotal = totalPlotCut->ProjectionY();
+*/
+        efficiencyChannelHitsX[tmpId]->Add(efficiencyChannelHits[tmpId]->ProjectionX());
+        efficiencyChannelHitsY[tmpId]->Add(efficiencyChannelHits[tmpId]->ProjectionY());
       }
     }
   }

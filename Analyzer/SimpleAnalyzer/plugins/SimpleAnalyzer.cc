@@ -4,6 +4,9 @@
 // user include files
 #include <map>
 
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
@@ -27,6 +30,8 @@
 #include "TH1.h"
 #include "TGraph.h"
 
+namespace pt = boost::property_tree;
+
 class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
    public:
       explicit SimpleAnalyzer(const edm::ParameterSet&);
@@ -36,6 +41,18 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
 
    private:
+     struct calFileId{
+       int db;
+       int sampic;
+       int channel;
+
+       calFileId()
+       : db(-1), sampic(-1), channel(-1){}
+
+       calFileId(int db, int sampic, int channel)
+       : db(db), sampic(sampic), channel(channel){}
+     };
+
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
@@ -66,7 +83,31 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       std::map< TotemTimingDetId, unsigned int> samples_graphCtr_map_;
       TotemTimingConversions conv, conv2;
       int ct;
+      std::map<TotemTimingDetId, calFileId> detId_calFileId_map_;
 };
+
+template <typename Tree>
+Tree query(Tree& pt, typename Tree::path_type path) {
+    if (path.empty())
+        return pt;
+
+    auto const head = path.reduce();
+
+    auto subscript = head.find('[');
+    auto name      = head.substr(0, subscript);
+    auto index     = std::string::npos != subscript && head.back() == ']'
+        ? std::stoul(head.substr(subscript+1))
+        : 0u;
+
+    auto matches = pt.equal_range(name);
+    if (matches.first==matches.second)
+        throw std::out_of_range("name:" + name);
+
+    for (; matches.first != matches.second && index; --index)
+        ++matches.first;
+
+    return query(matches.first->second, path);
+}
 
 //
 // constants, enums and typedefs
@@ -124,7 +165,7 @@ SimpleAnalyzer::initHistograms(const TotemTimingDetId& detId)
 
     std::string tHisto_name(chName);
     tHisto_name.insert(0, "tDistribution_");
-    tHisto_map_[ detId ] = maindir_map_[ detId ].make<TH1F>(tHisto_name.c_str(), tHisto_name.c_str(), 100, -20, 20 ); //0 5
+    tHisto_map_[ detId ] = maindir_map_[ detId ].make<TH1F>(tHisto_name.c_str(), tHisto_name.c_str(), 100, -3, 3 ); //0 5
     // std::string tDiffHisto_name(chName);
     // tDiffHisto_name.insert(0, "tDiffWithPl+1_");
     // tDiffHisto_map_[ detId ] = maindir_map_[ detId ].make<TH1F>(tDiffHisto_name.c_str(), tDiffHisto_name.c_str(), 100, -20, 20 ); //-2 2
@@ -144,52 +185,54 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByToken( tokenDigi_, timingDigi );
   iEvent.getByToken( tokenRecHit_, timingRecHit );
 
-  // for (const auto& digis : *timingDigi)
-  // {
-  //   const TotemTimingDetId detId( digis.detId() );
-  //   if (maindir_map_.find(detId) == maindir_map_.end())
-  //     initHistograms( detId );
-  //   std::string chName;
-  //   detId.channelName(chName, TotemTimingDetId::nFull);
-  //   std::string samples_graph_name(chName);
-  //   samples_graph_name.insert(0, "_cal_");
-  //   samples_graph_name.insert(0, std::to_string(ct));
-  //   samples_graph_name.insert(0, "samples_graph_");
-  //   TGraph *graph_hndl = maindir_map_[ detId ].make<TGraph>();
-  //   graph_hndl->SetName(samples_graph_name.c_str());
-  //   graph_hndl->SetTitle(samples_graph_name.c_str());
-  //   std::vector<float> voltage;
-  //
-  //   std::string samples_graph_name2(chName);
-  //   samples_graph_name.insert(0, "_noncal_");
-  //   samples_graph_name.insert(0, std::to_string(ct));
-  //   samples_graph_name.insert(0, "samples_graph_");
-  //   TGraph *graph_hndl2 = maindir_map_[ detId ].make<TGraph>();
-  //   graph_hndl2->SetName(samples_graph_name.c_str());
-  //   graph_hndl2->SetTitle(samples_graph_name.c_str());
-  //   std::vector<float> voltage2;
-  //   ct++;
-  //
-  //   for (const auto& digi : digis )
-  //   {
-  //     // Do stuff on DIGIs
-  //     voltage = conv.getVoltSamples(digi);
-  //     voltage2 = conv2.getVoltSamples(digi);
-  //     int i=0;
-  //     for (auto sampIt = voltage.begin(); sampIt != voltage.end(); ++sampIt){
-  //       // std::cout << *sampIt << ", ";
-  //       graph_hndl->SetPoint(i, SAMPIC_SAMPLING_PERIOD_NS*(i), *sampIt  );
-  //       i++;
-  //     }
-  //     // std::cout << "\n";
-  //
-  //     i=0;
-  //     for (auto sampIt = voltage2.begin(); sampIt != voltage2.end(); ++sampIt){
-  //       graph_hndl2->SetPoint(i, SAMPIC_SAMPLING_PERIOD_NS*(i), *sampIt  );
-  //       i++;
-  //     }
-  //   }
-  // }
+
+  for (const auto& digis : *timingDigi)
+  {
+    // const TotemTimingDetId detId( digis.detId() );
+    // if (maindir_map_.find(detId) == maindir_map_.end())
+    //   initHistograms( detId );
+    // std::string chName;
+    // detId.channelName(chName, TotemTimingDetId::nFull);
+    // std::string samples_graph_name(chName);
+    // samples_graph_name.insert(0, "_cal_");
+    // samples_graph_name.insert(0, std::to_string(ct));
+    // samples_graph_name.insert(0, "samples_graph_");
+    // TGraph *graph_hndl = maindir_map_[ detId ].make<TGraph>();
+    // graph_hndl->SetName(samples_graph_name.c_str());
+    // graph_hndl->SetTitle(samples_graph_name.c_str());
+    // std::vector<float> voltage;
+    //
+    // std::string samples_graph_name2(chName);
+    // samples_graph_name.insert(0, "_noncal_");
+    // samples_graph_name.insert(0, std::to_string(ct));
+    // samples_graph_name.insert(0, "samples_graph_");
+    // TGraph *graph_hndl2 = maindir_map_[ detId ].make<TGraph>();
+    // graph_hndl2->SetName(samples_graph_name.c_str());
+    // graph_hndl2->SetTitle(samples_graph_name.c_str());
+    // std::vector<float> voltage2;
+    // ct++;
+    const TotemTimingDetId detId(digis.detId());
+    for (const auto& digi : digis )
+    {
+      detId_calFileId_map_[detId] = calFileId(digi.getHardwareBoardId(), digi.getHardwareSampicId(), digi.getHardwareChannelId());
+      // // Do stuff on DIGIs
+      // voltage = conv.getVoltSamples(digi);
+      // voltage2 = conv2.getVoltSamples(digi);
+      // int i=0;
+      // for (auto sampIt = voltage.begin(); sampIt != voltage.end(); ++sampIt){
+      //   // std::cout << *sampIt << ", ";
+      //   graph_hndl->SetPoint(i, SAMPIC_SAMPLING_PERIOD_NS*(i), *sampIt  );
+      //   i++;
+      // }
+      // // std::cout << "\n";
+      //
+      // i=0;
+      // for (auto sampIt = voltage2.begin(); sampIt != voltage2.end(); ++sampIt){
+      //   graph_hndl2->SetPoint(i, SAMPIC_SAMPLING_PERIOD_NS*(i), *sampIt  );
+      //   i++;
+      // }
+    }
+  }
 
   for (const auto& recHits : *timingRecHit)
   {
@@ -223,19 +266,44 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 void
 SimpleAnalyzer::beginJob()
 {
-  ct=0;
-  conv = TotemTimingConversions();
-  conv2 = TotemTimingConversions();
-  conv.openCalibrationFile("/afs/cern.ch/user/f/fdej/sampic_cal/correct_offsets.cal.json");
+  // ct=0;
+  // conv = TotemTimingConversions();
+  // conv2 = TotemTimingConversions();
+  // conv.openCalibrationFile("/afs/cern.ch/user/f/fdej/sampic_cal/correct_offsets.cal.json");
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void
 SimpleAnalyzer::endJob(){
-  std::cout << "Mean, RMS\n";
+  std::string file_name = "/afs/cern.ch/user/f/fdej/sampic_cal/correct_after.cal.json"; //set it in cmssw
+  pt::ptree node;
+  pt::read_json(file_name, node);
   for (auto &hist : tHisto_map_){
-    std::cout << hist.second->GetMean() << ", " << hist.second->GetRMS() << "\n";
+    int db = detId_calFileId_map_[hist.first].db;
+    int sampic = detId_calFileId_map_[hist.first].sampic;
+    int channel = detId_calFileId_map_[hist.first].channel;
+    ct = 0;
+    for(pt::ptree::value_type &par : node.get_child("parameters."+ std::to_string(db))){
+      if( ct == 16*(1-sampic)+channel){
+        double old_time_offset = par.second.get<double>("time_offset");
+        double old_time_precision = par.second.get<double>("time_precision");
+        double new_time_offset = old_time_offset - hist.second->GetMean();
+        double new_time_precision = hist.second->GetRMS();
+        par.second.put<double>("time_offset",new_time_offset);
+        par.second.put<double>("time_precision",new_time_precision);
+        break;
+      }
+      ct++;
+    }
+
+  //  query(node, path + ".time_offset").put_value<double>(new_time_offset);
+  //  query(node, path + ".time_precision").put_value<double>(new_time_precision);
+    // node.put<double>(path + ".time_offset",new_time_offset);
+    // node.put<double>(path + ".time_precision",new_time_precision);
+    /*std::cout << hist.second->GetMean() << ", "
+              << hist.second->GetRMS() << "\n";*/
   }
+  pt::write_json("/afs/cern.ch/user/f/fdej/sampic_cal/correct_after.cal.json", node);
   // for (auto &hist : tDiffHisto_map_){
   //   TotemTimingDetId detId = hist.first;
   //   TotemTimingDetId detId1 = TotemTimingDetId(detId.arm(), detId.station(), detId.rp(), detId.plane()+1, detId.channel());
@@ -245,8 +313,6 @@ SimpleAnalyzer::endJob(){
   //   double beam = (h->GetRMS()*h->GetRMS() + h1->GetRMS()*h1->GetRMS() - hSub->GetRMS()*hSub->GetRMS())/2;
   //   std::cout << beam << "\n";
   // }
-
-
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------

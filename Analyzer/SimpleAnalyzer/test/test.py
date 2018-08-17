@@ -3,8 +3,8 @@ import string
 
 process = cms.Process('RECODQM')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
-process.verbosity = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))
+process.verbosity = cms.untracked.PSet(input = cms.untracked.int32(-1) )
 
 # minimum of logs
 process.MessageLogger = cms.Service("MessageLogger",
@@ -64,6 +64,7 @@ process.totemTimingRecHits.cfdFraction = cms.double(0.3);
 process.totemTimingRecHits.hysteresis = cms.double(1e-3);
 process.totemTimingRecHits.smoothingPoints = cms.int32(6);
 process.totemTimingRecHits.lowPassFrequency = cms.double(0);
+process.totemTimingRecHits.calibrationFile = cms.string("/afs/cern.ch/user/f/fdej/sampic_cal/correct_after.cal.json")
 
 #process.totemTimingRecHits.calibrationFile = cms.string("/afs/cern.ch/user/f/fdej/sampic_cal/correct_offsets.cal.json");
 

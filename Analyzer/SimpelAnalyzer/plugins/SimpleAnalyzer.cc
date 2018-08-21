@@ -609,8 +609,8 @@ bool SimpleAnalyzer::hitMatch(const TotemTimingRecHit& timingHit, const TotemRPL
   float xDiff = std::fabs((topTimingX + bottomTimingX)/2.0 - (topStripX + bottomStripX)/2.0);
   float yDiff = std::fabs((topTimingY + bottomTimingY)/2.0 - (topStripY + bottomStripY)/2.0);
 
-  float xTolerance = (topTimingX - bottomTimingX)/2.0 + (topStripX - bottomStripX)/2.0;// + params.xTolerance;
-  float yTolerance = (topTimingY - bottomTimingY)/2.0 + (topStripY - bottomStripY)/2.0;// + params.yTolerance;
+  float xTolerance = (topTimingX - bottomTimingX)/2.0 + (topStripX - bottomStripX)/2.0 + params.xTolerance;
+  float yTolerance = (topTimingY - bottomTimingY)/2.0 + (topStripY - bottomStripY)/2.0 + params.yTolerance;
 
   //std::cout << "timing: (" << timingTrack.getX0() << ", " << timingTrack.getY0() << ") +- (" << timingTrack.getX0Sigma() << ", " << timingTrack.getY0Sigma() << ")" << std::endl;
   //std::cout << "timing projected: x (" << bottomTimingX << ", " << topTimingX << "), y (" << bottomTimingY << ", " << topTimingY << ")" << std::endl;
@@ -624,10 +624,10 @@ bool SimpleAnalyzer::hitMatch(const TotemTimingRecHit& timingHit, const TotemRPL
 void
 SimpleAnalyzer::beginJob()
 {
-  trackMatchParamsMap[TotemTimingDetId(0, 0, 0, 0, 0)] = TrackMatchParameters(0.81, -1.16, 1.0, 0.95, -36.81, 0.3);
-  trackMatchParamsMap[TotemTimingDetId(0, 0, 1, 0, 0)] = TrackMatchParameters(1.17, -1.82, 1.0, 0.95, 36.48, 0.3);
-  trackMatchParamsMap[TotemTimingDetId(1, 0, 0, 0, 0)] = TrackMatchParameters(0.25, -1.0, 100.0, 0.91, -34.14, 2.0);
-  trackMatchParamsMap[TotemTimingDetId(1, 0, 1, 0, 0)] = TrackMatchParameters(0.53, -1.35, 100.0, 0.94, 35.46, 2.0);
+  trackMatchParamsMap[TotemTimingDetId(0, 0, 0, 0, 0)] = TrackMatchParameters(0.81, -1.16, 100.0, 0.95, -36.81, 100.0);
+  trackMatchParamsMap[TotemTimingDetId(0, 0, 1, 0, 0)] = TrackMatchParameters(1.17, -1.82, 100.0, 0.95, 36.48, 100.0);
+  trackMatchParamsMap[TotemTimingDetId(1, 0, 0, 0, 0)] = TrackMatchParameters(0.25, -1.0, 100.0, 0.91, -34.14, 100.0);
+  trackMatchParamsMap[TotemTimingDetId(1, 0, 1, 0, 0)] = TrackMatchParameters(0.53, -1.35, 100.0, 0.94, 35.46, 100.0);
 
 
   edm::Service<TFileService> fs;

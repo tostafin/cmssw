@@ -20,6 +20,8 @@
 #include "DataFormats/CTPPSReco/interface/CTPPSTimingLocalTrack.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSDiamondLocalTrack.h"
 #include "DataFormats/CTPPSReco/interface/TotemTimingLocalTrack.h"
+#include "RecoCTPPS/TotemRPLocal/interface/CTPPSTimingTrackRecognition.h"
+
 
 #include <string>
 #include <cmath>
@@ -33,124 +35,107 @@
  * Class intended to perform general CTPPS timing detectors track recognition,
  * as well as construction of specialized classes (for now CTPPSDiamond and TotemTiming local tracks).
 **/
-class TotemTimingTrackRecognition
+
+class TotemTimingTrackRecognition : public CTPPSTimingTrackRecognition<TotemTimingLocalTrack, TotemTimingRecHit>
 {
   public:
 
-    /* General parameters in the set:
-     * "threshold": float
-     * "thresholdFromMaximum": float
-     * "resolution": float
-     * "sigma": float
-     * "pixelEfficiencyFunction": TF1
-     * Parameters specific to TotemTimingLocalTrack:
-     * "startFromX": float
-     * "stopAtX": float
-     * "startFromY": float
-     * "stopAtY": float
-     */
-    TotemTimingTrackRecognition(const edm::ParameterSet& parameters);
-
-    ~TotemTimingTrackRecognition();
-
-
-
-    // Class public interface:
-
-    // Resets internal state of the class instance.
-    void clear();
-
+    TotemTimingTrackRecognition(const edm::ParameterSet& parameters) :
+        CTPPSTimingTrackRecognition<TotemTimingLocalTrack, TotemTimingRecHit>(parameters)
+      {};
 
     // Adds new hit to the set from which the tracks are reconstructed.
-    void addHit(const TotemTimingRecHit& recHit);
+    void addHit(const TotemTimingRecHit& recHit) {
+      if(recHit.getT() != TotemTimingRecHit::NO_T_AVAILABLE)
+        hitVectorMap[0].push_back(recHit);
+    }
 
 
     /// Produces a collection of tracks for the current station, given its hits collection
-    int produceTracks(edm::DetSet<TotemTimingLocalTrack>& tracks);
+    int produceTracks(edm::DetSet<TotemTimingLocalTrack>& tracks) {
+
+      int numberOfTracks = 0;
+      DimensionParameters param;
+
+      param.threshold = threshold;
+      param.thresholdFromMaximum = thresholdFromMaximum;
+      param.resolution = resolution;
+      param.sigma = sigma;
+      param.hitFunction = pixelEfficiencyFunction;
 
 
+      for(auto hitBatch: hitVectorMap) {
 
-  private:
+        auto hits = hitBatch.second;
 
-    // Algorithm parameters:
-    float threshold;
-    float thresholdFromMaximum;
-    float resolution;
-    float sigma;
-    float tolerance;
-    TF1 pixelEfficiencyFunction;
+        std::vector<TotemTimingLocalTrack> xPartTracks, yPartTracks;
+        auto getX = [](const TotemTimingRecHit& hit){ return hit.getX(); };
+        auto getXWidth = [](const TotemTimingRecHit& hit){ return hit.getXWidth(); };
+        auto setX = [](TotemTimingLocalTrack& track, float x){ track.setPosition(math::XYZPoint(x, 0., 0.)); };
+        auto setXSigma = [](TotemTimingLocalTrack& track, float sigma){ track.setPositionSigma(math::XYZPoint(sigma, 0., 0.)); };
+        auto getY = [](const TotemTimingRecHit& hit){ return hit.getY(); };
+        auto getYWidth = [](const TotemTimingRecHit& hit){ return hit.getYWidth(); };
+        auto setY = [](TotemTimingLocalTrack& track, float y){ track.setPosition(math::XYZPoint(0., y, 0.)); };
+        auto setYSigma = [](TotemTimingLocalTrack& track, float sigma){ track.setPositionSigma(math::XYZPoint(0., sigma, 0.)); };
 
+        float xRangeBegin, xRangeEnd, yRangeBegin, yRangeEnd;
+        getHitSpatialRange(hits, getX, getXWidth, xRangeBegin, xRangeEnd);
+        getHitSpatialRange(hits, getY, getYWidth, yRangeBegin, yRangeEnd);
 
-    typedef std::vector<CTPPSTimingRecHit> HitVector;
-    typedef std::unordered_map<int, HitVector> HitVectorMap;
+        param.rangeBegin = xRangeBegin;
+        param.rangeEnd = xRangeEnd;
+        producePartialTracks(hits, param, getX, getXWidth, setX, setXSigma, xPartTracks);
 
+        param.rangeBegin = yRangeBegin;
+        param.rangeEnd = yRangeEnd;
+        producePartialTracks(hits, param, getY, getYWidth, setY, setYSigma, yPartTracks);
 
-    // Stores CTPPSTimingRecHit vectors grouped by OOTIndex
-    HitVectorMap hitVectorMap;
+        if(xPartTracks.size() == 0 && yPartTracks.size() == 0)
+          continue;
 
+        //TODO: create default tracks (not sure if necessary)
 
-    // Functions used to extract hit's key by which the hits are grouped in hitVectorMap
-    //TODO: template specialization
-    int getHitKey(const CTPPSTimingRecHit& obj);
+        auto getZ = [](const TotemTimingRecHit& hit){ return hit.getZ(); };
+        auto getZWidth = [](const TotemTimingRecHit& hit){ return hit.getZWidth(); };
+        float zRangeBegin, zRangeEnd;
+        getHitSpatialRange(hits, getZ, getZWidth, zRangeBegin, zRangeEnd);
 
+        int validHitsNumber = (int)(threshold + 1.0);
 
-    int getHitKey(const CTPPSDiamondRecHit& hit);
+        for(const auto& xTrack: xPartTracks) {
+          for(const auto& yTrack: yPartTracks) {
 
+            math::XYZPoint position(
+              xTrack.getX0(),
+              yTrack.getY0(),
+              (zRangeBegin + zRangeEnd) / 2.0
+            );
+            math::XYZPoint positionSigma(
+              xTrack.getX0Sigma(),
+              yTrack.getY0Sigma(),
+              (zRangeEnd - zRangeBegin) / 2.0
+            );
 
-    /* Structure representing parameters set for single dimension.
-     * Intended to use when producing partial tracks.
-     */
-    struct DimensionParameters {
-      float threshold;
-      float thresholdFromMaximum;
-      float resolution;
-      float sigma;
-      float rangeBegin;
-      float rangeEnd;
-      TF1 hitFunction;
-    };
+            TotemTimingLocalTrack newTrack;
+            newTrack.setPosition(position);
+            newTrack.setPositionSigma(positionSigma);
+            // TODO: setting validity / time / numHits / numPlanes
 
+            int hitCounter = 0;
+            for(auto hit: hits) {
+              if(newTrack.containsHit(hit, tolerance)) {
+                hitCounter++;
+              }
+            }
 
-    /* Produces all partial tracks from given set with regard to single dimension.
-     *
-     * @hits: vector of hits from which the tracks are created
-     * @param: describes all parameters used by 1D track recognition algorithm
-     * @getHitCenter: functor extracting hit's center in the dimension
-     *      that the partial tracks relate to
-     * @getHitRangeWidth: analogical to getHitCenter, but extracts hit's width
-     *      in specific dimension
-     * @result: vector to which produced tracks are appended
-     */
-    void producePartialTracks(
-        const HitVector& hits,
-        const DimensionParameters& param,
-        float (*getHitCenter)(const CTPPSTimingRecHit&),
-        float (*getHitRangeWidth)(const CTPPSTimingRecHit&),
-        void (*setTrackCenter)(TotemTimingLocalTrack&, float),
-        void (*setTrackSigma)(TotemTimingLocalTrack&, float),
-        std::vector<TotemTimingLocalTrack>& result
-      );
+            if(hitCounter >= validHitsNumber)
+              tracks.push_back(newTrack);
+          }
+        }
+      }
 
-
-
-    /* Creates a partial track that consists of all hits in the hit set.
-     *
-     * @hits: vector of hits from which the track is created
-     * @getHitCenter: functor extracting hit's center in the dimension
-     *      that the track relates to
-     * @getHitRangeWidth: analogical to getHitCenter, but extracts hit's width
-     *      in specific dimension
-     * @result: track buffer to which found values are saved
-     *
-     * @return: true if the track was successfully produced. false otherwise
-     */
-    bool getHitSpatialRange(
-        const HitVector& hits,
-        float (*getHitCenter)(const CTPPSTimingRecHit&),
-        float (*getHitRangeWidth)(const CTPPSTimingRecHit&),
-        float& rangeBegin,
-        float& rangeEnd
-      );
+      return numberOfTracks;
+    }
 };
 
 #endif

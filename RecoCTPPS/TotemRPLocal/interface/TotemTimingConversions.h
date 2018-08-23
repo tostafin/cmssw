@@ -19,8 +19,8 @@
 
 class TotemTimingConversions {
 public:
-  TotemTimingConversions();
-  TotemTimingConversions(const std::string& calibrationFile);
+  TotemTimingConversions(bool mergeTimePeaks);
+  TotemTimingConversions(bool mergeTimePeaks, const std::string& calibrationFile);
 
   const float getTimeOfFirstSample(const TotemTimingDigi& digi);
   const float getTriggerTime(const TotemTimingDigi& digi);
@@ -33,18 +33,19 @@ public:
 
 private:
 
-
-
   static const float SAMPIC_SAMPLING_PERIOD_NS;
   static const float SAMPIC_ADC_V;
   static const int SAMPIC_MAX_NUMBER_OF_SAMPLES;
   static const int SAMPIC_DEFAULT_OFFSET;
+  static const int ACCEPTED_TIME_RADIUS;
+
 
   bool calibrationFileOk_;
   bool calibrationFileOpened_;
-  TF1 calibrationFunction_;
   std::string calibrationFile_;
   TotemTimingParser parsedData_;
+  /*const*/ bool mergeTimePeaks_;
+  TF1 calibrationFunction_;
 };
 
 #endif

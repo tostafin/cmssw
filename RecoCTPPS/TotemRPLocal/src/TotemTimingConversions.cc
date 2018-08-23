@@ -10,19 +10,39 @@
 #include "RecoCTPPS/TotemRPLocal/interface/TotemTimingConversions.h"
 //----------------------------------------------------------------------------------------------------
 
-const float TotemTimingConversions::SAMPIC_SAMPLING_PERIOD_NS = 1. / 7.8;
+const float TotemTimingConversions::SAMPIC_SAMPLING_PERIOD_NS = 1. / 7.695;
 const float TotemTimingConversions::SAMPIC_ADC_V = 1. / 256;
 const int TotemTimingConversions::SAMPIC_MAX_NUMBER_OF_SAMPLES = 64;
 const int TotemTimingConversions::SAMPIC_DEFAULT_OFFSET = 30;
-
-//----------------------------------------------------------------------------------------------------
-TotemTimingConversions::TotemTimingConversions()
-    : calibrationFileOk_(false), calibrationFileOpened_(false), calibrationFile_("/dev/null"), parsedData_(TotemTimingParser()) {}
+const int TotemTimingConversions::ACCEPTED_TIME_RADIUS = 4;
 
 //----------------------------------------------------------------------------------------------------
 
-TotemTimingConversions::TotemTimingConversions(const std::string& calibrationFile)
-    : calibrationFileOk_(true), calibrationFileOpened_(false), calibrationFile_(calibrationFile), parsedData_(TotemTimingParser()) {}
+// TotemTimingConversions::TotemTimingConversions()
+//     : calibrationFileOk_(false),
+//       calibrationFileOpened_(false),
+//       calibrationFile_("/dev/null"),
+//       parsedData_(TotemTimingParser()),
+//       mergeTimePeaks_(false)
+//       {}
+
+TotemTimingConversions::TotemTimingConversions(bool mergeTimePeaks)
+    : calibrationFileOk_(false),
+      calibrationFileOpened_(false),
+      calibrationFile_("/dev/null"),
+      parsedData_(TotemTimingParser()),
+      mergeTimePeaks_(mergeTimePeaks)
+      {}
+
+//----------------------------------------------------------------------------------------------------
+
+TotemTimingConversions::TotemTimingConversions(bool mergeTimePeaks, const std::string& calibrationFile)
+    : calibrationFileOk_(true),
+      calibrationFileOpened_(false),
+      calibrationFile_(calibrationFile),
+      parsedData_(TotemTimingParser()),
+      mergeTimePeaks_(mergeTimePeaks)
+      {}
 
 //----------------------------------------------------------------------------------------------------
 
@@ -69,23 +89,14 @@ const float TotemTimingConversions::getTimeOfFirstSample(const TotemTimingDigi& 
   float cell0TimeInstant;       // Time of first cell
   float firstCellTimeInstant; // Time of triggered cell
 
-  unsigned int timestamp = 0;
-  unsigned int safety_margin = 20;
-  if (digi.getCellInfo() <= safety_margin)
-    timestamp = digi.getTimestampB() + 1;
-  if (digi.getCellInfo() > SAMPIC_MAX_NUMBER_OF_SAMPLES - safety_margin)
-    timestamp = digi.getTimestampB();
-  else
-    timestamp = digi.getTimestampA();
-  // unsigned int timestamp = digi.getCellInfo() <= SAMPIC_MAX_NUMBER_OF_SAMPLES/2 ?
-  //                                                     digi.getTimestampA()
-  //                                                   : digi.getTimestampB();
+  unsigned int timestamp = digi.getCellInfo() <= SAMPIC_MAX_NUMBER_OF_SAMPLES/2 ?
+                                                      digi.getTimestampA()
+                                                    : digi.getTimestampB();
 
   cell0TimeClock = timestamp +
                    ((digi.getFPGATimestamp() - timestamp) & 0xFFFFFFF000) -
                    digi.getEventInfo().getL1ATimestamp() +
                    digi.getEventInfo().getL1ALatency();
-   // cell0TimeClock = 0;
 
   cell0TimeInstant = SAMPIC_MAX_NUMBER_OF_SAMPLES *
                      SAMPIC_SAMPLING_PERIOD_NS * cell0TimeClock;
@@ -99,12 +110,24 @@ const float TotemTimingConversions::getTimeOfFirstSample(const TotemTimingDigi& 
         (SAMPIC_MAX_NUMBER_OF_SAMPLES - digi.getCellInfo()) *
             SAMPIC_SAMPLING_PERIOD_NS;
 
+
+
   int db = digi.getHardwareBoardId();
   int sampic = digi.getHardwareSampicId();
   int channel = digi.getHardwareChannelId();
   if (!calibrationFileOpened_) openCalibrationFile();
-  return firstCellTimeInstant + parsedData_.getTimeOffset(db, sampic, channel);
+  float t = firstCellTimeInstant + parsedData_.getTimeOffset(db, sampic, channel);
   //NOTE: If no time offset is set, getTimeOffset returns 0
+
+  if(mergeTimePeaks_){
+    if(t < -ACCEPTED_TIME_RADIUS){
+      t += SAMPIC_MAX_NUMBER_OF_SAMPLES * SAMPIC_SAMPLING_PERIOD_NS;
+    }
+    if(t > ACCEPTED_TIME_RADIUS){
+      t -= SAMPIC_MAX_NUMBER_OF_SAMPLES * SAMPIC_SAMPLING_PERIOD_NS;
+    }
+  }
+  return t;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -136,15 +159,15 @@ std::vector<float> TotemTimingConversions::getTimeSamples(const TotemTimingDigi&
 //----------------------------------------------------------------------------------------------------
 
 std::vector<float> TotemTimingConversions::getVoltSamples(const TotemTimingDigi& digi){
-  if (!calibrationFileOpened_) openCalibrationFile();
-  //std::cout << "getVoltSamples - " ;
-  std::vector<float> data;
-  if (!calibrationFileOk_){
-    for (auto it = digi.getSamplesBegin(); it != digi.getSamplesEnd(); ++it){
-      data.emplace_back(SAMPIC_ADC_V * (*it));
-      //std::cout << SAMPIC_ADC_V * (*it) << "\n";
-    }
-  }
+   if (!calibrationFileOpened_) openCalibrationFile();
+   //std::cout << "getVoltSamples - " ;
+   std::vector<float> data;
+   if (!calibrationFileOk_){
+     for (auto it = digi.getSamplesBegin(); it != digi.getSamplesEnd(); ++it){
+       data.emplace_back(SAMPIC_ADC_V * (*it));
+       //std::cout << SAMPIC_ADC_V * (*it) << "\n";
+     }
+   }
   else{
     unsigned int db = digi.getHardwareBoardId();
     unsigned int sampic = digi.getHardwareSampicId();

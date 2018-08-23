@@ -81,7 +81,7 @@ class SimpleAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       // ---------- graphs ---------------------------
       std::map< TotemTimingDetId, TGraph*> samples_graph_map_;
       std::map< TotemTimingDetId, unsigned int> samples_graphCtr_map_;
-      TotemTimingConversions conv, conv2;
+      //TotemTimingConversions conv, conv2;
       int ct;
       std::map<TotemTimingDetId, calFileId> detId_calFileId_map_;
 };
@@ -165,7 +165,7 @@ SimpleAnalyzer::initHistograms(const TotemTimingDetId& detId)
 
     std::string tHisto_name(chName);
     tHisto_name.insert(0, "tDistribution_");
-    tHisto_map_[ detId ] = maindir_map_[ detId ].make<TH1F>(tHisto_name.c_str(), tHisto_name.c_str(), 100, -3, 3 ); //0 5
+    tHisto_map_[ detId ] = maindir_map_[ detId ].make<TH1F>(tHisto_name.c_str(), tHisto_name.c_str(), 100, -4, 4); //-4 4
     // std::string tDiffHisto_name(chName);
     // tDiffHisto_name.insert(0, "tDiffWithPl+1_");
     // tDiffHisto_map_[ detId ] = maindir_map_[ detId ].make<TH1F>(tDiffHisto_name.c_str(), tDiffHisto_name.c_str(), 100, -20, 20 ); //-2 2
@@ -257,6 +257,17 @@ SimpleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             tDiffHisto_map_[detId]->Fill(recHit2.getT() - recHit.getT());
           }
       }*/
+      // for (const auto& recHits2 : *timingRecHit){ nicolastuff
+      //   const TotemTimingDetId detId2( recHits2.detId() );
+      //   if  ((detId.arm() != detId2.arm()) &&
+      //       (detId.station() == detId2.station()) &&
+      //       (detId.rp() != detId2.rp()) &&
+      //       (detId.channel() == detId2.channel()) &&
+      //       (detId.plane()== detId2.plane()))
+      //     for (const auto& recHit2 : recHits2 ){
+      //       tDiff_45_56_Histo_map_[detId]->Fill(recHit2.getT() - recHit.getT());
+      //     }
+      // } nicolastuff
     }
   }
 }
@@ -275,7 +286,11 @@ SimpleAnalyzer::beginJob()
 // ------------ method called once each job just after ending the event loop  ------------
 void
 SimpleAnalyzer::endJob(){
-  std::string file_name = "/afs/cern.ch/user/f/fdej/sampic_cal/correct_after.cal.json"; //set it in cmssw
+  std::ofstream log_file;
+  log_file.open("log_withcal.csv", std::ofstream::out | std::ofstream::trunc);
+  log_file << "db, UFSD plane, UFSD channel, time_offset, time_precision (w.c)\n";
+
+  std::string file_name = "/afs/cern.ch/user/f/fdej/sampic_cal/correct_offsets.cal.json"; //set it in cmssw
   pt::ptree node;
   pt::read_json(file_name, node);
   for (auto &hist : tHisto_map_){
@@ -284,18 +299,17 @@ SimpleAnalyzer::endJob(){
     int channel = detId_calFileId_map_[hist.first].channel;
     ct = 0;
     for(pt::ptree::value_type &par : node.get_child("parameters."+ std::to_string(db))){
-      if( ct == 16*(1-sampic)+channel){
+      if( ct == 16*(1-sampic)+channel){ //very ugly but works for now
         double old_time_offset = par.second.get<double>("time_offset");
-        double old_time_precision = par.second.get<double>("time_precision");
         double new_time_offset = old_time_offset - hist.second->GetMean();
         double new_time_precision = hist.second->GetRMS();
         par.second.put<double>("time_offset",new_time_offset);
         par.second.put<double>("time_precision",new_time_precision);
+        log_file << db << ", " << hist.first.plane() << ", " << hist.first.channel() << ", " << new_time_offset << ", " << new_time_precision << "\n";
         break;
       }
       ct++;
     }
-
   //  query(node, path + ".time_offset").put_value<double>(new_time_offset);
   //  query(node, path + ".time_precision").put_value<double>(new_time_precision);
     // node.put<double>(path + ".time_offset",new_time_offset);
@@ -303,7 +317,8 @@ SimpleAnalyzer::endJob(){
     /*std::cout << hist.second->GetMean() << ", "
               << hist.second->GetRMS() << "\n";*/
   }
-  pt::write_json("/afs/cern.ch/user/f/fdej/sampic_cal/correct_after.cal.json", node);
+  log_file.close();
+  pt::write_json("/afs/cern.ch/user/f/fdej/sampic_cal/correct_offsets.cal.json", node);
   // for (auto &hist : tDiffHisto_map_){
   //   TotemTimingDetId detId = hist.first;
   //   TotemTimingDetId detId1 = TotemTimingDetId(detId.arm(), detId.station(), detId.rp(), detId.plane()+1, detId.channel());

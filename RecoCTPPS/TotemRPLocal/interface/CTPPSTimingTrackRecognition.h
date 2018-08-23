@@ -46,7 +46,7 @@ class CTPPSTimingTrackRecognition
     // Class API:
 
     // Resets internal state of a class instance.
-    void clear();
+    virtual void clear();
 
 
     // Adds new hit to the set from which the tracks are reconstructed.

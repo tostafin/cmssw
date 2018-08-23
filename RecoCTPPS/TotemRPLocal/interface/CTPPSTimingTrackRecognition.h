@@ -65,7 +65,6 @@ class CTPPSTimingTrackRecognition
     float thresholdFromMaximum;
     float resolution;
     float sigma;
-    float tolerance;
     TF1 pixelEfficiencyFunction;
 
 
@@ -88,6 +87,18 @@ class CTPPSTimingTrackRecognition
       float rangeBegin;
       float rangeEnd;
       TF1 hitFunction;
+    };
+
+
+    /* Structure representing 3D range in space.
+     */
+    struct SpatialRange {
+      float xBegin;
+      float xEnd;
+      float yBegin;
+      float yEnd;
+      float zBegin;
+      float zEnd;
     };
 
 
@@ -115,21 +126,11 @@ class CTPPSTimingTrackRecognition
 
 
 
-    /* Retrieves the bounds of a single dimension range in which all hits are contained.
+    /* Retrieves the bounds of a 3D range in which all hits from given collection are contained.
      *
      * @hits: hits collection to retrieve the range from
-     * @getHitCenter: function extracting hit's center in considered dimension
-     * @getHitRangeWidth: function extracting hit's width in considered dimension
-     * @rangeBegin: buffer to which the range's lower bound is written
-     * @rangeEnd: buffer to which the range's upper bound is written
      */
-    bool getHitSpatialRange(
-        const HitVector& hits,
-        float (*getHitCenter)(const HIT_TYPE&),
-        float (*getHitRangeWidth)(const HIT_TYPE&),
-        float& rangeBegin,
-        float& rangeEnd
-      );
+    SpatialRange getHitSpatialRange(const HitVector& hits);
 };
 
 // Implementation for all member methods

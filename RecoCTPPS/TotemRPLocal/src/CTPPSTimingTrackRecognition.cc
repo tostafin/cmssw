@@ -35,7 +35,6 @@ CTPPSTimingTrackRecognition<TRACK_TYPE, HIT_TYPE>::CTPPSTimingTrackRecognition(c
     thresholdFromMaximum    ( iConfig.getParameter<double>( "thresholdFromMaximum" ) ),
     resolution              ( iConfig.getParameter<double>( "resolution" ) ),
     sigma                   ( iConfig.getParameter<double>( "sigma" ) ),
-    tolerance               ( iConfig.getParameter<double>( "tolerance" ) ),
     pixelEfficiencyFunction ( "hit_TF1_CTPPS", iConfig.getParameter<std::string>( "pixelEfficiencyFunction" ).c_str() ) {
 }
 
@@ -142,37 +141,53 @@ void CTPPSTimingTrackRecognition<TRACK_TYPE, HIT_TYPE>::producePartialTracks(
 
 
 template<class TRACK_TYPE, class HIT_TYPE>
-bool CTPPSTimingTrackRecognition<TRACK_TYPE, HIT_TYPE>::getHitSpatialRange(
-    const HitVector& hits,
-    float (*getHitCenter)(const HIT_TYPE&),
-    float (*getHitRangeWidth)(const HIT_TYPE&),
-    float& rangeBegin,
-    float& rangeEnd
-  ) {
+typename CTPPSTimingTrackRecognition<TRACK_TYPE, HIT_TYPE>::SpatialRange
+CTPPSTimingTrackRecognition<TRACK_TYPE, HIT_TYPE>::getHitSpatialRange(const HitVector& hits) {
 
   bool initialized = false;
+  SpatialRange result;
 
   for(unsigned int i = 0; i < hits.size(); i++) {
 
     if(initialized) {
-      float bottomVal = getHitCenter(hits[i]) - getHitRangeWidth(hits[i]) / 2.0;
-      float topVal = getHitCenter(hits[i]) + getHitRangeWidth(hits[i]) / 2.0;
+      float xBegin = hits[i].getX() - (hits[i].getXWidth() / 2.0);
+      float xEnd = hits[i].getX() + (hits[i].getXWidth() / 2.0);
+      float yBegin = hits[i].getY() - (hits[i].getYWidth() / 2.0);
+      float yEnd = hits[i].getY() + (hits[i].getYWidth() / 2.0);
+      float zBegin = hits[i].getZ() - (hits[i].getZWidth() / 2.0);
+      float zEnd = hits[i].getZ() + (hits[i].getZWidth() / 2.0);
 
-      if(bottomVal < rangeBegin)
-        rangeBegin = bottomVal;
+      if(xBegin < result.xBegin)
+        result.xBegin = xBegin;
 
-      if(topVal > rangeEnd)
-        rangeEnd = topVal;
+      if(xEnd < result.xEnd)
+        result.xEnd = xEnd;
+
+      if(yBegin < result.yBegin)
+        result.yBegin = yBegin;
+
+      if(yEnd < result.yEnd)
+        result.yEnd = yEnd;
+
+      if(zBegin < result.zBegin)
+        result.zBegin = zBegin;
+
+      if(zEnd < result.zEnd)
+        result.zEnd = zEnd;
     }
 
     else {
-      rangeBegin = getHitCenter(hits[i]) - getHitRangeWidth(hits[i]) / 2.0;
-      rangeEnd = getHitCenter(hits[i]) + getHitRangeWidth(hits[i]) / 2.0;
+      result.xBegin = hits[i].getX() - (hits[i].getXWidth() / 2.0);
+      result.xEnd = hits[i].getX() + (hits[i].getXWidth() / 2.0);
+      result.yBegin = hits[i].getY() - (hits[i].getYWidth() / 2.0);
+      result.yEnd = hits[i].getY() + (hits[i].getYWidth() / 2.0);
+      result.zBegin = hits[i].getZ() - (hits[i].getZWidth() / 2.0);
+      result.zEnd = hits[i].getZ() + (hits[i].getZWidth() / 2.0);
       initialized = true;
     }
   }
 
-  return initialized;
+  return result;
 }
 
 #endif

@@ -18,23 +18,23 @@
 
 //----------------------------------------------------------------------------------------------------
 
-const std::string CTPPSDiamondTrackRecognition::pixelEfficiencyDefaultFunction_ = "(x>[0]-0.5*[1])*(x<[0]+0.5*[1])";
+//const std::string CTPPSDiamondTrackRecognition::pixelEfficiencyDefaultFunction_ = "(x>[0]-0.5*[1])*(x<[0]+0.5*[1])";
 
 CTPPSDiamondTrackRecognition::CTPPSDiamondTrackRecognition(const edm::ParameterSet& parameters) :
     CTPPSTimingTrackRecognition<CTPPSDiamondLocalTrack, CTPPSDiamondRecHit>(parameters)
 {
   if ( sigma == 0. ) {
-    pixelEfficiencyFunction = TF1( "hit_TF1_CTPPS", pixelEfficiencyDefaultFunction_.c_str()); // simple step function
+    //pixelEfficiencyFunction = TF1( "hit_TF1_CTPPS", pixelEfficiencyDefaultFunction_.c_str()); // simple step function
   }
 }
 
 //----------------------------------------------------------------------------------------------------
 
-// void CTPPSDiamondTrackRecognition::clear()
-// {
-//   CTPPSTimingTrackRecognition<CTPPSDiamondLocalTrack, CTPPSDiamondRecHit>::clear();
-//   mhMap_.clear();
-// }
+void CTPPSDiamondTrackRecognition::clear()
+{
+  CTPPSTimingTrackRecognition<CTPPSDiamondLocalTrack, CTPPSDiamondRecHit>::clear();
+  mhMap_.clear();
+}
 
 //----------------------------------------------------------------------------------------------------
 

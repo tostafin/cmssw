@@ -10,7 +10,7 @@
 #include "DataFormats/CTPPSReco/interface/CTPPSTimingLocalTrack.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSDiamondLocalTrack.h"
 #include "DataFormats/CTPPSReco/interface/TotemTimingLocalTrack.h"
-#include "RecoCTPPS/TotemRPLocal/interface/CTPPSTimingTrackRecognition.h"
+#include "RecoCTPPS/TotemRPLocal/interface/TotemTimingTrackRecognition.h"
 
 
 #include <string>
@@ -22,7 +22,8 @@
 #include "TF1.h"
 
 TotemTimingTrackRecognition::TotemTimingTrackRecognition(const edm::ParameterSet& parameters) :
-    CTPPSTimingTrackRecognition<TotemTimingLocalTrack, TotemTimingRecHit>(parameters)
+    CTPPSTimingTrackRecognition<TotemTimingLocalTrack, TotemTimingRecHit>(parameters),
+    tolerance(parameters.getParameter<double>( "threshold" ))
   {};
 
 void TotemTimingTrackRecognition::addHit(const TotemTimingRecHit& recHit) {
@@ -45,6 +46,7 @@ int TotemTimingTrackRecognition::produceTracks(edm::DetSet<TotemTimingLocalTrack
  for(auto hitBatch: hitVectorMap) {
 
    auto hits = hitBatch.second;
+   auto hitRange = getHitSpatialRange(hits);
 
    std::vector<TotemTimingLocalTrack> xPartTracks, yPartTracks;
    auto getX = [](const TotemTimingRecHit& hit){ return hit.getX(); };
@@ -56,27 +58,18 @@ int TotemTimingTrackRecognition::produceTracks(edm::DetSet<TotemTimingLocalTrack
    auto setY = [](TotemTimingLocalTrack& track, float y){ track.setPosition(math::XYZPoint(0., y, 0.)); };
    auto setYSigma = [](TotemTimingLocalTrack& track, float sigma){ track.setPositionSigma(math::XYZPoint(0., sigma, 0.)); };
 
-   float xRangeBegin, xRangeEnd, yRangeBegin, yRangeEnd;
-   getHitSpatialRange(hits, getX, getXWidth, xRangeBegin, xRangeEnd);
-   getHitSpatialRange(hits, getY, getYWidth, yRangeBegin, yRangeEnd);
-
-   param.rangeBegin = xRangeBegin;
-   param.rangeEnd = xRangeEnd;
+   param.rangeBegin = hitRange.xBegin;
+   param.rangeEnd = hitRange.xEnd;
    producePartialTracks(hits, param, getX, getXWidth, setX, setXSigma, xPartTracks);
 
-   param.rangeBegin = yRangeBegin;
-   param.rangeEnd = yRangeEnd;
+   param.rangeBegin = hitRange.yBegin;
+   param.rangeEnd = hitRange.yEnd;
    producePartialTracks(hits, param, getY, getYWidth, setY, setYSigma, yPartTracks);
 
    if(xPartTracks.size() == 0 && yPartTracks.size() == 0)
      continue;
 
    //TODO: create default tracks (not sure if necessary)
-
-   auto getZ = [](const TotemTimingRecHit& hit){ return hit.getZ(); };
-   auto getZWidth = [](const TotemTimingRecHit& hit){ return hit.getZWidth(); };
-   float zRangeBegin, zRangeEnd;
-   getHitSpatialRange(hits, getZ, getZWidth, zRangeBegin, zRangeEnd);
 
    int validHitsNumber = (int)(threshold + 1.0);
 
@@ -86,12 +79,12 @@ int TotemTimingTrackRecognition::produceTracks(edm::DetSet<TotemTimingLocalTrack
        math::XYZPoint position(
          xTrack.getX0(),
          yTrack.getY0(),
-         (zRangeBegin + zRangeEnd) / 2.0
+         (hitRange.zBegin + hitRange.zEnd) / 2.0
        );
        math::XYZPoint positionSigma(
          xTrack.getX0Sigma(),
          yTrack.getY0Sigma(),
-         (zRangeEnd - zRangeBegin) / 2.0
+         (hitRange.zEnd - hitRange.zBegin) / 2.0
        );
 
        TotemTimingLocalTrack newTrack;

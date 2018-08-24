@@ -43,10 +43,6 @@ class CTPPSDiamondTrackRecognition : public CTPPSTimingTrackRecognition<CTPPSDia
 
   private:
 
-    /// Default hit function accounting for the pad spatial efficiency
-    static const std::string pixelEfficiencyDefaultFunction_;
-
-    /// Function for pad efficiency
     std::unordered_map<int,int> mhMap_;
 };
 

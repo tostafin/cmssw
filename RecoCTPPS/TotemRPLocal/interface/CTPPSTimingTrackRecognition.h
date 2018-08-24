@@ -61,10 +61,10 @@ class CTPPSTimingTrackRecognition
   protected:
 
     // Algorithm parameters:
-    float threshold;
-    float thresholdFromMaximum;
-    float resolution;
-    float sigma;
+    const float threshold;
+    const float thresholdFromMaximum;
+    const float resolution;
+    const float sigma;
     TF1 pixelEfficiencyFunction;
 
 
@@ -90,7 +90,7 @@ class CTPPSTimingTrackRecognition
     };
 
 
-    /* Structure representing 3D range in space.
+    /* Structure representing a 3D range in space.
      */
     struct SpatialRange {
       float xBegin;

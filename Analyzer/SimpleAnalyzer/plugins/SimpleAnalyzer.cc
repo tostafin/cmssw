@@ -290,7 +290,7 @@ SimpleAnalyzer::endJob(){
   log_file.open("log_withcal.csv", std::ofstream::out | std::ofstream::trunc);
   log_file << "db, UFSD plane, UFSD channel, time_offset, time_precision (w.c)\n";
 
-  std::string file_name = "/afs/cern.ch/user/f/fdej/sampic_cal/correct_offsets.cal.json"; //set it in cmssw
+  std::string file_name = "RecoCTPPS/TotemRPLocal/calib/correct_offsets.cal.json"; //set it in cmssw
   pt::ptree node;
   pt::read_json(file_name, node);
   for (auto &hist : tHisto_map_){
@@ -318,7 +318,7 @@ SimpleAnalyzer::endJob(){
               << hist.second->GetRMS() << "\n";*/
   }
   log_file.close();
-  pt::write_json("/afs/cern.ch/user/f/fdej/sampic_cal/correct_offsets.cal.json", node);
+  pt::write_json("RecoCTPPS/TotemRPLocal/calib/correct_offsets2.cal.json", node);
   // for (auto &hist : tDiffHisto_map_){
   //   TotemTimingDetId detId = hist.first;
   //   TotemTimingDetId detId1 = TotemTimingDetId(detId.arm(), detId.station(), detId.rp(), detId.plane()+1, detId.channel());

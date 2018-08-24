@@ -33,79 +33,102 @@ void TotemTimingTrackRecognition::addHit(const TotemTimingRecHit& recHit) {
 
 int TotemTimingTrackRecognition::produceTracks(edm::DetSet<TotemTimingLocalTrack>& tracks) {
 
- int numberOfTracks = 0;
- DimensionParameters param;
+  int numberOfTracks = 0;
+  DimensionParameters param;
 
- param.threshold = threshold;
- param.thresholdFromMaximum = thresholdFromMaximum;
- param.resolution = resolution;
- param.sigma = sigma;
- param.hitFunction = pixelEfficiencyFunction;
+  param.threshold = threshold;
+  param.thresholdFromMaximum = thresholdFromMaximum;
+  param.resolution = resolution;
+  param.sigma = sigma;
+  param.hitFunction = pixelEfficiencyFunction;
 
+  for(auto hitBatch: hitVectorMap) {
 
- for(auto hitBatch: hitVectorMap) {
+    auto hits = hitBatch.second;
+    auto hitRange = getHitSpatialRange(hits);
 
-   auto hits = hitBatch.second;
-   auto hitRange = getHitSpatialRange(hits);
+    std::vector<TotemTimingLocalTrack> xPartTracks, yPartTracks;
+    auto getX = [](const TotemTimingRecHit& hit){ return hit.getX(); };
+    auto getXWidth = [](const TotemTimingRecHit& hit){ return hit.getXWidth(); };
+    auto setX = [](TotemTimingLocalTrack& track, float x){ track.setPosition(math::XYZPoint(x, 0., 0.)); };
+    auto setXSigma = [](TotemTimingLocalTrack& track, float sigma){ track.setPositionSigma(math::XYZPoint(sigma, 0., 0.)); };
+    auto getY = [](const TotemTimingRecHit& hit){ return hit.getY(); };
+    auto getYWidth = [](const TotemTimingRecHit& hit){ return hit.getYWidth(); };
+    auto setY = [](TotemTimingLocalTrack& track, float y){ track.setPosition(math::XYZPoint(0., y, 0.)); };
+    auto setYSigma = [](TotemTimingLocalTrack& track, float sigma){ track.setPositionSigma(math::XYZPoint(0., sigma, 0.)); };
 
-   std::vector<TotemTimingLocalTrack> xPartTracks, yPartTracks;
-   auto getX = [](const TotemTimingRecHit& hit){ return hit.getX(); };
-   auto getXWidth = [](const TotemTimingRecHit& hit){ return hit.getXWidth(); };
-   auto setX = [](TotemTimingLocalTrack& track, float x){ track.setPosition(math::XYZPoint(x, 0., 0.)); };
-   auto setXSigma = [](TotemTimingLocalTrack& track, float sigma){ track.setPositionSigma(math::XYZPoint(sigma, 0., 0.)); };
-   auto getY = [](const TotemTimingRecHit& hit){ return hit.getY(); };
-   auto getYWidth = [](const TotemTimingRecHit& hit){ return hit.getYWidth(); };
-   auto setY = [](TotemTimingLocalTrack& track, float y){ track.setPosition(math::XYZPoint(0., y, 0.)); };
-   auto setYSigma = [](TotemTimingLocalTrack& track, float sigma){ track.setPositionSigma(math::XYZPoint(0., sigma, 0.)); };
+    param.rangeBegin = hitRange.xBegin;
+    param.rangeEnd = hitRange.xEnd;
+    producePartialTracks(hits, param, getX, getXWidth, setX, setXSigma, xPartTracks);
 
-   param.rangeBegin = hitRange.xBegin;
-   param.rangeEnd = hitRange.xEnd;
-   producePartialTracks(hits, param, getX, getXWidth, setX, setXSigma, xPartTracks);
+    param.rangeBegin = hitRange.yBegin;
+    param.rangeEnd = hitRange.yEnd;
+    producePartialTracks(hits, param, getY, getYWidth, setY, setYSigma, yPartTracks);
 
-   param.rangeBegin = hitRange.yBegin;
-   param.rangeEnd = hitRange.yEnd;
-   producePartialTracks(hits, param, getY, getYWidth, setY, setYSigma, yPartTracks);
-
-   if(xPartTracks.size() == 0 && yPartTracks.size() == 0)
+    if(xPartTracks.size() == 0 && yPartTracks.size() == 0)
      continue;
 
-   //TODO: create default tracks (not sure if necessary)
+    //TODO: create default tracks (not sure if necessary)
 
-   int validHitsNumber = (int)(threshold + 1.0);
+    unsigned int validHitsNumber = (int)(threshold + 1.0);
 
-   for(const auto& xTrack: xPartTracks) {
-     for(const auto& yTrack: yPartTracks) {
+    for(const auto& xTrack: xPartTracks) {
+      for(const auto& yTrack: yPartTracks) {
 
-       math::XYZPoint position(
-         xTrack.getX0(),
-         yTrack.getY0(),
-         (hitRange.zBegin + hitRange.zEnd) / 2.0
-       );
-       math::XYZPoint positionSigma(
-         xTrack.getX0Sigma(),
-         yTrack.getY0Sigma(),
-         (hitRange.zEnd - hitRange.zBegin) / 2.0
-       );
+        math::XYZPoint position(
+          xTrack.getX0(),
+          yTrack.getY0(),
+          (hitRange.zBegin + hitRange.zEnd) / 2.0
+        );
+        math::XYZPoint positionSigma(
+          xTrack.getX0Sigma(),
+          yTrack.getY0Sigma(),
+          (hitRange.zEnd - hitRange.zBegin) / 2.0
+        );
 
-       TotemTimingLocalTrack newTrack;
-       newTrack.setPosition(position);
-       newTrack.setPositionSigma(positionSigma);
-       // TODO: setting validity / time / numHits / numPlanes
+        TotemTimingLocalTrack newTrack;
+        newTrack.setPosition(position);
+        newTrack.setPositionSigma(positionSigma);
 
-       int hitCounter = 0;
-       for(auto hit: hits) {
-         if(newTrack.containsHit(hit, tolerance)) {
-           hitCounter++;
-         }
-       }
+        std::vector<TotemTimingRecHit> componentHits;
+        for(auto hit: hits)
+          if(newTrack.containsHit(hit, tolerance))
+            componentHits.push_back(hit);
 
-       if(hitCounter >= validHitsNumber)
-         tracks.push_back(newTrack);
-     }
-   }
- }
+        if(componentHits.size() < validHitsNumber)
+          continue;
 
- return numberOfTracks;
+        // Calculating time
+        //    track's time = weighted mean of all hit times whith time precision as weight
+        //    track's time sigma = uncertainty of the weighted mean
+        // hit is ignored if the time precision is equal to 0
+
+        float meanDivident = 0.;
+        float meanDivisor = 0.;
+        bool validHits = false;
+        for(const auto& hit : componentHits) {
+
+          if(hit.getTPrecision() == 0.)
+            continue;
+
+          validHits = true;
+          float weight = 1 / (hit.getTPrecision() * hit.getTPrecision());
+          meanDivident += weight * hit.getT();
+          meanDivisor += weight;
+        }
+
+        float meanTime = validHits ? (meanDivident / meanDivisor) : 0.;
+        float timeSigma = validHits ? (std::sqrt(1 / meanDivisor)) : 0.;
+        newTrack.setValid(validHits);
+        newTrack.setT(meanTime);
+        newTrack.setTSigma(timeSigma);
+        // TODO: setting validity / numHits / numPlanes
+        tracks.push_back(newTrack);
+      }
+    }
+  }
+
+  return numberOfTracks;
 }
 
 #endif

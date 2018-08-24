@@ -18,14 +18,6 @@ const int TotemTimingConversions::ACCEPTED_TIME_RADIUS = 4;
 
 //----------------------------------------------------------------------------------------------------
 
-// TotemTimingConversions::TotemTimingConversions()
-//     : calibrationFileOk_(false),
-//       calibrationFileOpened_(false),
-//       calibrationFile_("/dev/null"),
-//       parsedData_(TotemTimingParser()),
-//       mergeTimePeaks_(false)
-//       {}
-
 TotemTimingConversions::TotemTimingConversions(bool mergeTimePeaks)
     : calibrationFileOk_(false),
       calibrationFileOpened_(false),
@@ -33,8 +25,6 @@ TotemTimingConversions::TotemTimingConversions(bool mergeTimePeaks)
       parsedData_(TotemTimingParser()),
       mergeTimePeaks_(mergeTimePeaks)
       {}
-
-//----------------------------------------------------------------------------------------------------
 
 TotemTimingConversions::TotemTimingConversions(bool mergeTimePeaks, const std::string& calibrationFile)
     : calibrationFileOk_(true),
@@ -52,13 +42,12 @@ void TotemTimingConversions::openCalibrationFile(){
       parsedData_.parseFile(calibrationFile_);
       calibrationFileOk_ = true;
       calibrationFileOpened_ = true;
-      //std::cout << parsedData_;
     }
     catch(boost::exception const &e){
       calibrationFileOk_ = false;
       calibrationFileOpened_ = false;
     }
-    calibrationFunction_ = TF1("calibrationFunction_",parsedData_.getFormula().c_str()); //set formula
+    calibrationFunction_ = TF1("calibrationFunction_",parsedData_.getFormula().c_str());
   }
 }
 
@@ -69,13 +58,12 @@ void TotemTimingConversions::openCalibrationFile(const std::string& calibrationF
       parsedData_.parseFile(calibrationFile_);
       calibrationFileOk_ = true;
       calibrationFileOpened_ = true;
-      //std::cout << parsedData_;
     }
     catch(boost::exception const &e){
       calibrationFileOk_ = false;
       calibrationFileOpened_ = false;
     }
-    calibrationFunction_ = TF1("calibrationFunction_",parsedData_.getFormula().c_str()); //set formula
+    calibrationFunction_ = TF1("calibrationFunction_",parsedData_.getFormula().c_str());
   }
 }
 
@@ -150,7 +138,6 @@ const float TotemTimingConversions::getTriggerTime(const TotemTimingDigi& digi){
 std::vector<float> TotemTimingConversions::getTimeSamples(const TotemTimingDigi& digi){
   if (!calibrationFileOpened_) openCalibrationFile();
   std::vector<float> time(digi.getNumberOfSamples());
-  // firstCellTimeInstant = 0;
   for (unsigned int i = 0; i < time.size(); ++i)
     time.at(i) = getTimeOfFirstSample(digi) + i * SAMPIC_SAMPLING_PERIOD_NS;
   return time;
@@ -160,12 +147,10 @@ std::vector<float> TotemTimingConversions::getTimeSamples(const TotemTimingDigi&
 
 std::vector<float> TotemTimingConversions::getVoltSamples(const TotemTimingDigi& digi){
    if (!calibrationFileOpened_) openCalibrationFile();
-   //std::cout << "getVoltSamples - " ;
    std::vector<float> data;
    if (!calibrationFileOk_){
      for (auto it = digi.getSamplesBegin(); it != digi.getSamplesEnd(); ++it){
        data.emplace_back(SAMPIC_ADC_V * (*it));
-       //std::cout << SAMPIC_ADC_V * (*it) << "\n";
      }
    }
   else{
@@ -177,7 +162,6 @@ std::vector<float> TotemTimingConversions::getVoltSamples(const TotemTimingDigi&
       auto parameters = parsedData_.getParameters(db, sampic, channel, cell);
       for (unsigned int i=0; i<parameters.size(); ++i)
         calibrationFunction_.SetParameter(i, parameters.at(i));
-      //std::cout << calibrationFunction_.Eval(*it) << "\n";
       data.emplace_back(calibrationFunction_.Eval(*it));
     }
   }

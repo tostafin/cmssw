@@ -62,8 +62,11 @@ void CTPPSTimingTrackRecognition<TRACK_TYPE, HIT_TYPE>::producePartialTracks(
 
   int numberOfTracks = 0;
   const double invResolution = 1./param.resolution;
+  const float profileRangeMargin = param.sigma * 3.;
+  const float profileRangeBegin = param.rangeBegin - profileRangeMargin;
+  const float profileRangeEnd = param.rangeEnd + profileRangeMargin;
 
-  std::vector<float> hitProfile((param.rangeEnd - param.rangeBegin) * invResolution, 0.);
+  std::vector<float> hitProfile((profileRangeEnd - profileRangeBegin) * invResolution, 0.);
   auto hitFunction = param.hitFunction;
 
   // Creates hit profile
@@ -75,7 +78,7 @@ void CTPPSTimingTrackRecognition<TRACK_TYPE, HIT_TYPE>::producePartialTracks(
     hitFunction.SetParameters(center, rangeWidth, param.sigma);
 
     for(unsigned int i = 0; i < hitProfile.size(); ++i) {
-      hitProfile[i] += hitFunction.Eval(param.rangeBegin + i*param.resolution);
+      hitProfile[i] += hitFunction.Eval(profileRangeBegin + i*param.resolution);
     }
   }
 
@@ -125,8 +128,8 @@ void CTPPSTimingTrackRecognition<TRACK_TYPE, HIT_TYPE>::producePartialTracks(
         else if(!underTrackThreshold && hitProfile[j] <= trackThreshold) {
           underTrackThreshold = true;
           TRACK_TYPE track;
-          float leftMargin = param.rangeBegin + param.resolution * trackBegin;
-          float rightMargin = param.rangeBegin + param.resolution * j;
+          float leftMargin = profileRangeBegin + param.resolution * trackBegin;
+          float rightMargin = profileRangeBegin + param.resolution * j;
           setTrackCenter(track, (leftMargin + rightMargin) / 2.0);
           setTrackSigma(track, (rightMargin - leftMargin) / 2.0);
           result.push_back(track);

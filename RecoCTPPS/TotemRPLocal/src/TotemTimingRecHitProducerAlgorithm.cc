@@ -17,7 +17,7 @@ const float TotemTimingRecHitProducerAlgorithm::SINC_COEFFICIENT = std::acos(-1)
 
 TotemTimingRecHitProducerAlgorithm::TotemTimingRecHitProducerAlgorithm(
     const edm::ParameterSet &iConfig)
-    : sampicConversions_(iConfig.getParameter<std::string>("calibrationFile")),
+    : sampicConversions_(TotemTimingConversions(iConfig.getParameter<bool>("mergeTimePeaks"), iConfig.getParameter<std::string>("calibrationFile"))),
       baselinePoints_(iConfig.getParameter<int>("baselinePoints")),
       saturationLimit_(iConfig.getParameter<double>("saturationLimit")),
       cfdFraction_(iConfig.getParameter<double>("cfdFraction")),

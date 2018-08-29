@@ -82,9 +82,6 @@ void CTPPSTimingTrackRecognition<TRACK_TYPE, HIT_TYPE>::producePartialTracks(
     }
   }
 
-  // Guard to make sure that no track is lost
-  hitProfile.push_back(param.threshold - 1.0);
-
   bool underThreshold = true;
   float rangeMaximum = -1.0;
   bool trackRangeFound = false;
@@ -150,42 +147,42 @@ CTPPSTimingTrackRecognition<TRACK_TYPE, HIT_TYPE>::getHitSpatialRange(const HitV
   bool initialized = false;
   SpatialRange result;
 
-  for(unsigned int i = 0; i < hits.size(); i++) {
+  for(const auto& hit: hits) {
 
     if(initialized) {
-      float xBegin = hits[i].getX() - (hits[i].getXWidth() / 2.0);
-      float xEnd = hits[i].getX() + (hits[i].getXWidth() / 2.0);
-      float yBegin = hits[i].getY() - (hits[i].getYWidth() / 2.0);
-      float yEnd = hits[i].getY() + (hits[i].getYWidth() / 2.0);
-      float zBegin = hits[i].getZ() - (hits[i].getZWidth() / 2.0);
-      float zEnd = hits[i].getZ() + (hits[i].getZWidth() / 2.0);
+      float xBegin = hit.getX() - (hit.getXWidth() / 2.0);
+      float xEnd = hit.getX() + (hit.getXWidth() / 2.0);
+      float yBegin = hit.getY() - (hit.getYWidth() / 2.0);
+      float yEnd = hit.getY() + (hit.getYWidth() / 2.0);
+      float zBegin = hit.getZ() - (hit.getZWidth() / 2.0);
+      float zEnd = hit.getZ() + (hit.getZWidth() / 2.0);
 
       if(xBegin < result.xBegin)
         result.xBegin = xBegin;
 
-      if(xEnd < result.xEnd)
+      if(xEnd > result.xEnd)
         result.xEnd = xEnd;
 
       if(yBegin < result.yBegin)
         result.yBegin = yBegin;
 
-      if(yEnd < result.yEnd)
+      if(yEnd > result.yEnd)
         result.yEnd = yEnd;
 
       if(zBegin < result.zBegin)
         result.zBegin = zBegin;
 
-      if(zEnd < result.zEnd)
+      if(zEnd > result.zEnd)
         result.zEnd = zEnd;
     }
 
     else {
-      result.xBegin = hits[i].getX() - (hits[i].getXWidth() / 2.0);
-      result.xEnd = hits[i].getX() + (hits[i].getXWidth() / 2.0);
-      result.yBegin = hits[i].getY() - (hits[i].getYWidth() / 2.0);
-      result.yEnd = hits[i].getY() + (hits[i].getYWidth() / 2.0);
-      result.zBegin = hits[i].getZ() - (hits[i].getZWidth() / 2.0);
-      result.zEnd = hits[i].getZ() + (hits[i].getZWidth() / 2.0);
+      result.xBegin = hit.getX() - (hit.getXWidth() / 2.0);
+      result.xEnd = hit.getX() + (hit.getXWidth() / 2.0);
+      result.yBegin = hit.getY() - (hit.getYWidth() / 2.0);
+      result.yEnd = hit.getY() + (hit.getYWidth() / 2.0);
+      result.zBegin = hit.getZ() - (hit.getZWidth() / 2.0);
+      result.zEnd = hit.getZ() + (hit.getZWidth() / 2.0);
       initialized = true;
     }
   }

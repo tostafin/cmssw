@@ -142,12 +142,12 @@ TotemTimingLocalTrackFitter::fillDescriptions( edm::ConfigurationDescriptions& d
     ->setComment( "threshold for discriminating noisy planes" );
 
 
-  desc.add<std::string>( "pixelEfficiencyFunction", "(TMath::Erf((x-[0]+0.5*[1])/([2]/4)+2)+1)*TMath::Erfc((x-[0]-0.5*[1])/([2]/4)-2)/4" )
+  desc.add<std::string>( "pixelEfficiencyFunction", "(TMath::Erf((x-[0]+0.5*([1]-0.05))/([2]/4)+2)+1)*TMath::Erfc((x-[0]-0.5*([1]-0.05))/([2]/4)-2)/4" )
     ->setComment( "efficiency function for single pixel\n"
                   "can be defined as:\n"
-                  " * Precise: (TMath::Erf((x-[0]+0.5*[1])/([2]/4)+2)+1)*TMath::Erfc((x-[0]-0.5*[1])/([2]/4)-2)/4\n"
-                  " * Fast: (x>[0]-0.5*[1])*(x<[0]+0.5*[1])+((x-[0]+0.5*[1]+[2])/[2])*(x>[0]-0.5*[1]-[2])*(x<[0]-0.5*[1])+(2-(x-[0]-0.5*[1]+[2])/[2])*(x>[0]+0.5*[1])*(x<[0]+0.5*[1]+[2])\n"
-                  " * Legacy: (1/(1+exp(-(x-[0]+0.5*[1])/[2])))*(1/(1+exp((x-[0]-0.5*[1])/[2])))\n"
+                  " * Precise: (TMath::Erf((x-[0]+0.5*([1]-0.05))/([2]/4)+2)+1)*TMath::Erfc((x-[0]-0.5*([1]-0.05))/([2]/4)-2)/4\n"
+                  " * Fast: (x>[0]-0.5*([1]-0.05))*(x<[0]+0.5*([1]-0.05))+((x-[0]+0.5*([1]-0.05)+[2])/[2])*(x>[0]-0.5*([1]-0.05)-[2])*(x<[0]-0.5*([1]-0.05))+(2-(x-[0]-0.5*([1]-0.05)+[2])/[2])*(x>[0]+0.5*([1]-0.05))*(x<[0]+0.5*([1]-0.05)+[2])\n"
+                  " * Legacy: (1/(1+exp(-(x-[0]+0.5*([1]-0.05))/[2])))*(1/(1+exp((x-[0]-0.5*([1]-0.05))/[2])))\n"
                   "with:\n"
                   "  [0]: centre of pad\n"
                   "  [1]: width of pad\n"

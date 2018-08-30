@@ -82,6 +82,9 @@ void CTPPSTimingTrackRecognition<TRACK_TYPE, HIT_TYPE>::producePartialTracks(
     }
   }
 
+  // Guard to make sure that the profile drops below the threshold at range's end
+  hitProfile.push_back(-1.);
+
   bool underThreshold = true;
   float rangeMaximum = -1.0;
   bool trackRangeFound = false;

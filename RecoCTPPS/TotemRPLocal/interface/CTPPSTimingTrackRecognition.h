@@ -40,7 +40,7 @@ class CTPPSTimingTrackRecognition
 
     CTPPSTimingTrackRecognition(const edm::ParameterSet& parameters);
 
-    ~CTPPSTimingTrackRecognition();
+    virtual ~CTPPSTimingTrackRecognition();
 
 
     // Class API:

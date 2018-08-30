@@ -18,16 +18,8 @@ const int TotemTimingConversions::ACCEPTED_TIME_RADIUS = 4;
 
 //----------------------------------------------------------------------------------------------------
 
-TotemTimingConversions::TotemTimingConversions(bool mergeTimePeaks)
-    : calibrationFileOk_(false),
-      calibrationFileOpened_(false),
-      calibrationFile_("/dev/null"),
-      parsedData_(TotemTimingParser()),
-      mergeTimePeaks_(mergeTimePeaks)
-      {}
-
-TotemTimingConversions::TotemTimingConversions(bool mergeTimePeaks, const std::string& calibrationFile)
-    : calibrationFileOk_(true),
+TotemTimingConversions::TotemTimingConversions(bool mergeTimePeaks, const std::string& calibrationFile="/dev/null")
+    : calibrationFileOk_(calibrationFile!="/dev/null"),
       calibrationFileOpened_(false),
       calibrationFile_(calibrationFile),
       parsedData_(TotemTimingParser()),
@@ -36,24 +28,17 @@ TotemTimingConversions::TotemTimingConversions(bool mergeTimePeaks, const std::s
 
 //----------------------------------------------------------------------------------------------------
 
-void TotemTimingConversions::openCalibrationFile(){
-  if (calibrationFile_!="/dev/null" && calibrationFileOk_){
-    try{
-      parsedData_.parseFile(calibrationFile_);
-      calibrationFileOk_ = true;
-      calibrationFileOpened_ = true;
-    }
-    catch(boost::exception const &e){
-      calibrationFileOk_ = false;
-      calibrationFileOpened_ = false;
-    }
-    calibrationFunction_ = TF1("calibrationFunction_",parsedData_.getFormula().c_str());
-  }
-}
-
-void TotemTimingConversions::openCalibrationFile(const std::string& calibrationFile){
+void TotemTimingConversions::openCalibrationFile(const std::string& calibrationFile="/dev/null"){
+  bool process =false;
   if (calibrationFile!="/dev/null"){
     calibrationFile_ = calibrationFile;
+    process = true;
+  }
+  else {
+    if (calibrationFile_!="/dev/null" && calibrationFileOk_)
+      process = true;
+  }
+  if(process){
     try{
       parsedData_.parseFile(calibrationFile_);
       calibrationFileOk_ = true;

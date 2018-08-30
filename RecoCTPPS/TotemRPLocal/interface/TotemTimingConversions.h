@@ -18,10 +18,8 @@
 
 class TotemTimingConversions {
 public:
-  TotemTimingConversions(bool mergeTimePeaks);
-  TotemTimingConversions(bool mergeTimePeaks, const std::string& calibrationFile);
-  void openCalibrationFile();
-  void openCalibrationFile(const std::string& calibrationFile);
+  TotemTimingConversions(bool mergeTimePeaks, const std::string& calibrationFile="/dev/null");
+  void openCalibrationFile(const std::string& calibrationFile="/dev/null");
   const float getTimeOfFirstSample(const TotemTimingDigi& digi);
   const float getTriggerTime(const TotemTimingDigi& digi);
   std::vector<float> getTimeSamples(const TotemTimingDigi& digi);

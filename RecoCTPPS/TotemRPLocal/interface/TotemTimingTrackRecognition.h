@@ -105,9 +105,7 @@ int TotemTimingTrackRecognition::produceTracks(edm::DetSet<TotemTimingLocalTrack
     if(xPartTracks.size() == 0 && yPartTracks.size() == 0)
      continue;
 
-    //TODO: create default tracks (not sure if necessary)
-
-    unsigned int validHitsNumber = (int)(threshold + 1.0);
+    unsigned int validHitsNumber = (unsigned int)(threshold + 1.0);
 
     for(const auto& xTrack: xPartTracks) {
       for(const auto& yTrack: yPartTracks) {

@@ -1,8 +1,26 @@
+/****************************************************************************
+ *
+ * This is a part of CTPPS offline software.
+ * Authors:
+ *   Filip Dej
+ *
+ * NOTE:
+ *   Given implementation handles calibration files in .cal.json format,
+ *   which can be generated using following python script: http://link.to.the.script
+ *
+ ****************************************************************************/
+
 #include "RecoCTPPS/TotemRPLocal/interface/TotemTimingParser.h"
+
 
 TotemTimingParser::TotemTimingParser()
 : formula_(""), parameters_(std::map<CalibrationKey, std::vector<double>>()),
 timeInfo_(std::map<CalibrationKey, std::pair<double, double >>()){}
+
+//------------------------------------------------------------------------------
+// Extracts the data from json file
+// Arguments:
+//   file_name: path to the calibration file
 
 void TotemTimingParser::parseFile(const std::string &file_name){
   pt::ptree node;
@@ -37,6 +55,8 @@ void TotemTimingParser::parseFile(const std::string &file_name){
   }
 }
 
+//------------------------------------------------------------------------------
+
 std::vector<double> TotemTimingParser::getParameters(int db, int sampic, int channel, int cell) const{
   CalibrationKey key = CalibrationKey(db, sampic, channel, cell);
   auto out = parameters_.find(key);
@@ -45,6 +65,9 @@ std::vector<double> TotemTimingParser::getParameters(int db, int sampic, int cha
   else
     return out->second;
 }
+
+//------------------------------------------------------------------------------
+
 double TotemTimingParser::getTimeOffset(int db, int sampic, int channel) const{
   CalibrationKey key = CalibrationKey(db, sampic, channel);
   auto out = timeInfo_.find(key);
@@ -53,6 +76,8 @@ double TotemTimingParser::getTimeOffset(int db, int sampic, int channel) const{
   else
     return out->second.first;
 }
+
+//------------------------------------------------------------------------------
 
 double TotemTimingParser::getTimePrecision(int db, int sampic, int channel) const{
   CalibrationKey key = CalibrationKey(db, sampic, channel);
@@ -63,9 +88,13 @@ double TotemTimingParser::getTimePrecision(int db, int sampic, int channel) cons
     return out->second.second;
 }
 
+//------------------------------------------------------------------------------
+
 std::string TotemTimingParser::getFormula() const{
   return formula_;
 }
+
+//------------------------------------------------------------------------------
 
 std::ostream& operator<<(std::ostream &strm, const TotemTimingParser::CalibrationKey &key){
   return strm << key.db << " " << key.sampic << " " << key.channel << " " << key.cell;

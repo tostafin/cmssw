@@ -4,6 +4,7 @@
  * Authors:
  *   Laurent Forthomme (laurent.forthomme@cern.ch)
  *   Nicola Minafra
+ *   Filip Dej
  *
  ****************************************************************************/
 
@@ -129,6 +130,7 @@ std::vector<float> TotemTimingConversions::getTimeSamples(const TotemTimingDigi&
 }
 
 //----------------------------------------------------------------------------------------------------
+// NOTE: If no proper file is specified, calibration is not applied
 
 std::vector<float> TotemTimingConversions::getVoltSamples(const TotemTimingDigi& digi){
    if (!calibrationFileOpened_) openCalibrationFile();

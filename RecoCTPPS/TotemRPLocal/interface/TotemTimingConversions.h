@@ -4,6 +4,7 @@
  * Authors:
  *   Laurent Forthomme (laurent.forthomme@cern.ch)
  *   Nicola Minafra
+ *   Filip Dej
  *
  ****************************************************************************/
 
@@ -18,8 +19,8 @@
 
 class TotemTimingConversions {
 public:
-  TotemTimingConversions(bool mergeTimePeaks, const std::string& calibrationFile="/dev/null");
-  void openCalibrationFile(const std::string& calibrationFile="/dev/null");
+  TotemTimingConversions(bool mergeTimePeaks, const std::string& calibrationFile);
+  void openCalibrationFile(const std::string& calibrationFile);
   const float getTimeOfFirstSample(const TotemTimingDigi& digi);
   const float getTriggerTime(const TotemTimingDigi& digi);
   std::vector<float> getTimeSamples(const TotemTimingDigi& digi);

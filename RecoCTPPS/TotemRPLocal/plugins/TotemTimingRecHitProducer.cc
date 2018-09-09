@@ -96,6 +96,8 @@ TotemTimingRecHitProducer::fillDescriptions( edm::ConfigurationDescriptions& des
     ->setComment( "Frequency (in GHz) for CFD smoothing, 0 for disabling the filter" );
   desc.add<double>( "hysteresis", 5e-3 )
     ->setComment( "hysteresis of the discriminator" );
+  desc.add<bool>( "mergeTimePeaks", false )
+      ->setComment( "if time peaks schould be merged" );
 
 
   descr.add( "totemTimingRecHits", desc );

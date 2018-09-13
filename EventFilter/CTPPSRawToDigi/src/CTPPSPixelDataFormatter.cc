@@ -196,11 +196,11 @@ void CTPPSPixelDataFormatter::formatRawData(unsigned int lvl1_ID, RawData & fedR
  
   for (Digis::const_iterator im = digis.begin(); im != digis.end(); im++) {
     //if (mapping_.size== 0 ) return; 
-    allDetDigis++;
+    m_allDetDigis++;
     cms_uint32_t rawId = im->first;
       edm::LogInfo("--- RPix") << " \t\t digi rawId = " << rawId;
 
-    hasDetDigis++;
+    m_hasDetDigis++;
     const DetDigis & detDigis = im->second;
     for (DetDigis::const_iterator it = detDigis.begin(); it != detDigis.end(); it++) {
         m_DigiCounter++;
@@ -245,7 +245,7 @@ void CTPPSPixelDataFormatter::formatRawData(unsigned int lvl1_ID, RawData & fedR
         }
     } // for DetDigis
   } // for Digis
-  LogTrace(" allDetDigis/hasDetDigis : ") << allDetDigis<<"/"<<hasDetDigis;
+  LogTrace(" allDetDigis/hasDetDigis : ") << m_allDetDigis<<"/"<<m_hasDetDigis;
   typedef std::map<int, vector<Word32> >::const_iterator RI;
   for (RI feddata = words.begin(); feddata != words.end(); feddata++) {
     int fedId = feddata->first;

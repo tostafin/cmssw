@@ -96,9 +96,8 @@ private:
   const std::map<CTPPSPixelFramePosition, CTPPSPixelROCInfo> &m_Mapping;
 
   mutable int m_DigiCounter;
-  int maxROCIndex;
-  int allDetDigis;
-  int hasDetDigis;
+  int m_allDetDigis;
+  int m_hasDetDigis;
   CTPPSPixelIndices theIndices;
 };
 

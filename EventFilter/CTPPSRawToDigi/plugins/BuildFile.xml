@@ -2,7 +2,9 @@
 	<flags EDM_PLUGIN="1"/>
 
 	<use name="FWCore/Framework"/>
-	
+  <use name="FWCore/PluginManager"/>
+  <use name="FWCore/ParameterSet"/>
+
 	<use name="DataFormats/FEDRawData"/>
 	<use name="DataFormats/Common"/>
 	

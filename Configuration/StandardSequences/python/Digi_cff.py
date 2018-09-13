@@ -72,5 +72,7 @@ _ctpps_2016_Digi = ppsDigi.copy()
 _ctpps_2016_Digi = cms.Sequence(RPixDetDigitizer+RPSiDetDigitizer)
 ctpps_2016.toReplaceWith(ppsDigi,_ctpps_2016_Digi)
 
+from Configuration.Eras.Modifier_fastSim_cff import fastSim
+fastSim.toReplaceWith(doAllDigi,doAllDigi.copyAndExclude([RPixDetDigitizer,RPSiDetDigitizer]))
 
 

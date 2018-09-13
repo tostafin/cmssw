@@ -1,17 +1,18 @@
 import FWCore.ParameterSet.Config as cms
 from EventFilter.RawDataCollector.rawDataCollector_cfi import *
 
-#from EventFilter.CTPPSRawToDigi.ctppsPixelRawData_cfi import ctppsPixelRawData
+from EventFilter.CTPPSRawToDigi.ctppsPixelRawData_cfi import ctppsPixelRawData
+from EventFilter.CTPPSRawToDigi.ctppsTotemRawData_cfi import ctppsTotemRawData
 #ctppsPixelRawData.InputLabel = cms.InputTag("RPixDetDigitizer")
 
-ctppsPixelRawData = cms.EDProducer("CTPPSPixelDigiToRaw",
-    InputLabel = cms.InputTag("RPixDetDigitizer"),
-    mappingLabel = cms.string("RPix") 
-)
+#ctppsPixelRawData = cms.EDProducer("CTPPSPixelDigiToRaw",
+#    InputLabel = cms.InputTag("RPixDetDigitizer"),
+#    mappingLabel = cms.string("RPix") 
+#)
 
-ctppsTotemRawData = cms.EDProducer("CTPPSTotemDigiToRaw",
-    InputLabel = cms.InputTag("RPSiDetDigitizer")
-)
+#ctppsTotemRawData = cms.EDProducer("CTPPSTotemDigiToRaw",
+#    InputLabel = cms.InputTag("RPSiDetDigitizer")
+#)
 
 ctppsRawData = cms.Sequence(ctppsTotemRawData*ctppsPixelRawData)
 

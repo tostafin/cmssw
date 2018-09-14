@@ -3,7 +3,7 @@
  * This is a part of CTPPS offline software.
  * Authors:
  *   Laurent Forthomme (laurent.forthomme@cern.ch)
- *   Nicola Minafra nicola.minafra@cern.ch)
+ *   Nicola Minafra (nicola.minafra@cern.ch)
  *   Mateusz Szpyrka (mateusz.szpyrka@cern.ch)
  *
  ****************************************************************************/

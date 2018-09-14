@@ -2,7 +2,7 @@
  *
  * This is a part of CTPPS offline software.
  * Authors:
- *   Nicola Minafra nicola.minafra@cern.ch)
+ *   Nicola Minafra (nicola.minafra@cern.ch)
  *   Mateusz Szpyrka (mateusz.szpyrka@cern.ch)
  *
  ****************************************************************************/
@@ -21,7 +21,12 @@ class TotemTimingLocalTrack : public CTPPSTimingLocalTrack
 
     TotemTimingLocalTrack();
 
-    //~TotemTimingLocalTrack() {};
+    TotemTimingLocalTrack(
+      const math::XYZPoint& pos0,
+      const math::XYZPoint& pos0_sigma,
+      float t,
+      float t_sigma
+    );
 
     // no specific class members yet
 };

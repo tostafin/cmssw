@@ -23,6 +23,7 @@ public:
   void openCalibrationFile(const std::string& calibrationFile);
   const float getTimeOfFirstSample(const TotemTimingDigi& digi);
   const float getTriggerTime(const TotemTimingDigi& digi);
+  const float getTimePrecision(const TotemTimingDigi& digi);
   std::vector<float> getTimeSamples(const TotemTimingDigi& digi);
   std::vector<float> getVoltSamples(const TotemTimingDigi& digi);
 

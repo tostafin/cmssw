@@ -121,6 +121,16 @@ const float TotemTimingConversions::getTriggerTime(const TotemTimingDigi& digi){
 
 //----------------------------------------------------------------------------------------------------
 
+const float TotemTimingConversions::getTimePrecision(const TotemTimingDigi& digi){
+  if (!calibrationFileOpened_) openCalibrationFile();
+  int db = digi.getHardwareBoardId();
+  int sampic = digi.getHardwareSampicId();
+  int channel = digi.getHardwareChannelId();
+  return parsedData_.getTimePrecision(db, sampic, channel);
+}
+
+//----------------------------------------------------------------------------------------------------
+
 std::vector<float> TotemTimingConversions::getTimeSamples(const TotemTimingDigi& digi){
   if (!calibrationFileOpened_) openCalibrationFile();
   std::vector<float> time(digi.getNumberOfSamples());

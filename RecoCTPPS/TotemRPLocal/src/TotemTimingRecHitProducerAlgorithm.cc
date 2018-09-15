@@ -60,6 +60,7 @@ void TotemTimingRecHitProducerAlgorithm::build(
     for (const auto &digi : vec) {
       const float triggerCellTimeInstant(
           sampicConversions_.getTriggerTime(digi));
+      const float timePrecision(sampicConversions_.getTimePrecision(digi));
       const std::vector<float> time(sampicConversions_.getTimeSamples(digi));
       std::vector<float> data(sampicConversions_.getVoltSamples(digi));
 
@@ -84,7 +85,7 @@ void TotemTimingRecHitProducerAlgorithm::build(
 
       rec_hits.push_back(TotemTimingRecHit(
           x_pos, x_width, y_pos, y_width, z_pos, z_width, // spatial information
-          t, triggerCellTimeInstant, .0, *max_corrected_it,
+          t, triggerCellTimeInstant, timePrecision, *max_corrected_it,
           baselineRegression.rms, mode_));
     }
   }

@@ -60,7 +60,7 @@ class TotemTimingTrackRecognition : public CTPPSTimingTrackRecognition<TotemTimi
 
 TotemTimingTrackRecognition::TotemTimingTrackRecognition(const edm::ParameterSet& parameters) :
     CTPPSTimingTrackRecognition<TotemTimingLocalTrack, TotemTimingRecHit>(parameters),
-    tolerance(parameters.getParameter<double>( "threshold" ))
+    tolerance(parameters.getParameter<double>( "tolerance" ))
   {};
 
 void TotemTimingTrackRecognition::addHit(const TotemTimingRecHit& recHit) {

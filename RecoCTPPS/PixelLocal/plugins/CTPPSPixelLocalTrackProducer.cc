@@ -217,20 +217,30 @@ void CTPPSPixelLocalTrackProducer::produce(edm::Event& iEvent, const edm::EventS
   patternFinder_->findPattern();
   std::vector<RPixDetPatternFinder::Road> patternVector = patternFinder_->getPatterns();
 
-  //loop on all the patterns
+  // loop on all the patterns
   int numberOfTracks = 0;
 
-  for(const auto & pattern : patternVector){
+  for(const auto & pattern : patternVector)
+  {
     CTPPSPixelDetId firstHitDetId = CTPPSPixelDetId(pattern.at(0).detId);
     CTPPSPixelDetId romanPotId = firstHitDetId.getRPId();
     
-    std::map<CTPPSPixelDetId, std::vector<RPixDetPatternFinder::PointInPlane> > hitOnPlaneMap; //hit of the pattern organized by plane
+    std::map<CTPPSPixelDetId, std::vector<RPixDetPatternFinder::PointInPlane> > hitOnPlaneMap; // hit of the pattern organized by plane
 
-    //loop on all the hits of the pattern
-    for(const auto & hit : pattern){
+    // loop on all the hits of the pattern
+    for(const auto & hit : pattern)
+    {
       CTPPSPixelDetId hitDetId = CTPPSPixelDetId(hit.detId);
       CTPPSPixelDetId tmpRomanPotId = hitDetId.getRPId();
-      
+
+      unsigned int rpDecId = hitDetId.arm()*100 + hitDetId.station()*10 + hitDetId.rp();
+      unsigned int plane = hitDetId.plane();
+      bool stop = false;
+
+      if (rpDecId == 23 && plane == 5) stop = true;
+
+      if (stop)
+        continue;
 
       if(tmpRomanPotId!=romanPotId){ //check that the hits belong to the same tracking station
         throw cms::Exception("CTPPSPixelLocalTrackProducer") << "Hits in the pattern must belong to the same tracking station";

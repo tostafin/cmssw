@@ -46,7 +46,7 @@ void TotemTimingParser::parseFile(const std::string &file_name){
         key.cell = cell_ct;
 
         for (pt::ptree::value_type &param : cell.second) {
-          values.push_back((double) strtod(param.second.data().c_str(), NULL));
+          values.push_back((double) strtod(param.second.data().c_str(), nullptr));
         }
         parameters_.insert(std::pair<CalibrationKey, std::vector<double> >(key, values));
         cell_ct++;

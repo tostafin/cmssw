@@ -43,10 +43,10 @@ class TotemTimingTrackRecognition : public CTPPSTimingTrackRecognition<TotemTimi
     TotemTimingTrackRecognition(const edm::ParameterSet& parameters);
 
     // Adds new hit to the set from which the tracks are reconstructed.
-    void addHit(const TotemTimingRecHit& recHit);
+    void addHit(const TotemTimingRecHit& recHit) override;
 
     /// Produces a collection of tracks for the current station, given its hits collection
-    int produceTracks(edm::DetSet<TotemTimingLocalTrack>& tracks);
+    int produceTracks(edm::DetSet<TotemTimingLocalTrack>& tracks) override;
 
   private:
 
@@ -102,7 +102,7 @@ int TotemTimingTrackRecognition::produceTracks(edm::DetSet<TotemTimingLocalTrack
     param.rangeEnd = hitRange.yEnd;
     producePartialTracks(hits, param, getY, getYWidth, setY, setYSigma, yPartTracks);
 
-    if(xPartTracks.size() == 0 && yPartTracks.size() == 0)
+    if(xPartTracks.empty() && yPartTracks.empty())
      continue;
 
     unsigned int validHitsNumber = (unsigned int)(threshold + 1.0);

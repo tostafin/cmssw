@@ -34,13 +34,13 @@ class CTPPSDiamondTrackRecognition : public CTPPSTimingTrackRecognition<CTPPSDia
   public:
     CTPPSDiamondTrackRecognition( const edm::ParameterSet& );
 
-    void clear();
+    void clear() override;
 
     /// Feed a new hit to the tracks recognition algorithm
-    void addHit( const CTPPSDiamondRecHit& recHit );
+    void addHit( const CTPPSDiamondRecHit& recHit ) override;
 
     /// Produce a collection of tracks for the current station, given its hits collection
-    int produceTracks( edm::DetSet<CTPPSDiamondLocalTrack>& tracks );
+    int produceTracks( edm::DetSet<CTPPSDiamondLocalTrack>& tracks ) override;
 
   private:
 
@@ -108,7 +108,7 @@ CTPPSDiamondTrackRecognition::produceTracks(edm::DetSet<CTPPSDiamondLocalTrack>&
     param.rangeEnd = hitRange.xEnd;
     producePartialTracks(hits, param, getX, getXWidth, setX, setXSigma, xPartTracks);
 
-    if(xPartTracks.size() == 0)
+    if(xPartTracks.empty())
       continue;
 
     float yRangeCenter = (hitRange.yBegin + hitRange.yEnd) / 2.0;

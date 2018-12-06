@@ -33,7 +33,7 @@ class CTPPSDiamondLocalTrack : public CTPPSTimingLocalTrack
       int mult_hits
     );
 
-    virtual ~CTPPSDiamondLocalTrack();
+    ~CTPPSDiamondLocalTrack() override;
 
     bool containsHit(const CTPPSDiamondRecHit& recHit, float tolerance = 0.1) const;
 

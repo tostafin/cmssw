@@ -65,12 +65,14 @@ process.output = cms.OutputModule("PoolOutputModule",
     ),
 )
 
+process.ctppsDiamondRecHits.applyCalibration = False
+
 # execution configuration
 process.p = cms.Path(
   process.totemTriggerRawToDigi *
 
-    process.ctppsDiamondRawToDigi #* 
-#    process.ctppsDiamondLocalReconstruction
+    process.ctppsDiamondRawToDigi * 
+    process.ctppsDiamondLocalReconstruction
 )
 
 process.outpath = cms.EndPath(process.output)

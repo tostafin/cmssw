@@ -51,6 +51,9 @@ For its usage, see "FWCore/Framework/interface/PrincipalGetAdapter.h"
 class testEventGetRefBeforePut;
 class testEvent;
 
+// added by TOTEM
+class TotemStandaloneRawDataSource;
+
 namespace edm {
 
   class BranchDescription;
@@ -294,6 +297,7 @@ namespace edm {
     friend class InputSource;
     friend class RawInputSource;
     friend class ProducerBase;
+    friend class ::TotemStandaloneRawDataSource;  // added by TOTEM
     template<typename T> friend class stream::ProducingModuleAdaptorBase;
 
     void commit_(std::vector<edm::ProductResolverIndex> const& iShouldPut, ParentageID* previousParentageId = nullptr);

@@ -3,6 +3,8 @@ import FWCore.ParameterSet.Config as cms
 source = cms.Source("TotemStandaloneRawDataSource",
     # if non-zero, prints a file summary in the beginning
     verbosity = cms.untracked.uint32(1),
+
+    setRunNumberFromFileName = cms.bool(True),
     
     # event number will be printed every 'printProgressFrequency' events,
     # nothing printed if 0

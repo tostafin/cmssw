@@ -51,11 +51,15 @@ class TotemStandaloneRawDataSource : public edm::PuttableSourceBase
     unsigned int verbosity;
 
     std::vector<std::string> fileNames;                     ///< vector of raw data files names
+    bool setRunNumberFromFileName;                          ///< whether run number shall be set from file names (see GetRunNumberFromFileName method)
     unsigned int printProgressFrequency;                    ///< frequency with which the progress (i.e. event number) is to be printed
 
     unsigned int fileIdx;                                   ///< current file index (within files), counted from 0
 
     std::vector<FileInfo> files;                            ///< to keep information about opened files
+
+    /// \brief extracts run number from a file name
+    edm::RunNumber_t GetRunNumberFromFileName(const std::string &str);
 
   private:
     /// list of the next state items
@@ -103,6 +107,7 @@ TotemStandaloneRawDataSource::TotemStandaloneRawDataSource(const edm::ParameterS
   PuttableSourceBase(pSet, desc),
   verbosity(pSet.getUntrackedParameter<unsigned int>("verbosity", 0)),
   fileNames(pSet.getUntrackedParameter<vector<string> >("fileNames")),
+  setRunNumberFromFileName(pSet.getParameter<bool>("setRunNumberFromFileName")),
   printProgressFrequency(pSet.getUntrackedParameter<unsigned int>("printProgressFrequency", 0)),
   currentTimestamp(0),
   eventID(0, 0, 0),
@@ -284,7 +289,10 @@ void TotemStandaloneRawDataSource::beginJob()
     // run number
     FileInfo fi;
     fi.fileName = fileNames[i];
-    fi.runNumber = i + 10001;
+    if (setRunNumberFromFileName)
+      fi.runNumber = GetRunNumberFromFileName(fi.fileName);
+    else
+      fi.runNumber = i + 1;
 
     // open file
     fi.file = new SRSFileReader();
@@ -329,6 +337,46 @@ void TotemStandaloneRawDataSource::endJob()
 void TotemStandaloneRawDataSource::fillDescription(edm::ParameterSetDescription& desc)
 {
   PuttableSourceBase::fillDescription(desc);
+}
+
+//----------------------------------------------------------------------------------------------------
+
+edm::RunNumber_t TotemStandaloneRawDataSource::GetRunNumberFromFileName(const string &path)
+{
+  // get file part of path
+  size_t pos = path.find_last_of('/');
+  string s = (pos == string::npos) ? path : path.substr(pos + 1);
+
+  // build array of numerical bits in the name
+  string digits = "0123456789";
+  vector<unsigned int> nBits;
+  pos = 0;
+  while (pos != string::npos)
+  {
+    size_t p1 = s.find_first_of(digits, pos);
+    if (p1 == string::npos)
+      break;
+
+    size_t p2 = s.find_first_not_of(digits, p1);
+
+    string valStr = (p2 == string::npos) ? s.substr(p1) : s.substr(p1, p2 - p1);
+    nBits.push_back(atoi(valStr.c_str()));
+
+    pos = p2;
+  }
+
+  if (nBits.size() == 4)
+  {
+    const unsigned int run = nBits[0];
+    const unsigned int eventBuilderHost = nBits[1];
+    const unsigned int eventBuilderProcess = nBits[2];
+    const unsigned int file = nBits[3];
+    const unsigned int evbID = (eventBuilderHost-11) * 2 + eventBuilderProcess-1;
+    return run*100000 + evbID*10000 + file;
+  }
+
+  throw cms::Exception("TotemStandaloneRawDataSource::GetRunNumberFromFileName")
+    << "Run and file number cannot be extracted from file name `" << path << "'." << endl;
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -219,9 +219,9 @@ const double CTPPSDiamondDQMSource::DISPLAY_RESOLUTION_FOR_HITS_MM = 0.1;
 const double CTPPSDiamondDQMSource::INV_DISPLAY_RESOLUTION_FOR_HITS_MM = 1. / DISPLAY_RESOLUTION_FOR_HITS_MM;
 const double CTPPSDiamondDQMSource::HPTDC_BIN_WIDTH_NS = 25. / 1024;
 const int CTPPSDiamondDQMSource::CTPPS_NUM_OF_ARMS = 2;
-const int CTPPSDiamondDQMSource::CTPPS_DIAMOND_STATION_ID = 1;
+const int CTPPSDiamondDQMSource::CTPPS_DIAMOND_STATION_ID = 2;
 const int CTPPSDiamondDQMSource::CTPPS_PIXEL_STATION_ID = 2;
-const int CTPPSDiamondDQMSource::CTPPS_DIAMOND_RP_ID = 6;
+const int CTPPSDiamondDQMSource::CTPPS_DIAMOND_RP_ID = 2;
 const int CTPPSDiamondDQMSource::CTPPS_NEAR_RP_ID = 2;
 const int CTPPSDiamondDQMSource::CTPPS_FAR_RP_ID = 3;
 const int CTPPSDiamondDQMSource::CTPPS_DIAMOND_NUM_OF_PLANES = 4;
@@ -246,6 +246,7 @@ CTPPSDiamondDQMSource::PotPlots::PotPlots(DQMStore::IBooker& ibooker, unsigned i
   CTPPSDiamondDetId(id).rpName(path, CTPPSDiamondDetId::nPath);
   ibooker.setCurrentFolder(path);
 
+  std::cout<<id<<" "<<CTPPSDiamondDetId(id)<<std::endl;
   CTPPSDiamondDetId(id).rpName(title, CTPPSDiamondDetId::nFull);
 
   activity_per_bx_0_25 =
@@ -549,18 +550,28 @@ void CTPPSDiamondDQMSource::bookHistograms(DQMStore::IBooker& ibooker, const edm
   ibooker.setCurrentFolder("CTPPS");
 
   globalPlot_ = GlobalPlots(ibooker);
-
+  
+  int dets[2][2]={
+	{1,6},
+	{2,2}
+	};
+  unsigned short station=0;
+  unsigned short pot=1;
+  
   for (unsigned short arm = 0; arm < CTPPS_NUM_OF_ARMS; ++arm) {
-    const CTPPSDiamondDetId rpId(arm, CTPPS_DIAMOND_STATION_ID, CTPPS_DIAMOND_RP_ID);
+    for(unsigned short detector = 0; detector < 2; detector++){
+    const CTPPSDiamondDetId rpId(arm, dets[detector][station], dets[detector][pot]);
     potPlots_[rpId] = PotPlots(ibooker, rpId);
     for (unsigned short pl = 0; pl < CTPPS_DIAMOND_NUM_OF_PLANES; ++pl) {
-      const CTPPSDiamondDetId plId(arm, CTPPS_DIAMOND_STATION_ID, CTPPS_DIAMOND_RP_ID, pl);
+      const CTPPSDiamondDetId plId(arm, dets[detector][station], dets[detector][pot], pl);
       planePlots_[plId] = PlanePlots(ibooker, plId);
       for (unsigned short ch = 0; ch < CTPPS_DIAMOND_NUM_OF_CHANNELS; ++ch) {
-        const CTPPSDiamondDetId chId(arm, CTPPS_DIAMOND_STATION_ID, CTPPS_DIAMOND_RP_ID, pl, ch);
+        const CTPPSDiamondDetId chId(arm, dets[detector][station], dets[detector][pot], pl, ch);
         channelPlots_[chId] = ChannelPlots(ibooker, chId);
+	std::cout<<arm<<" "<<dets[detector][station]<<" "<<dets[detector][pot]<<" "<<pl<<" "<<ch<<std::endl;
       }
     }
+   }
   }
 }
 
@@ -809,8 +820,9 @@ void CTPPSDiamondDQMSource::analyze(const edm::Event& event, const edm::EventSet
         potPlots_[detId_pot].activity_per_bx.at(rechit.getOOTIndex())->Fill(event.bunchCrossing());
     }
   }
-
+  
   for (const auto& plt : potPlots_) {
+    std::cout<<plt.first<<" "<<planes.size()<</*" "<<planes[plt.first]<<*/std::endl;
     plt.second.activePlanes->Fill(planes[plt.first].size());
     plt.second.activePlanesInclusive->Fill(planes_inclusive[plt.first].size());
   }
@@ -883,7 +895,7 @@ void CTPPSDiamondDQMSource::analyze(const edm::Event& event, const edm::EventSet
               potPlots_[detId_pot].effTriplecountingChMap[map_index] = 0;
               potPlots_[detId_pot].effDoublecountingChMap[map_index] = 0;
             }
-            CTPPSDiamondDetId detId(detId_pot.arm(), CTPPS_DIAMOND_STATION_ID, CTPPS_DIAMOND_RP_ID, plane, channel);
+            CTPPSDiamondDetId detId(detId_pot.arm(), detId_pot.station(), detId_pot.rp(),  plane, channel);
             if (channelAlignedWithTrack(geometry_.product(), detId, track, 0.2)) {
               // Channel should fire
               ++(potPlots_[detId_pot].effDoublecountingChMap[map_index]);
@@ -1028,7 +1040,7 @@ void CTPPSDiamondDQMSource::analyze(const edm::Event& event, const edm::EventSet
     for (const auto& lt : ds) {
       if (lt.isValid()) {
         // For efficieny
-        CTPPSDiamondDetId detId_pot(pixId.arm(), CTPPS_DIAMOND_STATION_ID, CTPPS_DIAMOND_RP_ID);
+        CTPPSDiamondDetId detId_pot(pixId.arm(), pixId.station(), pixId.rp());
         potPlots_[detId_pot].pixelTracksMap.Fill(lt.getX0() - horizontalShiftBwDiamondPixels_, lt.getY0());
 
         std::set<CTPPSDiamondDetId> planesWitHits_set;

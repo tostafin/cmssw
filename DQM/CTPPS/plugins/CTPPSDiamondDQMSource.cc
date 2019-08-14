@@ -95,7 +95,10 @@ private:
   static const int CTPPS_DIAMOND_NUM_OF_CHANNELS;
   static const int CTPPS_FED_ID_45;
   static const int CTPPS_FED_ID_56;
-
+  static const unsigned short DETS[2][2];
+  static const unsigned short station;
+  static const unsigned short pot;
+  static const unsigned short DETECTOR_NUM;
   edm::EDGetTokenT<edm::DetSetVector<TotemVFATStatus>> tokenStatus_;
   edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelLocalTrack>> tokenPixelTrack_;
   edm::EDGetTokenT<edm::DetSetVector<CTPPSDiamondDigi>> tokenDigi_;
@@ -228,6 +231,15 @@ const int CTPPSDiamondDQMSource::CTPPS_DIAMOND_NUM_OF_PLANES = 4;
 const int CTPPSDiamondDQMSource::CTPPS_DIAMOND_NUM_OF_CHANNELS = 12;
 const int CTPPSDiamondDQMSource::CTPPS_FED_ID_56 = 582;
 const int CTPPSDiamondDQMSource::CTPPS_FED_ID_45 = 583;
+ 
+const unsigned short CTPPSDiamondDQMSource::DETS[2][2]={
+	{1,6},
+	{2,2}
+	};
+const unsigned short CTPPSDiamondDQMSource::station=0;
+const unsigned short CTPPSDiamondDQMSource::pot=1;
+const unsigned short CTPPSDiamondDQMSource::DETECTOR_NUM=2;
+  
 
 //----------------------------------------------------------------------------------------------------
 
@@ -531,15 +543,17 @@ void CTPPSDiamondDQMSource::dqmBeginRun(const edm::Run& iRun, const edm::EventSe
   edm::ESHandle<CTPPSGeometry> geometry_;
   iSetup.get<VeryForwardRealGeometryRecord>().get(geometry_);
   const CTPPSGeometry* geom = geometry_.product();
-  const CTPPSDiamondDetId detid(0, CTPPS_DIAMOND_STATION_ID, CTPPS_DIAMOND_RP_ID, 0, 0);
-  const DetGeomDesc* det = geom->getSensor(detid);
-  horizontalShiftOfDiamond_ = det->translation().x() - det->params().at(0);
+  for(int detector=0;detector<DETECTOR_NUM;detector++){
+    const CTPPSDiamondDetId detid(0, DETS[detector][station], DETS[detector][pot], 0, 0);
+    const DetGeomDesc* det = geom->getSensor(detid);
+    horizontalShiftOfDiamond_ = det->translation().x() - det->params().at(0);
 
-  // Rough alignement of pixel detector for diamond thomography
-  const CTPPSPixelDetId pixid(0, CTPPS_PIXEL_STATION_ID, CTPPS_FAR_RP_ID, 0);
-  if (iRun.run() > 300000) {  //Pixel installed
-    det = geom->getSensor(pixid);
-    horizontalShiftBwDiamondPixels_ = det->translation().x() - det->params().at(0) - horizontalShiftOfDiamond_ - 1;
+    // Rough alignement of pixel detector for diamond thomography
+    const CTPPSPixelDetId pixid(0, CTPPS_PIXEL_STATION_ID, CTPPS_FAR_RP_ID, 0);
+    if (iRun.run() > 300000) {  //Pixel installed
+      det = geom->getSensor(pixid);
+      horizontalShiftBwDiamondPixels_ = det->translation().x() - det->params().at(0) - horizontalShiftOfDiamond_ - 1;
+    }
   }
 }
 
@@ -550,28 +564,21 @@ void CTPPSDiamondDQMSource::bookHistograms(DQMStore::IBooker& ibooker, const edm
   ibooker.setCurrentFolder("CTPPS");
 
   globalPlot_ = GlobalPlots(ibooker);
-  
-  int dets[2][2]={
-	{1,6},
-	{2,2}
-	};
-  unsigned short station=0;
-  unsigned short pot=1;
-  
+
   for (unsigned short arm = 0; arm < CTPPS_NUM_OF_ARMS; ++arm) {
-    for(unsigned short detector = 0; detector < 2; detector++){
-    const CTPPSDiamondDetId rpId(arm, dets[detector][station], dets[detector][pot]);
-    potPlots_[rpId] = PotPlots(ibooker, rpId);
-    for (unsigned short pl = 0; pl < CTPPS_DIAMOND_NUM_OF_PLANES; ++pl) {
-      const CTPPSDiamondDetId plId(arm, dets[detector][station], dets[detector][pot], pl);
-      planePlots_[plId] = PlanePlots(ibooker, plId);
-      for (unsigned short ch = 0; ch < CTPPS_DIAMOND_NUM_OF_CHANNELS; ++ch) {
-        const CTPPSDiamondDetId chId(arm, dets[detector][station], dets[detector][pot], pl, ch);
-        channelPlots_[chId] = ChannelPlots(ibooker, chId);
-	std::cout<<arm<<" "<<dets[detector][station]<<" "<<dets[detector][pot]<<" "<<pl<<" "<<ch<<std::endl;
+    for(unsigned short detector = 0; detector < DETECTOR_NUM; ++detector){
+      const CTPPSDiamondDetId rpId(arm, DETS[detector][station], DETS[detector][pot]);
+      potPlots_[rpId] = PotPlots(ibooker, rpId);
+      for (unsigned short pl = 0; pl < CTPPS_DIAMOND_NUM_OF_PLANES; ++pl) {
+        const CTPPSDiamondDetId plId(arm, DETS[detector][station], DETS[detector][pot], pl);
+        planePlots_[plId] = PlanePlots(ibooker, plId);
+        for (unsigned short ch = 0; ch < CTPPS_DIAMOND_NUM_OF_CHANNELS; ++ch) {
+          const CTPPSDiamondDetId chId(arm, DETS[detector][station], DETS[detector][pot], pl, ch);
+          channelPlots_[chId] = ChannelPlots(ibooker, chId);
+          std::cout<<arm<<" "<<DETS[detector][station]<<" "<<DETS[detector][pot]<<" "<<pl<<" "<<ch<<std::endl;
+        }
       }
     }
-   }
   }
 }
 
@@ -895,7 +902,7 @@ void CTPPSDiamondDQMSource::analyze(const edm::Event& event, const edm::EventSet
               potPlots_[detId_pot].effTriplecountingChMap[map_index] = 0;
               potPlots_[detId_pot].effDoublecountingChMap[map_index] = 0;
             }
-            CTPPSDiamondDetId detId(detId_pot.arm(), detId_pot.station(), detId_pot.rp(),  plane, channel);
+            CTPPSDiamondDetId detId(detId_pot.arm(), detId_pot.station(),detId_pot.rp(),  plane, channel);
             if (channelAlignedWithTrack(geometry_.product(), detId, track, 0.2)) {
               // Channel should fire
               ++(potPlots_[detId_pot].effDoublecountingChMap[map_index]);
@@ -1040,32 +1047,34 @@ void CTPPSDiamondDQMSource::analyze(const edm::Event& event, const edm::EventSet
     for (const auto& lt : ds) {
       if (lt.isValid()) {
         // For efficieny
-        CTPPSDiamondDetId detId_pot(pixId.arm(), pixId.station(), pixId.rp());
-        potPlots_[detId_pot].pixelTracksMap.Fill(lt.getX0() - horizontalShiftBwDiamondPixels_, lt.getY0());
+        for(int detector=0;detector<DETECTOR_NUM;detector++){
+          CTPPSDiamondDetId detId_pot(pixId.arm(),DETS[detector][station], DETS[detector][pot]);
+          potPlots_[detId_pot].pixelTracksMap.Fill(lt.getX0() - horizontalShiftBwDiamondPixels_, lt.getY0());
 
-        std::set<CTPPSDiamondDetId> planesWitHits_set;
-        for (const auto& rechits : *diamondRecHits) {
-          CTPPSDiamondDetId detId_plane(rechits.detId());
-          detId_plane.setChannel(0);
-          for (const auto& rechit : rechits) {
-            if (excludeMultipleHits_ && rechit.getMultipleHits() > 0)
-              continue;
-            if (rechit.getOOTIndex() == CTPPSDiamondRecHit::TIMESLICE_WITHOUT_LEADING || rechit.getToT() == 0)
-              continue;
-            if (planePlots_.find(detId_plane) == planePlots_.end())
-              continue;
-            if (pixId.arm() == detId_plane.arm() && lt.getX0() - horizontalShiftBwDiamondPixels_ < 24) {
-              planePlots_[detId_plane].pixelTomography_far->Fill(
-                  lt.getX0() - horizontalShiftBwDiamondPixels_ + 25 * rechit.getOOTIndex(), lt.getY0());
-              if (centralOOT_ != -999 && rechit.getOOTIndex() == centralOOT_)
-                planesWitHits_set.insert(detId_plane);
+          std::set<CTPPSDiamondDetId> planesWitHits_set;
+          for (const auto& rechits : *diamondRecHits) {
+            CTPPSDiamondDetId detId_plane(rechits.detId());
+            detId_plane.setChannel(0);
+            for (const auto& rechit : rechits) {
+              if (excludeMultipleHits_ && rechit.getMultipleHits() > 0)
+                continue;
+              if (rechit.getOOTIndex() == CTPPSDiamondRecHit::TIMESLICE_WITHOUT_LEADING || rechit.getToT() == 0)
+                continue;
+              if (planePlots_.find(detId_plane) == planePlots_.end())
+                continue;
+              if (pixId.arm() == detId_plane.arm() && lt.getX0() - horizontalShiftBwDiamondPixels_ < 24) {
+                planePlots_[detId_plane].pixelTomography_far->Fill(
+                    lt.getX0() - horizontalShiftBwDiamondPixels_ + 25 * rechit.getOOTIndex(), lt.getY0());
+                if (centralOOT_ != -999 && rechit.getOOTIndex() == centralOOT_)
+                  planesWitHits_set.insert(detId_plane);
+              }
             }
           }
-        }
 
-        for (auto& planeId : planesWitHits_set)
-          planePlots_[planeId].pixelTracksMapWithDiamonds.Fill(lt.getX0() - horizontalShiftBwDiamondPixels_,
-                                                               lt.getY0());
+          for (auto& planeId : planesWitHits_set)
+            planePlots_[planeId].pixelTracksMapWithDiamonds.Fill(lt.getX0() - horizontalShiftBwDiamondPixels_,
+                lt.getY0());
+        }
       }
     }
   }

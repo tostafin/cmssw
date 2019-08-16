@@ -107,8 +107,8 @@ private:
   edm::EDGetTokenT<std::vector<TotemFEDInfo>> tokenFEDInfo_;
 
   bool excludeMultipleHits_;
-  double horizontalShiftBwDiamondPixels_;
-  double horizontalShiftOfDiamond_;
+  const static double horizontalShiftBwDiamondPixels_;
+  const static double horizontalShiftOfDiamond_;
   std::vector<std::pair<edm::EventRange, int>> runParameters_;
   int centralOOT_;
   unsigned int verbosity_;
@@ -239,6 +239,8 @@ const unsigned short CTPPSDiamondDQMSource::DETS[2][2]={
 const unsigned short CTPPSDiamondDQMSource::station=0;
 const unsigned short CTPPSDiamondDQMSource::pot=1;
 const unsigned short CTPPSDiamondDQMSource::DETECTOR_NUM=2;
+const double CTPPSDiamondDQMSource::horizontalShiftBwDiamondPixels_=0;
+const double CTPPSDiamondDQMSource::horizontalShiftOfDiamond_=0;
   
 
 //----------------------------------------------------------------------------------------------------
@@ -517,12 +519,16 @@ CTPPSDiamondDQMSource::CTPPSDiamondDQMSource(const edm::ParameterSet& ps)
       centralOOT_(-999),
       verbosity_(ps.getUntrackedParameter<unsigned int>("verbosity", 0)),
       EC_difference_56_(-500),
-      EC_difference_45_(-500) {
-  for (const auto& pset : ps.getParameter<std::vector<edm::ParameterSet>>("offsetsOOT")) {
-    runParameters_.emplace_back(
-        std::make_pair(pset.getParameter<edm::EventRange>("validityRange"), pset.getParameter<int>("centralOOT")));
-  }
-}
+      EC_difference_45_(-500)
+//      horizontalShiftBwDiamondPixels_(0),
+//      horizontalShiftOfDiamond_(0)
+ {
+		for (const auto& pset : ps.getParameter<std::vector<edm::ParameterSet>>("offsetsOOT")) {
+			runParameters_.emplace_back(
+					std::make_pair(pset.getParameter<edm::EventRange>("validityRange"), pset.getParameter<int>("centralOOT")));
+		}
+	}
+  
 
 //----------------------------------------------------------------------------------------------------
 
@@ -540,21 +546,23 @@ void CTPPSDiamondDQMSource::dqmBeginRun(const edm::Run& iRun, const edm::EventSe
   }
 
   // Get detector shifts from the geometry
+/*
   edm::ESHandle<CTPPSGeometry> geometry_;
   iSetup.get<VeryForwardRealGeometryRecord>().get(geometry_);
   const CTPPSGeometry* geom = geometry_.product();
   for(int detector=0;detector<DETECTOR_NUM;detector++){
-    const CTPPSDiamondDetId detid(0, DETS[detector][station], DETS[detector][pot], 0, 0);
-    const DetGeomDesc* det = geom->getSensor(detid);
-    horizontalShiftOfDiamond_ = det->translation().x() - det->params().at(0);
+	  const CTPPSDiamondDetId detid(arm, DETS[detector][station], DETS[detector][pot], 0, 0);
+	  const DetGeomDesc* det = geom->getSensor(detid);
+	  horizontalShiftOfDiamond_ = det->translation().x() - det->params().at(0);
 
-    // Rough alignement of pixel detector for diamond thomography
-    const CTPPSPixelDetId pixid(0, CTPPS_PIXEL_STATION_ID, CTPPS_FAR_RP_ID, 0);
-    if (iRun.run() > 300000) {  //Pixel installed
-      det = geom->getSensor(pixid);
-      horizontalShiftBwDiamondPixels_ = det->translation().x() - det->params().at(0) - horizontalShiftOfDiamond_ - 1;
-    }
+	  // Rough alignement of pixel detector for diamond thomography
+	  const CTPPSPixelDetId pixid(arm, CTPPS_PIXEL_STATION_ID, CTPPS_FAR_RP_ID, 0);
+	  if (iRun.run() > 300000) {  //Pixel installed
+		  det = geom->getSensor(pixid);
+		  horizontalShiftBwDiamondPixels_ = det->translation().x() - det->params().at(0) - horizontalShiftOfDiamond_ - 1;
+	  }
   }
+*/
 }
 
 //----------------------------------------------------------------------------------------------------

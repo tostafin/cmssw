@@ -107,8 +107,8 @@ private:
   edm::EDGetTokenT<std::vector<TotemFEDInfo>> tokenFEDInfo_;
 
   bool excludeMultipleHits_;
-  const static double horizontalShiftBwDiamondPixels_;
-  const static double horizontalShiftOfDiamond_;
+  double horizontalShiftBwDiamondPixels_;
+  double horizontalShiftOfDiamond_;
   std::vector<std::pair<edm::EventRange, int>> runParameters_;
   int centralOOT_;
   unsigned int verbosity_;
@@ -239,9 +239,6 @@ const unsigned short CTPPSDiamondDQMSource::DETS[2][2]={
 const unsigned short CTPPSDiamondDQMSource::station=0;
 const unsigned short CTPPSDiamondDQMSource::pot=1;
 const unsigned short CTPPSDiamondDQMSource::DETECTOR_NUM=2;
-const double CTPPSDiamondDQMSource::horizontalShiftBwDiamondPixels_=0;
-const double CTPPSDiamondDQMSource::horizontalShiftOfDiamond_=0;
-  
 
 //----------------------------------------------------------------------------------------------------
 
@@ -516,13 +513,13 @@ CTPPSDiamondDQMSource::CTPPSDiamondDQMSource(const edm::ParameterSet& ps)
           consumes<edm::DetSetVector<CTPPSDiamondLocalTrack>>(ps.getParameter<edm::InputTag>("tagDiamondLocalTracks"))),
       tokenFEDInfo_(consumes<std::vector<TotemFEDInfo>>(ps.getParameter<edm::InputTag>("tagFEDInfo"))),
       excludeMultipleHits_(ps.getParameter<bool>("excludeMultipleHits")),
+      horizontalShiftBwDiamondPixels_(0),
+      horizontalShiftOfDiamond_(0),
       centralOOT_(-999),
       verbosity_(ps.getUntrackedParameter<unsigned int>("verbosity", 0)),
       EC_difference_56_(-500),
       EC_difference_45_(-500)
-//      horizontalShiftBwDiamondPixels_(0),
-//      horizontalShiftOfDiamond_(0)
- {
+	{
 		for (const auto& pset : ps.getParameter<std::vector<edm::ParameterSet>>("offsetsOOT")) {
 			runParameters_.emplace_back(
 					std::make_pair(pset.getParameter<edm::EventRange>("validityRange"), pset.getParameter<int>("centralOOT")));

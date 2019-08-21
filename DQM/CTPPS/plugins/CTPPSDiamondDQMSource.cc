@@ -96,6 +96,7 @@ private:
   static const int CTPPS_FED_ID_45;
   static const int CTPPS_FED_ID_56;
   static const unsigned short DETECTORS[2];
+  static const unsigned short DETECTOR_NUM;
   edm::EDGetTokenT<edm::DetSetVector<TotemVFATStatus>> tokenStatus_;
   edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelLocalTrack>> tokenPixelTrack_;
   edm::EDGetTokenT<edm::DetSetVector<CTPPSDiamondDigi>> tokenDigi_;
@@ -268,32 +269,32 @@ CTPPSDiamondDQMSource::PotPlots::PotPlots(DQMStore::IBooker& ibooker, unsigned i
                                      -0.5,
                                      4.5,
                                      19. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
-                                     -0.5,
-                                     18.5);
+                                     2.5,
+                                     21.5);
   hitDistribution2d_lumisection = ibooker.book2D("hits in planes lumisection",
                                                  title + " hits in planes in the last lumisection;plane number;x (mm)",
                                                  10,
                                                  -0.5,
                                                  4.5,
                                                  19. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
-                                                 -0.5,
-                                                 18.5);
+                                                 2.5,
+                                                 21.5);
   hitDistribution2dOOT = ibooker.book2D("hits with OOT in planes",
                                         title + " hits with OOT in planes;plane number + 0.25 OOT;x (mm)",
                                         17,
                                         -0.25,
                                         4,
                                         19. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
-                                        -0.5,
-                                        18.5);
+                                        2.5,
+                                        21.5);
   hitDistribution2dOOT_le = ibooker.book2D("hits with OOT in planes (le only)",
                                            title + " hits with OOT in planes (le only);plane number + 0.25 OOT;x (mm)",
                                            17,
                                            -0.25,
                                            4,
                                            19. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
-                                           -0.5,
-                                           18.5);
+                                           2.5,
+                                           21.5);
   activePlanes =
       ibooker.book1D("active planes", title + " active planes (per event);number of active planes", 6, -0.5, 5.5);
   activePlanesInclusive =
@@ -312,7 +313,7 @@ CTPPSDiamondDQMSource::PotPlots::PotPlots(DQMStore::IBooker& ibooker, unsigned i
                                         4,
                                         19. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
                                         -0.5,
-                                        18.5);
+                                        21.5);
 
   pixelTomographyAll_0_25 =
       ibooker.book2D("tomography pixel 0 25",
@@ -321,8 +322,8 @@ CTPPSDiamondDQMSource::PotPlots::PotPlots(DQMStore::IBooker& ibooker, unsigned i
                      0,
                      100,
                      8,
-                     0,
-                     8);
+                     -6,
+                     6);
   pixelTomographyAll.emplace_back(pixelTomographyAll_0_25);
   pixelTomographyAll_25_50 =
       ibooker.book2D("tomography pixel 25 50",
@@ -331,8 +332,8 @@ CTPPSDiamondDQMSource::PotPlots::PotPlots(DQMStore::IBooker& ibooker, unsigned i
                      0,
                      100,
                      8,
-                     0,
-                     8);
+                     -6,
+                     6);
   pixelTomographyAll.emplace_back(pixelTomographyAll_25_50);
   pixelTomographyAll_50_75 =
       ibooker.book2D("tomography pixel 50 75",
@@ -341,8 +342,8 @@ CTPPSDiamondDQMSource::PotPlots::PotPlots(DQMStore::IBooker& ibooker, unsigned i
                      0,
                      100,
                      8,
-                     0,
-                     8);
+                     -6,
+                     6);
   pixelTomographyAll.emplace_back(pixelTomographyAll_50_75);
 
   leadingEdgeCumulative_both = ibooker.book1D(

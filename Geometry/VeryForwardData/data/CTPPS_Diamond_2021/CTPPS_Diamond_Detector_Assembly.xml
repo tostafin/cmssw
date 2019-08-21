@@ -61,12 +61,12 @@
 
     <PosPart copyNumber="1">
       <rParent name="CTPPS_Diamond_Main_Box"/>
-      <rChild name="CTPPS_Diamond_Plane2:CTPPS_Diamond_Plane"/>
+      <rChild name="CTPPS_Diamond_Plane1_new:CTPPS_Diamond_Plane"/>
       <Translation y="0*cm" x="[Shift_dx]" z="-([CTPPS_Diamond_Parameters:Plane_dz]+[CTPPS_Diamond_Parameters:Plane_gap])*3/2"/>
     </PosPart>
     <PosPart copyNumber="2">
       <rParent name="CTPPS_Diamond_Main_Box"/>
-      <rChild name="CTPPS_Diamond_Plane1:CTPPS_Diamond_Plane"/>
+      <rChild name="CTPPS_Diamond_Plane2_new:CTPPS_Diamond_Plane"/>
       <Translation y="0*cm" x="[Shift_dx]" z="-([CTPPS_Diamond_Parameters:Plane_dz]+[CTPPS_Diamond_Parameters:Plane_gap])/2"/>
     </PosPart>
     <PosPart copyNumber="3">

@@ -22,7 +22,7 @@ process.maxEvents = cms.untracked.PSet(
 #process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 1000 )
 
 # raw-to-digi conversion
-#process.load("EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff")
+process.load("EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff")
 
 #process.load("CalibPPS.ESProducers.totemDAQMappingESSourceXML_cfi")
 process.totemDAQMappingESSourceXML_TimingDiamond = cms.ESSource("TotemDAQMappingESSourceXML",

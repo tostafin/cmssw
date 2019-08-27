@@ -20,8 +20,8 @@ ROOT.gROOT.SetStyle('Plain') # white background
 #zmassHist = ROOT.TH1F ("zmass", "Z Candidate Mass", 50, 20, 220)
 
 # loop over events
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
+from decimal import *
+getcontext().prec=1000
 
 for event in events:
 	event.getByLabel (label, handle)
@@ -35,9 +35,9 @@ for event in events:
 #		pp.pprint(dir(detid))
 		print detid.arm(), detid.station(), detid.rp(), detid.plane(), detid.channel()
 		for digi in ds:
-			print 'X', digi.getX()
-			print 'Y', digi.getY()
-			print 'Z', digi.getZ()
+			print 'X', Decimal(digi.getX())
+			print 'Y', Decimal(digi.getY())
+			print 'Z', Decimal(digi.getZ())
 	# use muons to make Z peak
 #	numMuons = len (muons)
 #		if muons < 2: continue

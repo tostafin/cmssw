@@ -14,7 +14,10 @@ outputFName = sys.argv[2]+'.root'
 
 #Very important: CMSE is not supported by cmsShow
 process.XMLIdealGeometryESSource.rootNodeName = cms.string('cms:OCMS')
-
+#process.XMLIdealGeometryESSource.rootNodeName = cms.string('RP_Box_22:RP_box_primary_vacuum')
+#process.XMLIdealGeometryESSource.rootNodeName = cms.string('RP_220_Right_Station:RP_220_Right_Station_Vacuum_5')
+#process.XMLIdealGeometryESSource.rootNodeName = cms.string('CTPPS_Diamond_Detector_Assembly_2021:CTPPS_Diamond_Main_Box')
+#process.XMLIdealGeometryESSource.rootNodeName = cms.string('RP_147_Right_Station:RP_147_Right_Station_Vacuum_5')
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger = cms.Service("MessageLogger",
 		debugModules = cms.untracked.vstring('*'),
@@ -33,7 +36,7 @@ process.maxEvents = cms.untracked.PSet(
 
 process.add_(cms.ESProducer("TGeoMgrFromDdd",
 			verbose = cms.untracked.bool(False),
-			level   = cms.untracked.int32(25)
+			level   = cms.untracked.int32(14)
 			))
 
 process.dump = cms.EDAnalyzer("DumpSimGeometry",

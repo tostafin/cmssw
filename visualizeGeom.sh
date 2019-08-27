@@ -1,3 +1,3 @@
-name=$1
+name=${1-geomCTPPS}
 cmsRun universalConfig.py $name
-cmsShow -c ./Fireworks/Core/macros/simGeo.fwc --sim-geom-file $name.root
+cmsShow -s -c ./Fireworks/Core/macros/simGeo.fwc --sim-geom-file $name.root

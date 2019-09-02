@@ -433,7 +433,7 @@ CTPPSDiamondDQMSource::PlanePlots::PlanePlots(DQMStore::IBooker& ibooker, unsign
   hit_multiplicity = ibooker.book1D("channels per plane", title + " channels per plane; ch per plane", 13, -0.5, 12.5);
 
   pixelTomography_far =
-      ibooker.book2D("tomography pixel", title + " tomography with pixel;x + 25 OOT (mm);y (mm)", 75, 0, 75, 8, 0, 8);
+      ibooker.book2D("tomography pixel", title + " tomography with pixel;x + 25 OOT (mm);y (mm)", 75, 0, 75, 8, -5, 5);
   EfficiencyWRTPixelsInPlane =
       ibooker.book2D("Efficiency wrt pixels", title + " Efficiency wrt pixels;x (mm);y (mm)", 25, 0, 25, 12, -2, 10);
 }
@@ -488,7 +488,7 @@ CTPPSDiamondDQMSource::ChannelPlots::ChannelPlots(DQMStore::IBooker& ibooker, un
                      75);
 
   pixelTomography_far =
-      ibooker.book2D("tomography pixel", "tomography with pixel;x + 25 OOT (mm);y (mm)", 75, 0, 75, 8, 0, 8);
+      ibooker.book2D("tomography pixel", "tomography with pixel;x + 25 OOT (mm);y (mm)", 75, 0, 75, 8, -5, 5);
 
   hit_rate = ibooker.book1D("hit rate", title + "hit rate;rate (Hz)", 40, 0, 20);
 }

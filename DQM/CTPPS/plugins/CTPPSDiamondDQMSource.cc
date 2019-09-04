@@ -417,8 +417,8 @@ CTPPSDiamondDQMSource::PlanePlots::PlanePlots(DQMStore::IBooker& ibooker, unsign
                                  0,
                                  25,
                                  12,
-                                 -2,
-                                 10) {
+                                 -6,
+                                 6) {
   std::string path, title;
   CTPPSDiamondDetId(id).planeName(path, CTPPSDiamondDetId::nPath);
   ibooker.setCurrentFolder(path);
@@ -433,7 +433,7 @@ CTPPSDiamondDQMSource::PlanePlots::PlanePlots(DQMStore::IBooker& ibooker, unsign
   pixelTomography_far =
       ibooker.book2D("tomography pixel", title + " tomography with pixel;x + 25 OOT (mm);y (mm)", 75, 0, 75, 10, -5, 5);
   EfficiencyWRTPixelsInPlane =
-      ibooker.book2D("Efficiency wrt pixels", title + " Efficiency wrt pixels;x (mm);y (mm)", 25, 0, 25, 12, -2, 10);
+      ibooker.book2D("Efficiency wrt pixels", title + " Efficiency wrt pixels;x (mm);y (mm)", 25, 0, 25, 12, -6, 6);
 }
 
 //----------------------------------------------------------------------------------------------------

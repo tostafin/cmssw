@@ -44,7 +44,6 @@
       <rRotation name="CTPPS_Diamond_Transformations:planes_box_rotation"/>
       <Translation x="0*cm" y="0*cm" z="-[CTPPS_Timing_Horizontal_Pot:bottom_wall_thickness]/2+[CTPPS_Diamond_Parameters:PCB_extend_dx]"/>
     </PosPart>
-
     <PosPart copyNumber="1">
       <rParent name="CTPPS_Diamond_Main_Box"/>
       <rChild name="CTPPS_Diamond_Plane1:CTPPS_Diamond_Plane"/>

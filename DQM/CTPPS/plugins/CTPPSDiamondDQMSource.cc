@@ -266,32 +266,32 @@ CTPPSDiamondDQMSource::PotPlots::PotPlots(DQMStore::IBooker& ibooker, unsigned i
                                      10,
                                      -0.5,
                                      4.5,
-                                     19. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
-                                     2.5,
+                                     22. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
+                                     -0.5,
                                      21.5);
   hitDistribution2d_lumisection = ibooker.book2D("hits in planes lumisection",
                                                  title + " hits in planes in the last lumisection;plane number;x (mm)",
                                                  10,
                                                  -0.5,
                                                  4.5,
-                                                 19. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
-                                                 2.5,
+                                                 22. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
+                                                 -0.5,
                                                  21.5);
   hitDistribution2dOOT = ibooker.book2D("hits with OOT in planes",
                                         title + " hits with OOT in planes;plane number + 0.25 OOT;x (mm)",
                                         17,
                                         -0.25,
                                         4,
-                                        19. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
-                                        2.5,
+                                        22. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
+                                        -0.5,
                                         21.5);
   hitDistribution2dOOT_le = ibooker.book2D("hits with OOT in planes (le only)",
                                            title + " hits with OOT in planes (le only);plane number + 0.25 OOT;x (mm)",
                                            17,
                                            -0.25,
                                            4,
-                                           19. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
-                                           2.5,
+                                           22. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
+                                           -0.5,
                                            21.5);
   activePlanes =
       ibooker.book1D("active planes", title + " active planes (per event);number of active planes", 6, -0.5, 5.5);
@@ -309,7 +309,7 @@ CTPPSDiamondDQMSource::PotPlots::PotPlots(DQMStore::IBooker& ibooker, unsigned i
                                         9,
                                         -0.5,
                                         4,
-                                        19. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
+                                        22. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM,
                                         -0.5,
                                         21.5);
 
@@ -431,7 +431,7 @@ CTPPSDiamondDQMSource::PlanePlots::PlanePlots(DQMStore::IBooker& ibooker, unsign
   hit_multiplicity = ibooker.book1D("channels per plane", title + " channels per plane; ch per plane", 13, -0.5, 12.5);
 
   pixelTomography_far =
-      ibooker.book2D("tomography pixel", title + " tomography with pixel;x + 25 OOT (mm);y (mm)", 75, 0, 75, 8, -5, 5);
+      ibooker.book2D("tomography pixel", title + " tomography with pixel;x + 25 OOT (mm);y (mm)", 75, 0, 75, 10, -5, 5);
   EfficiencyWRTPixelsInPlane =
       ibooker.book2D("Efficiency wrt pixels", title + " Efficiency wrt pixels;x (mm);y (mm)", 25, 0, 25, 12, -2, 10);
 }

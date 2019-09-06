@@ -243,7 +243,7 @@ CTPPSDiamondDQMSource::PotPlots::PotPlots(DQMStore::IBooker& ibooker, unsigned i
       LeadingOnlyCounter(0),
       TrailingOnlyCounter(0),
       CompleteCounter(0),
-      pixelTracksMap("Pixel track maps for efficiency", "Pixel track maps for efficiency", 25, 0, 25, 12, -2, 10) {
+      pixelTracksMap("Pixel track maps for efficiency", "Pixel track maps for efficiency", 25, 0, 25, 12, -6, 6) {
   std::string path, title;
   CTPPSDiamondDetId(id).rpName(path, CTPPSDiamondDetId::nPath);
   ibooker.setCurrentFolder(path);
@@ -303,7 +303,7 @@ CTPPSDiamondDQMSource::PotPlots::PotPlots(DQMStore::IBooker& ibooker, unsigned i
                      5.5);
 
   trackDistribution =
-      ibooker.book1D("tracks", title + " tracks;x (mm)", 22. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM, -0.5, 21.5);
+      ibooker.book1D("tracks", title + " tracks;x (mm)", 19. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM, -0.5, 18.5);
   trackDistributionOOT = ibooker.book2D("tracks with OOT",
                                         title + " tracks with OOT;plane number;x (mm)",
                                         9,
@@ -427,7 +427,7 @@ CTPPSDiamondDQMSource::PlanePlots::PlanePlots(DQMStore::IBooker& ibooker, unsign
 
   digiProfileCumulativePerPlane = ibooker.book1D("digi profile", title + " digi profile; ch number", 12, -0.5, 11.5);
   hitProfile = ibooker.book1D(
-      "hit profile", title + " hit profile;x (mm)", 22. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM, -0.5, 21.5);
+      "hit profile", title + " hit profile;x (mm)", 19. * INV_DISPLAY_RESOLUTION_FOR_HITS_MM, -0.5, 18.5);
   hit_multiplicity = ibooker.book1D("channels per plane", title + " channels per plane; ch per plane", 13, -0.5, 12.5);
 
   pixelTomography_far =
@@ -486,7 +486,7 @@ CTPPSDiamondDQMSource::ChannelPlots::ChannelPlots(DQMStore::IBooker& ibooker, un
                      75);
 
   pixelTomography_far =
-      ibooker.book2D("tomography pixel", "tomography with pixel;x + 25 OOT (mm);y (mm)", 75, 0, 75, 10, -5, 5);
+      ibooker.book2D("tomography pixel", "tomography with pixel;x + 25 OOT (mm);y (mm)", 75, 0, 75, 8, -4, 4);
 
   hit_rate = ibooker.book1D("hit rate", title + "hit rate;rate (Hz)", 40, 0, 20);
 }
@@ -1236,7 +1236,6 @@ void CTPPSDiamondDQMSource::globalEndLuminosityBlock(const edm::LuminosityBlock&
 
     CTPPSDiamondDetId detId_pot(plot.first);
     detId_pot.setPlane(0);
-
     hitHistoTmp->Divide(&(plot.second.pixelTracksMapWithDiamonds), &(potPlots_[detId_pot].pixelTracksMap));
   }
 }

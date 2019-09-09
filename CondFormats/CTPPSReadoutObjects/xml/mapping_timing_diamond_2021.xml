@@ -1,7 +1,7 @@
 <top>   
   <arm id="0">  <!-- 45 -->
-    <station id="2">        <!-- 215 m -->
-      <rp_detector_set id="2">        <!-- Timing -->
+    <station id="2">        <!-- 220 m -->
+      <rp_detector_set id="2">        <!-- Near Horizontal -->
         <rp_plane_diamond id="0"> 
           <diamond_channel id="0"         hw_id="0x206"           FEDId="583"             GOHId="3"               IdxInFiber="6"/>
           <diamond_channel id="1"         hw_id="0x201"           FEDId="583"             GOHId="3"               IdxInFiber="1"/>
@@ -64,8 +64,8 @@
     </station>
   </arm>
   <arm id="1">  <!-- 56 -->
-    <station id="2">        <!-- 215 m -->
-      <rp_detector_set id="2">        <!-- Timing -->
+    <station id="2">        <!-- 220 m -->
+      <rp_detector_set id="2">        <!-- Near Horizontal -->
         <rp_plane_diamond id="0"> 
           <diamond_channel id="0"         hw_id="0x306"           FEDId="582"             GOHId="7"               IdxInFiber="6"/>
           <diamond_channel id="1"         hw_id="0x301"           FEDId="582"             GOHId="7"               IdxInFiber="1"/>

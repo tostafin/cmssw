@@ -243,7 +243,6 @@ CTPPSDiamondDQMSource::PotPlots::PotPlots(DQMStore::IBooker& ibooker, unsigned i
   CTPPSDiamondDetId(id).rpName(path, CTPPSDiamondDetId::nPath);
   ibooker.setCurrentFolder(path);
 
-  std::cout<<id<<" "<<CTPPSDiamondDetId(id)<<std::endl;
   CTPPSDiamondDetId(id).rpName(title, CTPPSDiamondDetId::nFull);
 
   activity_per_bx_0_25 =
@@ -568,7 +567,6 @@ void CTPPSDiamondDQMSource::bookHistograms(DQMStore::IBooker& ibooker, const edm
         for (unsigned short ch = 0; ch < CTPPS_DIAMOND_NUM_OF_CHANNELS; ++ch) {
           const CTPPSDiamondDetId chId(arm, station, pot, pl, ch);
           channelPlots_[chId] = ChannelPlots(ibooker, chId);
-          std::cout<<arm<<" "<<station<<" "<<pot<<" "<<pl<<" "<<ch<<std::endl;
         }
       }
     }
@@ -822,7 +820,6 @@ void CTPPSDiamondDQMSource::analyze(const edm::Event& event, const edm::EventSet
   }
   
   for (const auto& plt : potPlots_) {
-    std::cout<<plt.first<<" "<<planes.size()<</*" "<<planes[plt.first]<<*/std::endl;
     plt.second.activePlanes->Fill(planes[plt.first].size());
     plt.second.activePlanesInclusive->Fill(planes_inclusive[plt.first].size());
   }

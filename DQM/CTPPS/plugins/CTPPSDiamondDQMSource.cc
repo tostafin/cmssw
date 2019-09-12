@@ -512,11 +512,14 @@ void CTPPSDiamondDQMSource::dqmBeginRun(const edm::Run& iRun, const edm::EventSe
   }
 
   // Get detector shifts from the geometry
+  // Uncomment this to shift hits histogram to x=0 for 16 and 116
+  // Needs some code adjustments in filling to make it work properly for 22 and 122
+
 /*
   edm::ESHandle<CTPPSGeometry> geometry_;
   iSetup.get<VeryForwardRealGeometryRecord>().get(geometry_);
   const CTPPSGeometry* geom = geometry_.product();
-        for(int detector:detectors){
+        for(int detector:CTPPS_DETECTORS){
           const CTPPSDiamondDetId detid(arm, detector/10, detector%10, 0, 0);
 	  const DetGeomDesc* det = geom->getSensor(detid);
 	  horizontalShiftOfDiamond_ = det->translation().x() - det->params().at(0);

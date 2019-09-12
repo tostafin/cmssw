@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <DDDefinition xmlns="http://www.cern.ch/cms/DDL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.cern.ch/cms/DDL ../../../DetectorDescription/Schema/DDLSchema.xsd">
 
-  <ConstantsSection label="CTPPS_Diamond_Plane1_new.xml" eval="true">
+  <ConstantsSection label="CTPPS_Diamond_Plane1.xml" eval="true">
     <Constant name="Str1_dx" value="-[CTPPS_Diamond_Parameters:Diamond_dx]*2+[CTPPS_Diamond_Parameters:UnMet_Edge]+[CTPPS_Diamond_Parameters:Pat3_Str4_dx]/2"/>
     <Constant name="Str2_dx" value="[Str1_dx] + [CTPPS_Diamond_Parameters:Pat3_Str4_dx]/2+[CTPPS_Diamond_Parameters:Pat3_Str3_dx]/2+[CTPPS_Diamond_Parameters:UnMet_gap]"/>
     <Constant name="Str3_dx" value="[Str2_dx] + [CTPPS_Diamond_Parameters:Pat3_Str3_dx]/2+[CTPPS_Diamond_Parameters:Pat3_Str2_dx]/2+[CTPPS_Diamond_Parameters:UnMet_gap]"/>
@@ -16,18 +16,18 @@
     <Constant name="Str12_dx" value="[Str11_dx] + [CTPPS_Diamond_Parameters:Pat2_Str2_dx]/2+[CTPPS_Diamond_Parameters:Pat2_Str1_dx]/2+[CTPPS_Diamond_Parameters:UnMet_gap]"/>
   </ConstantsSection>
 
-  <SolidSection label="CTPPS_Diamond_Plane1_new.xml">
+  <SolidSection label="CTPPS_Diamond_Plane1.xml">
     <Box name="Plane" dx="[CTPPS_Diamond_Parameters:Plane_dx]/2" dy="[CTPPS_Diamond_Parameters:Plane_dy]/2" dz="[CTPPS_Diamond_Parameters:Plane_dz]/2"/>
   </SolidSection>
 
-  <LogicalPartSection label="CTPPS_Diamond_Plane1_new.xml">
+  <LogicalPartSection label="CTPPS_Diamond_Plane1.xml">
     <LogicalPart name="CTPPS_Diamond_Plane" category="unspecified">
       <rSolid name="Plane"/>
       <rMaterial name="materials:Air"/>
     </LogicalPart>
   </LogicalPartSection>
 
-  <PosPartSection label="CTPPS_Diamond_Plane1_new.xml">
+  <PosPartSection label="CTPPS_Diamond_Plane1.xml">
 
     <!-- ******** Pattern 3 ********* -->
     <PosPart copyNumber="000">

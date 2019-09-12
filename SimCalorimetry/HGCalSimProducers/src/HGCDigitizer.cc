@@ -39,7 +39,7 @@ namespace {
 
   int getCellThickness(const HGCalGeometry* geom, const DetId& detid) {
     const auto& dddConst = geom->topology().dddConstants();
-    return dddConst.waferType(detid);
+    return (1 + dddConst.waferType(detid));
   }
 
   int getCellThickness(const HcalGeometry* geom, const DetId& detid) { return 1; }
@@ -98,21 +98,6 @@ namespace {
     }
     return result;
   }
-
-  float getCCE(const HGCalGeometry* geom, const DetId& detid, const std::vector<float>& cces) {
-    if (cces.empty())
-      return 1.f;
-    if ((detid.det() == DetId::Hcal) || (detid.det() == DetId::HGCalHSc)) {
-      return 1.f;
-    } else {
-      const auto& topo = geom->topology();
-      const auto& dddConst = topo.dddConstants();
-      int waferTypeL = dddConst.waferType(detid);
-      return cces[waferTypeL - 1];
-    }
-  }
-
-  float getCCE(const HcalGeometry* geom, const DetId& id, const std::vector<float>& cces) { return 1.f; }
 
   // Dumps the internals of the SimHit accumulator to the digis for premixing
   void saveSimHitAccumulator(PHGCSimAccumulator& simResult,
@@ -420,7 +405,7 @@ void HGCDigitizer::accumulate(edm::Handle<edm::PCaloHitContainer> const& hits,
 
     const float toa = std::get<2>(hitRefs[i]);
     const PCaloHit& hit = hits->at(hitidx);
-    const float charge = hit.energy() * 1e6 * keV2fC * getCCE(geom, id, cce_);
+    const float charge = hit.energy() * 1e6 * keV2fC;
 
     //distance to the center of the detector
     const float dist2center(getPositionDistance(geom, id));

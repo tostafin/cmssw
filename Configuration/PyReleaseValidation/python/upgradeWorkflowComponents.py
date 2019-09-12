@@ -17,6 +17,10 @@ upgradeKeys[2017] = [
     '2021PU',
     '2021Design',
     '2021DesignPU',
+    '2023',
+    '2023PU',
+    '2024',
+    '2024PU',
 ]
 
 upgradeKeys[2026] = [
@@ -30,6 +34,12 @@ upgradeKeys[2026] = [
     '2026D44PU',
     '2026D45',
     '2026D45PU',
+    '2026D46',
+    '2026D46PU',
+    '2026D47',
+    '2026D47PU',
+    '2026D48',
+    '2026D48PU',
 ]
 
 # pre-generation of WF numbers
@@ -83,6 +93,7 @@ upgradeSteps['baseline'] = {
         'HARVESTFull',
         'HARVESTFullGlobal',
         'MiniAODFullGlobal',
+        'NanoFull',
     ],
     'suffix' : '',
     'offset' : 0.0,
@@ -179,16 +190,6 @@ upgradeSteps['heCollapse'] = {
     'suffix' : '_heCollapse',
     'offset' : 0.6,
 }
-upgradeSteps['killStuckTBM'] = {
-    'steps' : [
-        'DigiFull',
-    ],
-    'PU' : [
-        'DigiFull',
-    ],
-    'suffix' : '_killStuckTBM',
-    'offset' : 0.7,
-}
 upgradeSteps['ParkingBPH'] = {
     'steps' : [
         'RecoFull',
@@ -238,7 +239,7 @@ upgradeProperties[2017] = {
         'GT' : 'auto:phase1_2017_realistic',
         'HLTmenu': '@relval2017',
         'Era' : 'Run2_2017',
-        'ScenToRun' : ['GenSimFull','DigiFull','RecoFull','HARVESTFull','ALCAFull'],
+        'ScenToRun' : ['GenSimFull','DigiFull','RecoFull','HARVESTFull','ALCAFull','NanoFull'],
     },
     '2017Design' : {
         'Geom' : 'DB:Extended',
@@ -280,10 +281,26 @@ upgradeProperties[2017] = {
         'BeamSpot': 'GaussSigmaZ4cm',
         'ScenToRun' : ['GenSimFull','DigiFull','RecoFull','HARVESTFull'],
     },
+    '2023' : {
+        'Geom' : 'DB:Extended',
+        'GT' : 'auto:phase1_2023_realistic',
+        'HLTmenu': '@relval2021',
+        'Era' : 'Run3',
+        'BeamSpot': 'Run3RoundOptics25ns13TeVLowSigmaZ',
+        'ScenToRun' : ['GenSimFull','DigiFull','RecoFull','HARVESTFull','ALCAFull'],
+    },
+    '2024' : {
+        'Geom' : 'DB:Extended',
+        'GT' : 'auto:phase1_2024_realistic',
+        'HLTmenu': '@relval2021',
+        'Era' : 'Run3',
+        'BeamSpot': 'Run3RoundOptics25ns13TeVLowSigmaZ',
+        'ScenToRun' : ['GenSimFull','DigiFull','RecoFull','HARVESTFull','ALCAFull'],
+    },
 }
 
 upgradeProperties[2017]['2017PU'] = deepcopy(upgradeProperties[2017]['2017'])
-upgradeProperties[2017]['2017PU']['ScenToRun'] = ['GenSimFull','DigiFullPU','RecoFullPU','HARVESTFullPU']
+upgradeProperties[2017]['2017PU']['ScenToRun'] = ['GenSimFull','DigiFullPU','RecoFullPU','HARVESTFullPU','NanoFull']
 upgradeProperties[2017]['2017DesignPU'] = deepcopy(upgradeProperties[2017]['2017Design'])
 upgradeProperties[2017]['2017DesignPU']['ScenToRun'] = ['GenSimFull','DigiFullPU','RecoFullPU','HARVESTFullPU']
 
@@ -297,40 +314,67 @@ upgradeProperties[2017]['2021PU']['ScenToRun'] = ['GenSimFull','DigiFullPU','Rec
 upgradeProperties[2017]['2021DesignPU'] = deepcopy(upgradeProperties[2017]['2021Design'])
 upgradeProperties[2017]['2021DesignPU']['ScenToRun'] = ['GenSimFull','DigiFullPU','RecoFullPU','HARVESTFullPU']
 
+upgradeProperties[2017]['2023PU'] = deepcopy(upgradeProperties[2017]['2023'])
+upgradeProperties[2017]['2023PU']['ScenToRun'] = ['GenSimFull','DigiFullPU','RecoFullPU','HARVESTFullPU','NanoFull']
+
+upgradeProperties[2017]['2024PU'] = deepcopy(upgradeProperties[2017]['2024'])
+upgradeProperties[2017]['2024PU']['ScenToRun'] = ['GenSimFull','DigiFullPU','RecoFullPU','HARVESTFullPU','NanoFull']
+
 upgradeProperties[2026] = {
     '2026D35' : {
         'Geom' : 'Extended2026D35',
         'HLTmenu': '@fake2',
-        'GT' : 'auto:phase2_realistic',
+        'GT' : 'auto:phase2_realistic_T6',
         'Era' : 'Phase2C4_timing_layer_bar',
         'ScenToRun' : ['GenSimHLBeamSpotFull','DigiFullTrigger','RecoFullGlobal', 'HARVESTFullGlobal'],
     },
     '2026D41' : {
         'Geom' : 'Extended2026D41',
         'HLTmenu': '@fake2',
-        'GT' : 'auto:phase2_realistic',
+        'GT' : 'auto:phase2_realistic_T14',
         'Era' : 'Phase2C8_timing_layer_bar',
         'ScenToRun' : ['GenSimHLBeamSpotFull','DigiFullTrigger','RecoFullGlobal', 'HARVESTFullGlobal'],
     },
     '2026D43' : {
         'Geom' : 'Extended2026D43',
         'HLTmenu': '@fake2',
-        'GT' : 'auto:phase2_realistic',
+        'GT' : 'auto:phase2_realistic_T14',
         'Era' : 'Phase2C4_timing_layer_bar',
         'ScenToRun' : ['GenSimHLBeamSpotFull','DigiFullTrigger','RecoFullGlobal', 'HARVESTFullGlobal'],
     },
     '2026D44' : {
         'Geom' : 'Extended2026D44',
         'HLTmenu': '@fake2',
-        'GT' : 'auto:phase2_realistic',
+        'GT' : 'auto:phase2_realistic_T14',
         'Era' : 'Phase2C6_timing_layer_bar',
         'ScenToRun' : ['GenSimHLBeamSpotFull','DigiFullTrigger','RecoFullGlobal', 'HARVESTFullGlobal'],
     },
     '2026D45' : {
         'Geom' : 'Extended2026D45',
         'HLTmenu': '@fake2',
-        'GT' : 'auto:phase2_realistic',
+        'GT' : 'auto:phase2_realistic_T15',
         'Era' : 'Phase2C8_timing_layer_bar',
+        'ScenToRun' : ['GenSimHLBeamSpotFull','DigiFullTrigger','RecoFullGlobal', 'HARVESTFullGlobal'],
+    },
+    '2026D46' : {
+        'Geom' : 'Extended2026D46',
+        'HLTmenu': '@fake2',
+        'GT' : 'auto:phase2_realistic_T15',
+        'Era' : 'Phase2C9_timing_layer_bar',
+        'ScenToRun' : ['GenSimHLBeamSpotFull','DigiFullTrigger','RecoFullGlobal', 'HARVESTFullGlobal'],
+    },
+    '2026D47' : {
+        'Geom' : 'Extended2026D47',
+        'HLTmenu': '@fake2',
+        'GT' : 'auto:phase2_realistic_T15',
+        'Era' : 'Phase2C10_timing_layer_bar',
+        'ScenToRun' : ['GenSimHLBeamSpotFull','DigiFullTrigger','RecoFullGlobal', 'HARVESTFullGlobal'],
+    },
+    '2026D48' : {
+        'Geom' : 'Extended2026D48',
+        'HLTmenu': '@fake2',
+        'GT' : 'auto:phase2_realistic_T15',
+        'Era' : 'Phase2C9_timing_layer_bar',
         'ScenToRun' : ['GenSimHLBeamSpotFull','DigiFullTrigger','RecoFullGlobal', 'HARVESTFullGlobal'],
     },
 }
@@ -443,6 +487,14 @@ upgradeFragments=['FourMuPt_1_200_pythia8_cfi',
                   'SingleElectronPt15Eta1p7_2p7_cfi',
                   'ZTT_All_hadronic_14TeV_TuneCUETP8M1_cfi',
                   'CloseByParticle_Photon_ERZRanges_cfi',
+                  'CE_E_Front_300um_cfi', 
+                  'CE_E_Front_200um_cfi', 
+                  'CE_E_Front_120um_cfi', 
+                  'CE_H_Fine_300um_cfi',  
+                  'CE_H_Fine_200um_cfi',  
+                  'CE_H_Fine_120um_cfi',  
+                  'CE_H_Coarse_Scint_cfi',
+                  'CE_H_Coarse_300um_cfi',
 ]
 
 howMuches={'FourMuPt_1_200_pythia8_cfi':Kby(10,100),
@@ -539,6 +591,14 @@ howMuches={'FourMuPt_1_200_pythia8_cfi':Kby(10,100),
            'SingleElectronPt15Eta1p7_2p7_cfi':Kby(9,100),
            'ZTT_All_hadronic_14TeV_TuneCUETP8M1_cfi':Kby(9,50),
            'CloseByParticle_Photon_ERZRanges_cfi':Kby(9,100),
+           'CE_E_Front_300um_cfi':Kby(9,100), 
+           'CE_E_Front_200um_cfi':Kby(9,100), 
+           'CE_E_Front_120um_cfi':Kby(9,100), 
+           'CE_H_Fine_300um_cfi':Kby(9,100),  
+           'CE_H_Fine_200um_cfi':Kby(9,100),  
+           'CE_H_Fine_120um_cfi':Kby(9,100),  
+           'CE_H_Coarse_Scint_cfi':Kby(9,100),
+           'CE_H_Coarse_300um_cfi':Kby(9,100),
 }
 
 upgradeDatasetFromFragment={'FourMuPt_1_200_pythia8_cfi': 'FourMuPt1_200',
@@ -635,4 +695,12 @@ upgradeDatasetFromFragment={'FourMuPt_1_200_pythia8_cfi': 'FourMuPt1_200',
                             'SingleElectronPt15Eta1p7_2p7_cfi':'SingleElectronPt15Eta1p7_2p7',
                             'ZTT_All_hadronic_14TeV_TuneCUETP8M1_cfi': 'ZTT_14',
                             'CloseByParticle_Photon_ERZRanges_cfi': 'CloseByParticleGun',
+                            'CE_E_Front_300um_cfi':'CloseByParticleGun_CE_E_Front_300um', 
+                            'CE_E_Front_200um_cfi':'CloseByParticleGun_CE_E_Front_200um', 
+                            'CE_E_Front_120um_cfi':'CloseByParticleGun_CE_E_Front_120um', 
+                            'CE_H_Fine_300um_cfi':'CloseByParticleGun_CE_H_Fine_300um',  
+                            'CE_H_Fine_200um_cfi':'CloseByParticleGun_CE_H_Fine_200um',  
+                            'CE_H_Fine_120um_cfi':'CloseByParticleGun_CE_H_Fine_120um',  
+                            'CE_H_Coarse_Scint_cfi':'CloseByParticleGun_CE_H_Coarse_Scint',
+                            'CE_H_Coarse_300um_cfi':'CloseByParticleGun_CE_H_Coarse_300um',
 }

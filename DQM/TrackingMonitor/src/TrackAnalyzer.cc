@@ -21,8 +21,6 @@
 #include "TMath.h"
 #include "DQM/TrackingMonitor/interface/GetLumi.h"
 
-using namespace dqm;
-
 namespace {
   template <typename T, size_t N>
   std::array<T, N + 1> makeLogBins(const double min, const double max) {
@@ -1437,6 +1435,7 @@ void TrackAnalyzer::fillHistosForEfficiencyFromHitPatter(const reco::Track& trac
           case 2:
             if (!useInac)
               break;
+            [[fallthrough]];
           case 1:
             hits_total_[Key(hp.getSubStructure(pattern), hp.getSubSubStructure(pattern), mon)]->Fill(monitoring);
             break;

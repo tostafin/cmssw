@@ -6,10 +6,11 @@
 #include "SimG4Core/Application/interface/StackingAction.h"
 #include "SimG4Core/Application/interface/TrackingAction.h"
 #include "SimG4Core/Application/interface/SteppingAction.h"
-#include "SimG4Core/Application/interface/CustomUIsession.h"
 #include "SimG4Core/Application/interface/CustomUIsessionThreadPrefix.h"
 #include "SimG4Core/Application/interface/CustomUIsessionToFile.h"
 #include "SimG4Core/Application/interface/ExceptionHandler.h"
+
+#include "SimG4Core/Geometry/interface/CustomUIsession.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -32,8 +33,6 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/ESTransientHandle.h"
 #include "Geometry/Records/interface/IdealGeometryRecord.h"
-#include "DetectorDescription/Core/interface/DDCompactView.h"
-#include "DetectorDescription/DDCMS/interface/DDCompactView.h"
 
 #include "SimG4Core/Geometry/interface/DDDWorld.h"
 #include "SimG4Core/MagneticField/interface/FieldBuilder.h"
@@ -66,7 +65,6 @@
 #include <thread>
 #include <sstream>
 #include <vector>
-//#include <mutex>
 
 static std::once_flag applyOnce;
 thread_local bool RunManagerMTWorker::dumpMF = false;
@@ -84,8 +82,7 @@ namespace {
   void createWatchers(const edm::ParameterSet& iP,
                       SimActivityRegistry* iReg,
                       std::vector<std::shared_ptr<SimWatcher> >& oWatchers,
-                      std::vector<std::shared_ptr<SimProducer> >& oProds,
-                      int thisThreadID) {
+                      std::vector<std::shared_ptr<SimProducer> >& oProds) {
     if (!iP.exists("Watchers")) {
       return;
     }
@@ -238,7 +235,7 @@ void RunManagerMTWorker::initializeTLS() {
     }
   }
   if (m_hasWatchers) {
-    createWatchers(m_p, m_tls->registry.get(), m_tls->watchers, m_tls->producers, thisID);
+    createWatchers(m_p, m_tls->registry.get(), m_tls->watchers, m_tls->producers);
   }
 }
 
@@ -253,15 +250,15 @@ void RunManagerMTWorker::initializeThread(RunManagerMT& runManagerMaster, const 
   // Initialize per-thread output
   G4Threading::G4SetThreadId(thisID);
   G4UImanager::GetUIpointer()->SetUpForAThread(thisID);
-  const std::string& uitype = m_pCustomUIsession.getUntrackedParameter<std::string>("Type");
+  const std::string& uitype = m_pCustomUIsession.getUntrackedParameter<std::string>("Type", "MessageLogger");
   if (uitype == "MessageLogger") {
     m_tls->UIsession.reset(new CustomUIsession());
   } else if (uitype == "MessageLoggerThreadPrefix") {
-    m_tls->UIsession.reset(
-        new CustomUIsessionThreadPrefix(m_pCustomUIsession.getUntrackedParameter<std::string>("ThreadPrefix"), thisID));
+    m_tls->UIsession.reset(new CustomUIsessionThreadPrefix(
+        m_pCustomUIsession.getUntrackedParameter<std::string>("ThreadPrefix", ""), thisID));
   } else if (uitype == "FilePerThread") {
     m_tls->UIsession.reset(
-        new CustomUIsessionToFile(m_pCustomUIsession.getUntrackedParameter<std::string>("ThreadFile"), thisID));
+        new CustomUIsessionToFile(m_pCustomUIsession.getUntrackedParameter<std::string>("ThreadFile", ""), thisID));
   } else {
     throw edm::Exception(edm::errors::Configuration)
         << "Invalid value of CustomUIsession.Type '" << uitype
@@ -288,17 +285,6 @@ void RunManagerMTWorker::initializeThread(RunManagerMT& runManagerMaster, const 
 
   // we need the track manager now
   m_tls->trackManager.reset(new SimTrackManager());
-
-  // Get DDCompactView, or would it be better to get the object from
-  // runManagerMaster instead of EventSetup in here?
-  auto geoFromDD4hep = m_p.getParameter<bool>("g4GeometryDD4hepSource");
-  edm::ESTransientHandle<cms::DDCompactView> pDD4hep;
-  edm::ESTransientHandle<DDCompactView> pDD;
-  if (geoFromDD4hep) {
-    es.get<IdealGeometryRecord>().get(pDD4hep);
-  } else {
-    es.get<IdealGeometryRecord>().get(pDD);
-  }
 
   // setup the magnetic field
   if (m_pUseMagneticField) {
@@ -361,11 +347,11 @@ void RunManagerMTWorker::initializeThread(RunManagerMT& runManagerMaster, const 
   BeginOfJob aBeginOfJob(&es);
   m_tls->registry->beginOfJobSignal_(&aBeginOfJob);
 
-  G4int sv = m_p.getParameter<int>("SteppingVerbosity");
-  G4double elim = m_p.getParameter<double>("StepVerboseThreshold") * CLHEP::GeV;
-  std::vector<int> ve = m_p.getParameter<std::vector<int> >("VerboseEvents");
-  std::vector<int> vn = m_p.getParameter<std::vector<int> >("VertexNumber");
-  std::vector<int> vt = m_p.getParameter<std::vector<int> >("VerboseTracks");
+  G4int sv = m_p.getUntrackedParameter<int>("SteppingVerbosity", 0);
+  G4double elim = m_p.getUntrackedParameter<double>("StepVerboseThreshold", 0.1) * CLHEP::GeV;
+  std::vector<int> ve = m_p.getUntrackedParameter<std::vector<int> >("VerboseEvents");
+  std::vector<int> vn = m_p.getUntrackedParameter<std::vector<int> >("VertexNumber");
+  std::vector<int> vt = m_p.getUntrackedParameter<std::vector<int> >("VerboseTracks");
 
   if (sv > 0) {
     m_sVerbose.reset(new CMSSteppingVerbose(sv, elim, ve, vn, vt));

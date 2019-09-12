@@ -13,7 +13,6 @@
 // Framework headers
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "DQMServices/Core/interface/MonitorElement.h"
 #include "DQMServices/Core/interface/DQMStore.h"
 
 // Geometry
@@ -275,6 +274,7 @@ void DTLocalTriggerLutTest::runClientDiagnostic(DQMStore::IBooker& ibooker, DQMS
             switch (static_cast<int>(phiWhSummary->GetBinContent(sect, stat))) {
               case 1:
                 phiNoData++;
+                [[fallthrough]];
               case 2:
               case 3:
                 phiErr++;
@@ -282,6 +282,7 @@ void DTLocalTriggerLutTest::runClientDiagnostic(DQMStore::IBooker& ibooker, DQMS
             switch (static_cast<int>(phibWhSummary->GetBinContent(sect, stat))) {
               case 1:
                 phibNoData++;
+                [[fallthrough]];
               case 2:
               case 3:
                 phibErr++;

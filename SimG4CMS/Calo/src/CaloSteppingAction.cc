@@ -36,6 +36,7 @@ CaloSteppingAction::CaloSteppingAction(const edm::ParameterSet& p) : count_(0) {
   nameEESD_ = iC.getParameter<std::vector<std::string> >("EESDNames");
   nameHCSD_ = iC.getParameter<std::vector<std::string> >("HCSDNames");
   nameHitC_ = iC.getParameter<std::vector<std::string> >("HitCollNames");
+  allSteps_ = iC.getParameter<int>("AllSteps");
   slopeLY_ = iC.getParameter<double>("SlopeLightYield");
   birkC1EC_ = iC.getParameter<double>("BirkC1EC");
   birkSlopeEC_ = iC.getParameter<double>("BirkSlopeEC");
@@ -43,6 +44,7 @@ CaloSteppingAction::CaloSteppingAction(const edm::ParameterSet& p) : count_(0) {
   birkC1HC_ = iC.getParameter<double>("BirkC1HC");
   birkC2HC_ = iC.getParameter<double>("BirkC2HC");
   birkC3HC_ = iC.getParameter<double>("BirkC3HC");
+  timeSliceUnit_ = iC.getUntrackedParameter<double>("TimeSliceUnit", 1.0);
 
   edm::LogVerbatim("Step") << "CaloSteppingAction:: " << nameEBSD_.size() << " names for EB SD's";
   for (unsigned int k = 0; k < nameEBSD_.size(); ++k)
@@ -57,6 +59,7 @@ CaloSteppingAction::CaloSteppingAction(const edm::ParameterSet& p) : count_(0) {
                            << birkC1EC_ << ":" << birkSlopeEC_ << ":" << birkCutEC_;
   edm::LogVerbatim("Step") << "CaloSteppingAction::Constants for HCAL: Birk "
                            << "constants " << birkC1HC_ << ":" << birkC2HC_ << ":" << birkC3HC_;
+  edm::LogVerbatim("Step") << "CaloSteppingAction::Constant for time slice " << timeSliceUnit_;
   edm::LogVerbatim("Step") << "CaloSteppingAction:: " << nameHitC_.size() << " hit collections";
   for (unsigned int k = 0; k < nameHitC_.size(); ++k)
     edm::LogVerbatim("Step") << "[" << k << "] " << nameHitC_[k];
@@ -72,6 +75,9 @@ CaloSteppingAction::CaloSteppingAction(const edm::ParameterSet& p) : count_(0) {
     slave_[k] = std::make_unique<CaloSlaveSD>(nameHitC_[k]);
     produces<edm::PCaloHitContainer>(nameHitC_[k]);
   }
+  if (allSteps_ > 0)
+    produces<edm::PassiveHitContainer>("AllPassiveHits");
+  edm::LogVerbatim("Step") << "CaloSteppingAction:: All Steps Flag " << allSteps_ << " for passive hits";
 }
 
 CaloSteppingAction::~CaloSteppingAction() {
@@ -86,6 +92,11 @@ void CaloSteppingAction::produce(edm::Event& e, const edm::EventSetup&) {
     fillHits(*product, k);
     e.put(std::move(product), nameHitC_[k]);
   }
+  if (allSteps_ > 0) {
+    std::unique_ptr<edm::PassiveHitContainer> hgcPH(new edm::PassiveHitContainer);
+    fillPassiveHits(*hgcPH);
+    e.put(std::move(hgcPH), "AllPassiveHits");
+  }
 }
 
 void CaloSteppingAction::fillHits(edm::PCaloHitContainer& cc, int type) {
@@ -93,6 +104,24 @@ void CaloSteppingAction::fillHits(edm::PCaloHitContainer& cc, int type) {
                            << slave_[type].get()->hits().size() << " hits";
   cc = slave_[type].get()->hits();
   slave_[type].get()->Clean();
+}
+
+void CaloSteppingAction::fillPassiveHits(edm::PassiveHitContainer& cc) {
+  edm::LogVerbatim("Step") << "CaloSteppingAction::fillPassiveHits with " << store_.size() << " hits";
+  for (const auto& element : store_) {
+    auto lv = std::get<0>(element.first);
+    auto it = mapLV_.find(lv);
+    if (it != mapLV_.end()) {
+      PassiveHit hit(it->second,
+                     std::get<1>(element.first),
+                     std::get<2>(element.second),
+                     std::get<3>(element.second),
+                     std::get<1>(element.second),
+                     std::get<2>(element.first),
+                     std::get<0>(element.second));
+      cc.emplace_back(hit);
+    }
+  }
 }
 
 void CaloSteppingAction::update(const BeginOfJob* job) {
@@ -118,8 +147,11 @@ void CaloSteppingAction::update(const BeginOfRun* run) {
   if (lvs) {
     std::map<const std::string, const G4LogicalVolume*> nameMap;
     std::map<const std::string, const G4LogicalVolume*>::const_iterator itr;
-    for (auto lvi = lvs->begin(), lve = lvs->end(); lvi != lve; ++lvi)
+    for (auto lvi = lvs->begin(), lve = lvs->end(); lvi != lve; ++lvi) {
       nameMap.emplace((*lvi)->GetName(), *lvi);
+      if (allSteps_ > 0)
+        mapLV_[*lvi] = (*lvi)->GetName();
+    }
     for (auto const& name : nameEBSD_) {
       for (itr = nameMap.begin(); itr != nameMap.end(); ++itr) {
         const std::string& lvname = itr->first;
@@ -173,6 +205,8 @@ void CaloSteppingAction::update(const BeginOfEvent* evt) {
     hitMap_[k].erase(hitMap_[k].begin(), hitMap_[k].end());
     slave_[k].get()->Initialize();
   }
+  if (allSteps_ > 0)
+    store_.erase(store_.begin(), store_.end());
 }
 
 //=================================================================== each STEP
@@ -234,6 +268,63 @@ void CaloSteppingAction::update(const G4Step* aStep) {
       }
     }
   }
+
+  if (allSteps_ > 0) {
+    auto it = mapLV_.find(lv);
+    double energy = aStep->GetTotalEnergyDeposit() / CLHEP::MeV;
+    auto const touch = aStep->GetPreStepPoint()->GetTouchable();
+    double time = aStep->GetTrack()->GetGlobalTime() / CLHEP::nanosecond;
+    int itime = static_cast<int>(1000.0 * time);
+    int trackId = aStep->GetTrack()->GetTrackID();
+    int pdg = aStep->GetTrack()->GetDefinition()->GetPDGEncoding();
+#ifdef EDM_ML_DEBUG
+    edm::LogVerbatim("Step") << "CaloSteppingAction: Volume " << lv->GetName() << " History "
+                             << touch->GetHistoryDepth() << " Pointers " << aStep->GetPostStepPoint() << ":"
+                             << aStep->GetTrack()->GetNextVolume() << ":" << aStep->IsLastStepInVolume() << " E "
+                             << energy << " T " << time << ":" << itime << " PDG " << pdg;
+#endif
+    uint32_t copy = 0;
+    if (((aStep->GetPostStepPoint() == nullptr) || (aStep->GetTrack()->GetNextVolume() == nullptr)) &&
+        (aStep->IsLastStepInVolume())) {
+      energy += (aStep->GetPreStepPoint()->GetKineticEnergy() / CLHEP::MeV);
+    } else {
+      time = aStep->GetPostStepPoint()->GetGlobalTime() / CLHEP::nanosecond;
+      copy = (touch->GetHistoryDepth() < 1)
+                 ? static_cast<uint32_t>(touch->GetReplicaNumber(0))
+                 : static_cast<uint32_t>(touch->GetReplicaNumber(0) + 1000 * touch->GetReplicaNumber(1));
+    }
+    if (it != mapLV_.end()) {
+      PassiveKey key(std::make_tuple(lv, copy, trackId, itime));
+      if (allSteps_ > 1) {
+        bool flag(true);
+        while (store_.find(key) != store_.end()) {
+          copy += 1000000;
+          key = std::make_tuple(lv, copy, trackId, itime);
+          if (copy > 100000000) {
+            flag = false;
+            break;
+          }
+        }
+        if (flag) {
+          store_[key] = std::make_tuple(pdg, time, energy, energy);
+        } else {
+          auto itr = store_.find(key);
+          double e1 = std::get<2>(itr->second) + energy;
+          double e2 = std::get<3>(itr->second) + energy;
+          store_[key] = std::make_tuple(pdg, time, e1, e2);
+        }
+      } else {
+        auto itr = store_.find(key);
+        if (itr == store_.end()) {
+          store_[key] = std::make_tuple(pdg, time, energy, energy);
+        } else {
+          double e1 = std::get<2>(itr->second) + energy;
+          double e2 = std::get<3>(itr->second) + energy;
+          store_[key] = std::make_tuple(pdg, time, e1, e2);
+        }
+      }
+    }
+  }
 }
 
 //================================================================ End of EVENT
@@ -270,7 +361,7 @@ uint32_t CaloSteppingAction::getDetIDHC(int det, int lay, int depth, const math:
 }
 
 void CaloSteppingAction::fillHit(uint32_t id, double dE, double time, int primID, uint16_t depth, double em, int flag) {
-  CaloHitID currentID(id, time, primID, depth);
+  CaloHitID currentID(id, time, primID, depth, timeSliceUnit_);
   double edepEM = (em ? dE : 0);
   double edepHAD = (em ? 0 : dE);
   std::pair<int, CaloHitID> evID = std::make_pair(eventID_, currentID);

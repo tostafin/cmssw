@@ -21,6 +21,8 @@
 #include "Geometry/HGCalGeometry/interface/HGCalGeometry.h"
 #include "Geometry/HcalTowerAlgo/interface/HcalGeometry.h"
 
+#include "SimCalorimetry/HGCalSimAlgos/interface/HGCalSiNoiseMap.h"
+
 namespace hgc = hgc_digi;
 
 namespace hgc_digi_utils {
@@ -40,7 +42,7 @@ namespace hgc_digi_utils {
                        : false);
     //base time samples for each DetId, initialized to 0
     info.size = (isHalf ? 0.5 : 1.0);
-    info.thickness = dddConst.waferType(detid);
+    info.thickness = 1 + dddConst.waferType(detid);
   }
 
   inline void addCellMetadata(HGCCellInfo& info, const CaloSubdetectorGeometry* geom, const DetId& detid) {
@@ -122,11 +124,20 @@ protected:
   //1keV in fC
   float keV2fC_;
 
-  //noise level
+  //noise level (used if scaleByDose=False)
   std::vector<float> noise_fC_;
 
-  //charge collection efficiency
+  //charge collection efficiency (used if scaleByDose=False)
   std::vector<double> cce_;
+
+  //determines if the dose map should be used instead
+  bool scaleByDose_;
+
+  //path to dose map
+  std::string doseMapFile_;
+
+  //noise maps (used if scaleByDose=True)
+  HGCalSiNoiseMap scal_;
 
   //front-end electronics model
   std::unique_ptr<HGCFEElectronics<DFr> > myFEelectronics_;
@@ -136,6 +147,9 @@ protected:
 
   //if true will put both in time and out-of-time samples in the event
   bool doTimeSamples_;
+
+  //if set to true, threshold will be computed based on the expected meap peak/2
+  bool thresholdFollowsMIP_;
 };
 
 #endif

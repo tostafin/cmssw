@@ -17,15 +17,15 @@ from HLTrigger.Configuration.common import *
 #                     pset.minGoodStripCharge = cms.PSet(refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone'))
 #     return process
 
-# use 5DHit as seed
-def customiseFor27220(process):
-   for pset in process._Process__psets.values():
-       if hasattr(pset,'ComponentType'):
-             if (pset.ComponentType == 'CkfTrajectoryBuilder' or 
-                 pset.ComponentType == 'GroupedCkfTrajectoryBuilder' or
-                 pset.ComponentType == 'MuonCkfTrajectoryBuilder'):
-                 if not hasattr(pset,'seedAs5DHit'):
-                     pset.seedAs5DHit = cms.bool(False)
+def customiseFor27653(process):
+   """ PR27653 : RecoTrackRefSelector has new parameter: invertRapidityCut
+                 default value (for back compatibility) : cms.bool(False)
+   """
+   for prod in producers_by_type(process,"RecoTrackRefSelector"):
+      if not hasattr(prod,"invertRapidityCut"):
+         setattr(prod,"invertRapidityCut",cms.bool(False))
+#      for p in prod.parameterNames_():
+#         print p
    return process
 
 def customiseFor2017DtUnpacking(process):
@@ -57,11 +57,24 @@ def customiseFor2017DtUnpacking(process):
 
     return process
 
+def customiseFor27694(process) :
+
+    for producer in esproducers_by_type(process, "PixelCPETemplateRecoESProducer"):
+        if hasattr(producer, "DoCosmics"): del producer.DoCosmics
+
+    for producer in esproducers_by_type(process, "PixelCPEGenericESProducer"):
+        if hasattr(producer, "TanLorentzAnglePerTesla"): del producer.TanLorentzAnglePerTesla
+        if hasattr(producer, "PixelErrorParametrization"): del producer.PixelErrorParametrization
+
+    return process
 
 # CMSSW version specific customizations
 def customizeHLTforCMSSW(process, menuType="GRun"):
 
     # add call to action function in proper order: newest last!
-    process = customiseFor27220(process)
+    # process = customiseFor12718(process)
+    process = customiseFor27653(process)
+
+    process = customiseFor27694(process)
 
     return process

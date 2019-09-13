@@ -214,7 +214,7 @@ const int CTPPSDiamondDQMSource::CTPPS_DIAMOND_NUM_OF_PLANES = 4;
 const int CTPPSDiamondDQMSource::CTPPS_DIAMOND_NUM_OF_CHANNELS = 12;
 const int CTPPSDiamondDQMSource::CTPPS_FED_ID_56 = 582;
 const int CTPPSDiamondDQMSource::CTPPS_FED_ID_45 = 583;
-const int CTPPSDiamondDQMSource::CTPPS_DETECTORS[2]={16,22};
+const int CTPPSDiamondDQMSource::CTPPS_DETECTORS[2] = {16, 22};
 
 //----------------------------------------------------------------------------------------------------
 
@@ -323,7 +323,6 @@ CTPPSDiamondDQMSource::PotPlots::PotPlots(DQMStore::IBooker& ibooker, unsigned i
                      8,
                      -4,
                      4);
-
 
   leadingEdgeCumulative_both = ibooker.book1D(
       "leading edge (le and te)", title + " leading edge (le and te) (recHits); leading edge (ns)", 75, 0, 75);
@@ -487,14 +486,12 @@ CTPPSDiamondDQMSource::CTPPSDiamondDQMSource(const edm::ParameterSet& ps)
       centralOOT_(-999),
       verbosity_(ps.getUntrackedParameter<unsigned int>("verbosity", 0)),
       EC_difference_56_(-500),
-      EC_difference_45_(-500)
-	{
-	for (const auto& pset : ps.getParameter<std::vector<edm::ParameterSet>>("offsetsOOT")) {
-		runParameters_.emplace_back(
-					std::make_pair(pset.getParameter<edm::EventRange>("validityRange"), pset.getParameter<int>("centralOOT")));
-		}
-	}
-  
+      EC_difference_45_(-500) {
+  for (const auto& pset : ps.getParameter<std::vector<edm::ParameterSet>>("offsetsOOT")) {
+    runParameters_.emplace_back(
+        std::make_pair(pset.getParameter<edm::EventRange>("validityRange"), pset.getParameter<int>("centralOOT")));
+  }
+}
 
 //----------------------------------------------------------------------------------------------------
 
@@ -515,7 +512,7 @@ void CTPPSDiamondDQMSource::dqmBeginRun(const edm::Run& iRun, const edm::EventSe
   // Uncomment this to shift hits histogram to x=0 for 16 and 116
   // Needs some code adjustments in filling to make it work properly for 22 and 122
 
-/*
+  /*
   edm::ESHandle<CTPPSGeometry> geometry_;
   iSetup.get<VeryForwardRealGeometryRecord>().get(geometry_);
   const CTPPSGeometry* geom = geometry_.product();
@@ -543,9 +540,9 @@ void CTPPSDiamondDQMSource::bookHistograms(DQMStore::IBooker& ibooker, const edm
   globalPlot_ = GlobalPlots(ibooker);
 
   for (unsigned short arm = 0; arm < CTPPS_NUM_OF_ARMS; ++arm) {
-    for(unsigned short detector : CTPPS_DETECTORS){
-      const short station=detector/10;
-      const short pot=detector%10;
+    for (unsigned short detector : CTPPS_DETECTORS) {
+      const short station = detector / 10;
+      const short pot = detector % 10;
       const CTPPSDiamondDetId rpId(arm, station, pot);
       potPlots_[rpId] = PotPlots(ibooker, rpId);
       for (unsigned short pl = 0; pl < CTPPS_DIAMOND_NUM_OF_PLANES; ++pl) {
@@ -805,7 +802,7 @@ void CTPPSDiamondDQMSource::analyze(const edm::Event& event, const edm::EventSet
         potPlots_[detId_pot].activity_per_bx.at(rechit.getOOTIndex())->Fill(event.bunchCrossing());
     }
   }
-  
+
   for (const auto& plt : potPlots_) {
     plt.second.activePlanes->Fill(planes[plt.first].size());
     plt.second.activePlanesInclusive->Fill(planes_inclusive[plt.first].size());
@@ -879,7 +876,7 @@ void CTPPSDiamondDQMSource::analyze(const edm::Event& event, const edm::EventSet
               potPlots_[detId_pot].effTriplecountingChMap[map_index] = 0;
               potPlots_[detId_pot].effDoublecountingChMap[map_index] = 0;
             }
-            CTPPSDiamondDetId detId(detId_pot.arm(), detId_pot.station(), detId_pot.rp(),  plane, channel);
+            CTPPSDiamondDetId detId(detId_pot.arm(), detId_pot.station(), detId_pot.rp(), plane, channel);
             if (channelAlignedWithTrack(geometry_.product(), detId, track, 0.2)) {
               // Channel should fire
               ++(potPlots_[detId_pot].effDoublecountingChMap[map_index]);
@@ -1024,10 +1021,10 @@ void CTPPSDiamondDQMSource::analyze(const edm::Event& event, const edm::EventSet
     for (const auto& lt : ds) {
       if (lt.isValid()) {
         // For efficiency
-        for(int detector:CTPPS_DETECTORS){
-	  const short station=detector/10;
-	  const short pot=detector%10;
-          CTPPSDiamondDetId detId_pot(pixId.arm(),station, pot);
+        for (int detector : CTPPS_DETECTORS) {
+          const short station = detector / 10;
+          const short pot = detector % 10;
+          CTPPSDiamondDetId detId_pot(pixId.arm(), station, pot);
           potPlots_[detId_pot].pixelTracksMap.Fill(lt.getX0() - horizontalShiftBwDiamondPixels_, lt.getY0());
 
           std::set<CTPPSDiamondDetId> planesWitHits_set;
@@ -1052,7 +1049,7 @@ void CTPPSDiamondDQMSource::analyze(const edm::Event& event, const edm::EventSet
 
           for (auto& planeId : planesWitHits_set)
             planePlots_[planeId].pixelTracksMapWithDiamonds.Fill(lt.getX0() - horizontalShiftBwDiamondPixels_,
-                lt.getY0());
+                                                                 lt.getY0());
         }
       }
     }

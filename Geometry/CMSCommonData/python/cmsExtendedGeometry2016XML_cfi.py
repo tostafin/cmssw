@@ -248,6 +248,7 @@ XMLIdealGeometryESSource = cms.ESSource("XMLIdealGeometryESSource",
         'Geometry/ForwardCommonData/data/zdc.xml',
         'Geometry/ForwardCommonData/data/zdclumi.xml',
         'Geometry/ForwardCommonData/data/cmszdc.xml')+cms.vstring(
+        'Geometry/VeryForwardData/data/2016/v1/pps.xml',
         'Geometry/ForwardCommonData/data/bhm.xml',
         'Geometry/ForwardCommonData/data/pltbcm.xml',
         'Geometry/ForwardCommonData/data/bcm1f.xml',

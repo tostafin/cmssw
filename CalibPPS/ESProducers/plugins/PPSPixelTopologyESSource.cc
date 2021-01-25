@@ -1,8 +1,8 @@
 /****************************************************************************
  *
- *  CondFormats/PPSObjects/plugins/PPSTopologyESSource.cc
+ *  CondFormats/PPSObjects/plugins/PPSPixelTopologyESSource.cc
  *
- *  Description :  - Loads PPSTopology from the PPSTopologyESSource_cfi.py
+ *  Description :  - Loads PPSPixelTopology from the PPSPixelTopologyESSource_cfi.py
  *                   config file.
  *
  *
@@ -22,8 +22,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
-#include "CondFormats/PPSObjects/interface/PPSTopology.h"
-#include "CondFormats/DataRecord/interface/PPSTopologyRcd.h"
+#include "CondFormats/PPSObjects/interface/PPSPixelTopology.h"
+#include "CondFormats/DataRecord/interface/PPSPixelTopologyRcd.h"
 
 #include <memory>
 
@@ -32,24 +32,24 @@
 using namespace std;
 
 /**
- * \brief Loads PPSTopology from a config file.
+ * \brief Loads PPSPixelTopology from a config file.
  **/
 
-class PPSTopologyESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder {
+class PPSPixelTopologyESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder {
 public:
-  PPSTopologyESSource(const edm::ParameterSet&);
-  ~PPSTopologyESSource() override = default;
+  PPSPixelTopologyESSource(const edm::ParameterSet&);
+  ~PPSPixelTopologyESSource() override = default;
 
-  std::unique_ptr<PPSTopology> produce(const PPSTopologyRcd&);
+  std::unique_ptr<PPSPixelTopology> produce(const PPSPixelTopologyRcd&);
   static void fillDescriptions(edm::ConfigurationDescriptions&);
 
 private:
-  bool setPPSTopology_;
+  bool setPPSPixelTopology_;
 
   /// Set PPS Topology parameters to their values from config
-  void setPPSTopology(const edm::ParameterSet&);
-  ///  Fill PPSTopology object 
-  std::unique_ptr<PPSTopology> fillPPSTopology();
+  void setPPSPixelTopology(const edm::ParameterSet&);
+  ///  Fill PPSPixelTopology object 
+  std::unique_ptr<PPSPixelTopology> fillPPSPixelTopology();
 
   // Topology parameters
   double pitch_simY_;
@@ -73,8 +73,8 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 
-PPSTopologyESSource::PPSTopologyESSource(const edm::ParameterSet& iConfig)
-    : setPPSTopology_(iConfig.getParameter<bool>("setPPSTopology")),
+PPSPixelTopologyESSource::PPSPixelTopologyESSource(const edm::ParameterSet& iConfig)
+    : setPPSPixelTopology_(iConfig.getParameter<bool>("setPPSPixelTopology")),
  pitch_simY_(0.),
  pitch_simX_(0.),
  thickness_(0.),
@@ -87,27 +87,27 @@ PPSTopologyESSource::PPSTopologyESSource(const edm::ParameterSet& iConfig)
  active_edge_sigma_(0.),
  phys_active_edge_dist_(0.)
  {
-  if (setPPSTopology_)
-    setPPSTopology(iConfig);
+  if (setPPSPixelTopology_)
+    setPPSPixelTopology(iConfig);
 
   setWhatProduced(this);
-  findingRecord<PPSTopologyRcd>();
+  findingRecord<PPSPixelTopologyRcd>();
 }
 
 //----------------------------------------------------------------------------------------------------
 
-std::unique_ptr<PPSTopology> PPSTopologyESSource::produce(const PPSTopologyRcd&) {
-  // If beam parameters are available from the config file, fill their values into PPSTopology object
-  auto topo = (setPPSTopology_) ? fillPPSTopology() : std::make_unique<PPSTopology>();
+std::unique_ptr<PPSPixelTopology> PPSPixelTopologyESSource::produce(const PPSPixelTopologyRcd&) {
+  // If beam parameters are available from the config file, fill their values into PPSPixelTopology object
+  auto topo = (setPPSPixelTopology_) ? fillPPSPixelTopology() : std::make_unique<PPSPixelTopology>();
 
-  edm::LogInfo("PPSTopologyESSource::produce") << "\n" << *topo;
+  edm::LogInfo("PPSPixelTopologyESSource::produce") << "\n" << *topo;
 
   return topo;
 }
 
 //----------------------------------------------------------------------------------------------------
 
-void PPSTopologyESSource::setPPSTopology(const edm::ParameterSet& iConfig) {
+void PPSPixelTopologyESSource::setPPSPixelTopology(const edm::ParameterSet& iConfig) {
   pitch_simY_ = iConfig.getParameter<double>("PitchSimY");
   pitch_simX_ = iConfig.getParameter<double>("PitchSimX");
   thickness_ = iConfig.getParameter<double>("thickness");
@@ -123,8 +123,8 @@ void PPSTopologyESSource::setPPSTopology(const edm::ParameterSet& iConfig) {
 
 //----------------------------------------------------------------------------------------------------
 
-std::unique_ptr<PPSTopology> PPSTopologyESSource::fillPPSTopology() {
-  auto p = std::make_unique<PPSTopology>();
+std::unique_ptr<PPSPixelTopology> PPSPixelTopologyESSource::fillPPSPixelTopology() {
+  auto p = std::make_unique<PPSPixelTopology>();
 
   p->setPitchSimY(pitch_simY_);
   p->setPitchSimX(pitch_simX_);
@@ -144,11 +144,11 @@ std::unique_ptr<PPSTopology> PPSTopologyESSource::fillPPSTopology() {
 
 //----------------------------------------------------------------------------------------------------
 
-void PPSTopologyESSource::setIntervalFor(const edm::eventsetup::EventSetupRecordKey& key,
+void PPSPixelTopologyESSource::setIntervalFor(const edm::eventsetup::EventSetupRecordKey& key,
                                                  const edm::IOVSyncValue& iosv,
                                                  edm::ValidityInterval& oValidity) {
-  edm::LogInfo("PPSTopologyESSource")
-      << ">> PPSTopologyESSource::setIntervalFor(" << key.name() << ")\n"
+  edm::LogInfo("PPSPixelTopologyESSource")
+      << ">> PPSPixelTopologyESSource::setIntervalFor(" << key.name() << ")\n"
       << "    run=" << iosv.eventID().run() << ", event=" << iosv.eventID().event();
 
   edm::ValidityInterval infinity(iosv.beginOfTime(), iosv.endOfTime());
@@ -157,9 +157,9 @@ void PPSTopologyESSource::setIntervalFor(const edm::eventsetup::EventSetupRecord
 
 //----------------------------------------------------------------------------------------------------
 
-void PPSTopologyESSource::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void PPSPixelTopologyESSource::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.add<bool>("setPPSTopology", true);
+  desc.add<bool>("setPPSPixelTopology", true);
 
   desc.add<double>("PitchSimY", 150e-3);
   desc.add<double>("PitchSimX", 100e-3);
@@ -173,9 +173,9 @@ void PPSTopologyESSource::fillDescriptions(edm::ConfigurationDescriptions& descr
   desc.add<double>("activeEdgeSigma", 0.02);
   desc.add<double>("physActiveEdgeDist", 0.150);
 
-  descriptions.add("ppsTopologyESSource", desc);
+  descriptions.add("ppsPixelTopologyESSource", desc);
 }
 
 //----------------------------------------------------------------------------------------------------
 
-DEFINE_FWK_EVENTSETUP_SOURCE(PPSTopologyESSource);
+DEFINE_FWK_EVENTSETUP_SOURCE(PPSPixelTopologyESSource);

@@ -1,4 +1,4 @@
-#include "CondFormats/PPSObjects/interface/PPSTopology.h"
+#include "CondFormats/PPSObjects/interface/PPSPixelTopology.h"
 #include "FWCore/Utilities/interface/typelookup.h"
 
-TYPELOOKUP_DATA_REG(PPSTopology);
+TYPELOOKUP_DATA_REG(PPSPixelTopology);

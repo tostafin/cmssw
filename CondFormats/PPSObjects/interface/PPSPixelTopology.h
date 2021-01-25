@@ -1,11 +1,11 @@
-#ifndef CondFormats_PPSObjects_PPSTopology_h
-#define CondFormats_PPSObjects_PPSTopology_h
+#ifndef CondFormats_PPSObjects_PPSPixelTopology_h
+#define CondFormats_PPSObjects_PPSPixelTopology_h
 // -*- C++ -*-
 //
 // Package:    PPSObjects
-// Class:      PPSTopology
+// Class:      PPSPixelTopology
 //
-/**\class PPSTopology PPSTopology.h CondFormats/PPSObjects/src/PPSTopology.cc
+/**\class PPSPixelTopology PPSPixelTopology.h CondFormats/PPSObjects/src/PPSPixelTopology.cc
 
  Description: Internal topology of PPS detectors
 
@@ -20,12 +20,12 @@
 #include <cmath>
 
 
-class PPSTopology {
+class PPSPixelTopology {
 public:
   // Constructor
-  PPSTopology();
+  PPSPixelTopology();
   // Destructor
-  ~PPSTopology();
+  ~PPSPixelTopology();
 
   class PixelInfo {
   public:
@@ -44,7 +44,7 @@ public:
       pixel_row_no_(pixel_row_no),
       pixel_col_no_(pixel_col_no)
       //,
-      //      pixel_index_(pixel_col_no * PPSTopology::no_of_pixels_simX_ + pixel_row_no)
+      //      pixel_index_(pixel_col_no * PPSPixelTopology::no_of_pixels_simX_ + pixel_row_no)
   {}
 
     inline double higherSimXBorder() const { return higher_simX_border_; }
@@ -65,6 +65,8 @@ public:
     unsigned short pixel_row_no_;
     unsigned short pixel_col_no_;
     //    unsigned short pixel_index_;
+    COND_SERIALIZABLE;
+
   };
 
   unsigned short pixelIndex(PixelInfo pI);
@@ -146,6 +148,6 @@ Uses coordinate a frame with origin in the center of the wafer.
   COND_SERIALIZABLE;
 };
 
-std::ostream &operator<<(std::ostream &, PPSTopology);
+std::ostream &operator<<(std::ostream &, PPSPixelTopology);
 
 #endif

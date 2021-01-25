@@ -55,9 +55,9 @@ private:
   double pitch_simY_;
   double pitch_simX_;
   double thickness_;
-  int no_of_pixels_simX_;
-  int no_of_pixels_simY_;
-  int no_of_pixels_;
+  unsigned short no_of_pixels_simX_;
+  unsigned short no_of_pixels_simY_;
+  unsigned short no_of_pixels_;
   double simX_width_;
   double simY_width_;
   double dead_edge_width_;

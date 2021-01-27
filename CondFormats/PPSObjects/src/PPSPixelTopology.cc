@@ -4,17 +4,18 @@
 // Constructors
 
 PPSPixelTopology::PPSPixelTopology()
-  :  pitch_simY_(0.),
-pitch_simX_(0.),
-thickness_(0.),
-no_of_pixels_simX_(0.),
-no_of_pixels_simY_(0.),
-no_of_pixels_(0.),
-simX_width_(0.),
-simY_width_(0.),
-dead_edge_width_(0.),
-active_edge_sigma_(0.),
-phys_active_edge_dist_(0.) 
+  : runType_(""),  
+    pitch_simY_(0.),
+    pitch_simX_(0.),
+    thickness_(0.),
+    no_of_pixels_simX_(0.),
+    no_of_pixels_simY_(0.),
+    no_of_pixels_(0.),
+    simX_width_(0.),
+    simY_width_(0.),
+    dead_edge_width_(0.),
+    active_edge_sigma_(0.),
+    phys_active_edge_dist_(0.) 
 {
   active_edge_x_ = simX_width_ * 0.5 - phys_active_edge_dist_;
   active_edge_y_ = simY_width_ * 0.5 - phys_active_edge_dist_;
@@ -230,7 +231,7 @@ void PPSPixelTopology::index2RowCol(unsigned int& arow, unsigned int& acol, unsi
 
 // Getters
 
-//double PPSPixelTopology::getBeamMom45() const { return beam_momentum_45_; }
+std::string PPSPixelTopology::getRunType() const { return runType_; }
 double PPSPixelTopology::getPitchSimY() const { return pitch_simY_; }
 double PPSPixelTopology::getPitchSimX() const { return pitch_simX_; }
 double PPSPixelTopology::getThickness() const { return thickness_; }
@@ -245,7 +246,7 @@ double PPSPixelTopology::getPhysActiveEdgeDist() const { return phys_active_edge
 
 // Setters
 
-//void PPSPixelTopology::setBeamMom45(double mom) { beam_momentum_45_ = mom; }
+void PPSPixelTopology::setRunType(std::string rt){runType_ = rt;}
 void PPSPixelTopology::setPitchSimY(double psy){pitch_simY_ = psy;}
 void PPSPixelTopology::setPitchSimX(double psx){pitch_simX_ = psx;}
 void PPSPixelTopology::setThickness(double tss){thickness_ = tss;}
@@ -258,36 +259,26 @@ void PPSPixelTopology::setNoPixelsSimX(unsigned short npx){no_of_pixels_simX_ = 
   void PPSPixelTopology::setActiveEdgeSigma(double aes){active_edge_sigma_ = aes;}
   void PPSPixelTopology::setPhysActiveEdgeDist(double pae){phys_active_edge_dist_ = pae;}
 
-  void PPSPixelTopology::printInfo(std::stringstream& s) {
+void PPSPixelTopology::printInfo(std::stringstream& s) {
   s << "\n PPS Topology parameters : \n"
-    /* << "\n   beam_momentum_45 = " << beam_momentum_45_ << " GeV"
-  << "\n   beam_momentum_56 = " << beam_momentum_56_ << " GeV"
-  << "\n   beta_star_x_45 = " << beta_star_x_45_ << " cm"
-  << "\n   beta_star_y_45 = " << beta_star_y_45_ << " cm"
-  << "\n   beta_star_x_56 = " << beta_star_x_56_ << " cm"
-  << "\n   beta_star_y_56 = " << beta_star_y_56_ << " cm"
-  << "\n   beam_divergence_x_45 = " << beam_divergence_x_45_ << " rad"
-  << "\n   beam_divergence_y_45 = " << beam_divergence_y_45_ << " rad"
-  << "\n   beam_divergence_x_56 = " << beam_divergence_x_56_ << " rad"
-  << "\n   beam_divergence_y_56 = " << beam_divergence_y_56_ << " rad"
-  << "\n   half_crossing_angle_x_45 = " << half_crossing_angle_x_45_ << " rad"
-  << "\n   half_crossing_angle_y_45 = " << half_crossing_angle_y_45_ << " rad"
-  << "\n   half_crossing_angle_x_56 = " << half_crossing_angle_x_56_ << " rad"
-  << "\n   half_crossing_angle_y_56 = " << half_crossing_angle_y_56_ << " rad"
-  << "\n   vtx_offset_x_45 = " << vtx_offset_x_45_ << " cm"
-  << "\n   vtx_offset_y_45 = " << vtx_offset_y_45_ << " cm"
-  << "\n   vtx_offset_z_45 = " << vtx_offset_z_45_ << " cm"
-  << "\n   vtx_offset_t_45 = " << vtx_offset_t_45_ << " cm"
-  << "\n   vtx_offset_x_56 = " << vtx_offset_x_56_ << " cm"
-  << "\n   vtx_offset_y_56 = " << vtx_offset_y_56_ << " cm"
-  << "\n   vtx_offset_z_56 = " << vtx_offset_z_56_ << " cm"
-  << "\n   vtx_offset_t_56 = " << vtx_offset_t_56_ << " cm"
-  << "\n   vtx_stddev_x = " << vtx_stddev_x_ << " cm"
-  << "\n   vtx_stddev_y = " << vtx_stddev_y_ << " cm"
-  << "\n   vtx_stddev_z = " << vtx_stddev_z_ << " cm"
-  << "\n   vtx_stddev_t = " << vtx_stddev_t_ << " cm" */
-<< std::endl;
-  }
+    << "\n  runType_  = " <<  runType_
+    << "\n  pitch_simY_  = " <<  pitch_simY_
+    << "\n   pitch_simX_ = " <<  pitch_simX_
+    << "\n   thickness_ = " <<  thickness_
+    << "\n   no_of_pixels_simX_ " << no_of_pixels_simX_ 
+    << "\n   no_of_pixels_simY_ " << no_of_pixels_simY_
+    << "\n   no_of_pixels_ " << no_of_pixels_ 
+    << "\n   simX_width_ " << simX_width_
+    << "\n   simY_width_ " << simY_width_
+    << "\n   dead_edge_width_ " << dead_edge_width_ 
+    << "\n   active_edge_sigma_ " << active_edge_sigma_
+    << "\n   phys_active_edge_dist_ " << phys_active_edge_dist_
+
+    << "\n   active_edge_x_ " << active_edge_x_
+    << "\n   active_edge_y_ " << active_edge_y_ 
+
+    << std::endl;
+}
 
 
   std::ostream& operator<<(std::ostream& os, PPSPixelTopology info) {

@@ -52,6 +52,7 @@ private:
   std::unique_ptr<PPSPixelTopology> fillPPSPixelTopology();
 
   // Topology parameters
+  std::string runType_;
   double pitch_simY_;
   double pitch_simX_;
   double thickness_;
@@ -74,19 +75,20 @@ protected:
 //----------------------------------------------------------------------------------------------------
 
 PPSPixelTopologyESSource::PPSPixelTopologyESSource(const edm::ParameterSet& iConfig)
-    : setPPSPixelTopology_(iConfig.getParameter<bool>("setPPSPixelTopology")),
- pitch_simY_(0.),
- pitch_simX_(0.),
- thickness_(0.),
- no_of_pixels_simX_(0.),
- no_of_pixels_simY_(0.),
- no_of_pixels_(0.),
- simX_width_(0.),
- simY_width_(0.),
- dead_edge_width_(0.),
- active_edge_sigma_(0.),
- phys_active_edge_dist_(0.)
- {
+  : setPPSPixelTopology_(iConfig.getParameter<bool>("setPPSPixelTopology")),
+    runType_(""),
+    pitch_simY_(0.),
+    pitch_simX_(0.),
+    thickness_(0.),
+    no_of_pixels_simX_(0.),
+    no_of_pixels_simY_(0.),
+    no_of_pixels_(0.),
+    simX_width_(0.),
+    simY_width_(0.),
+    dead_edge_width_(0.),
+    active_edge_sigma_(0.),
+    phys_active_edge_dist_(0.)
+{
   if (setPPSPixelTopology_)
     setPPSPixelTopology(iConfig);
 
@@ -108,6 +110,7 @@ std::unique_ptr<PPSPixelTopology> PPSPixelTopologyESSource::produce(const PPSPix
 //----------------------------------------------------------------------------------------------------
 
 void PPSPixelTopologyESSource::setPPSPixelTopology(const edm::ParameterSet& iConfig) {
+  runType_ = iConfig.getParameter<std::string>("RunType");
   pitch_simY_ = iConfig.getParameter<double>("PitchSimY");
   pitch_simX_ = iConfig.getParameter<double>("PitchSimX");
   thickness_ = iConfig.getParameter<double>("thickness");
@@ -126,6 +129,7 @@ void PPSPixelTopologyESSource::setPPSPixelTopology(const edm::ParameterSet& iCon
 std::unique_ptr<PPSPixelTopology> PPSPixelTopologyESSource::fillPPSPixelTopology() {
   auto p = std::make_unique<PPSPixelTopology>();
 
+  p->setRunType(runType_);
   p->setPitchSimY(pitch_simY_);
   p->setPitchSimX(pitch_simX_);
   p->setThickness(thickness_);
@@ -160,7 +164,7 @@ void PPSPixelTopologyESSource::setIntervalFor(const edm::eventsetup::EventSetupR
 void PPSPixelTopologyESSource::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.add<bool>("setPPSPixelTopology", true);
-
+  desc.add<std::string>("RunType","Run3");
   desc.add<double>("PitchSimY", 150e-3);
   desc.add<double>("PitchSimX", 100e-3);
   desc.add<double>("thickness", 0.23);
@@ -168,7 +172,7 @@ void PPSPixelTopologyESSource::fillDescriptions(edm::ConfigurationDescriptions& 
   desc.add<int>("noOfPixelSimY", 156);
   desc.add<int>("noOfPixels", 160 * 156);
   desc.add<double>("simXWidth", 16.6);
-  desc.add<double>("simYWidth", 24.4);
+  desc.add<double>("simYWidth", 16.2);
   desc.add<double>("deadEdgeWidth", 200e-3);
   desc.add<double>("activeEdgeSigma", 0.02);
   desc.add<double>("physActiveEdgeDist", 0.150);

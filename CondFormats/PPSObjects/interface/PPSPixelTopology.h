@@ -81,7 +81,8 @@ public:
 		  double& higher_y) const;
 
   // Getters
-
+  
+  std::string getRunType() const;
   double getPitchSimY() const;
   double getPitchSimX() const;
   double getThickness() const;
@@ -97,7 +98,7 @@ public:
 
   // Setters
 
-//  void setBeamMom45(double mom);
+  void setRunType(std::string rt);
   void setPitchSimY(double psy);
   void setPitchSimX(double psx);
   void setThickness(double tss);
@@ -129,18 +130,19 @@ Uses coordinate a frame with origin in the center of the wafer.
   void rowCol2Index(unsigned int arow, unsigned int acol, unsigned int& index) const ;
   void index2RowCol(unsigned int& arow, unsigned int& acol, unsigned int index) const;
 
-   double pitch_simY_;
-   double pitch_simX_;
-   double thickness_;
-   unsigned short no_of_pixels_simX_;
-   unsigned short no_of_pixels_simY_;
-   unsigned short no_of_pixels_;
-   double simX_width_;
-   double simY_width_;
-   double dead_edge_width_;
-   double active_edge_sigma_;
-   double phys_active_edge_dist_;
-
+  std::string runType_;
+  double pitch_simY_;
+  double pitch_simX_;
+  double thickness_;
+  unsigned short no_of_pixels_simX_;
+  unsigned short no_of_pixels_simY_;
+  unsigned short no_of_pixels_;
+  double simX_width_;
+  double simY_width_;
+  double dead_edge_width_;
+  double active_edge_sigma_;
+  double phys_active_edge_dist_;
+  
   double active_edge_x_;
   double active_edge_y_;
 

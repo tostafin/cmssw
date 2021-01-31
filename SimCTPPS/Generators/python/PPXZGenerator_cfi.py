@@ -8,6 +8,8 @@ generator = cms.EDProducer("PPXZGenerator",
   decayZToElectrons = cms.bool(True),
   decayZToMuons = cms.bool(False),
 
+  useResonantIntermediateState = cms.bool(False),
+
   m_X = cms.double(1200),
 
   m_Z_mean = cms.double(91.1876),
@@ -23,6 +25,9 @@ generator = cms.EDProducer("PPXZGenerator",
 
   m_XZ_min = cms.double(1300),
   c_XZ = cms.double(0.04),
+
+  m_S_mean = cms.double(0),
+  m_S_gamma = cms.double(0),
 
   p_z_LAB_2p_min = cms.double(-1500),
   p_z_LAB_2p_max = cms.double(+1500),

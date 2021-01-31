@@ -50,6 +50,8 @@ class PPXZGenerator : public edm::one::EDProducer<>
     bool decayZToElectrons;
     bool decayZToMuons;
 
+    bool useResonantIntermediateState;
+
     const double m_X;       // mass of the X particle, GeV
     const double m_Z_mean;  // mass of the Z particle, mean, GeV
     const double m_Z_gamma; // mass of the Z particle, gamma, GeV
@@ -64,6 +66,9 @@ class PPXZGenerator : public edm::one::EDProducer<>
 
     const double m_XZ_min;  // minimal value of invariant mass of the X-Z system, GeV
     const double c_XZ;      // parameter of the exponential distribution for the invariant mass of the X-Z system, GeV
+
+    const double m_S_mean;  // mass of the intermediate particle S, mean, GeV
+    const double m_S_gamma; // mass of the intermediate particle S, gamma, GeV
 
     const double p_z_LAB_2p_min; // minimum of p_z of the 2-proton system in the LAB frame, GeV
     const double p_z_LAB_2p_max; // maximum of p_z of the 2-proton system in the LAB frame, GeV
@@ -85,6 +90,7 @@ PPXZGenerator::PPXZGenerator(const edm::ParameterSet& pset) :
   decayX(pset.getParameter<bool>("decayX")),
   decayZToElectrons(pset.getParameter<bool>("decayZToElectrons")),
   decayZToMuons(pset.getParameter<bool>("decayZToMuons")),
+  useResonantIntermediateState(pset.getParameter<bool>("useResonantIntermediateState")),
 
   m_X(pset.getParameter<double>("m_X")),
   m_Z_mean(pset.getParameter<double>("m_Z_mean")),
@@ -97,8 +103,13 @@ PPXZGenerator::PPXZGenerator(const edm::ParameterSet& pset) :
   m_mu(pset.getParameter<double>("m_mu")),
 
   p_beam(pset.getParameter<double>("p_beam")),
+
   m_XZ_min(pset.getParameter<double>("m_XZ_min")),
   c_XZ(pset.getParameter<double>("c_XZ")),
+
+  m_S_mean(pset.getParameter<double>("m_S_mean")),
+  m_S_gamma(pset.getParameter<double>("m_S_gamma")),
+
   p_z_LAB_2p_min(pset.getParameter<double>("p_z_LAB_2p_min")),
   p_z_LAB_2p_max(pset.getParameter<double>("p_z_LAB_2p_max")),
 
@@ -149,7 +160,9 @@ void PPXZGenerator::produce(edm::Event &e, const edm::EventSetup& es)
   for (unsigned int n_attempt = 0; n_attempt < 10000; ++n_attempt)
   {
     m_Z = CLHEP::RandBreitWigner::shoot(engine, m_Z_mean, m_Z_gamma);
-    m_XZ = m_XZ_min + CLHEP::RandExponential::shoot(engine, c_XZ_mean);
+
+    m_XZ = (useResonantIntermediateState) ? CLHEP::RandBreitWigner::shoot(engine, m_S_mean, m_S_gamma) :
+      m_XZ_min + CLHEP::RandExponential::shoot(engine, c_XZ_mean);
 
     if (m_Z < 0. || m_XZ < m_Z + m_X)
       continue;

@@ -30,6 +30,10 @@ process.generator.m_XZ_min = $mass + 100
 process.generator.m_X_pr1 = $mass - 100
 process.generator.decayX = True
 
+process.generator.m_S_mean = $mass + 100
+process.generator.m_S_gamma = 0.01 * ($mass + 100)
+process.generator.useResonantIntermediateState = False
+
 # distribution plotter
 process.ctppsTrackDistributionPlotter = cms.EDAnalyzer("CTPPSTrackDistributionPlotter",
   tagTracks = cms.InputTag("ctppsLocalTrackLiteProducer"),
@@ -101,5 +105,8 @@ def UseSettingsGamma():
   process.generator.m_XZ_min = $mass + 1E-6
   process.generator.m_X_pr1 = $mass - 100
   process.generator.p_T_Z_min = 80
+
+def UseSettingsZResIntState():
+  process.generator.useResonantIntermediateState = True
 
 $settings_function()

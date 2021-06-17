@@ -2146,7 +2146,7 @@ ppsDict = {
 
         ],
     },
-    "P3" : {
+    "P4" : {
         2 : [
             'Geometry/ForwardCommonData/data/Run2/totemMaterials.xml',
             'Geometry/ForwardCommonData/data/totemRotations.xml',
@@ -2200,15 +2200,22 @@ ppsDict = {
             'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_124.xml',
             'Geometry/VeryForwardData/data/RP_Detectors_Assembly/RP_Detectors_Assembly_125.xml',
             'Geometry/VeryForwardData/data/RP_Device.xml',
-            'Geometry/VeryForwardData/data/RP_Vertical_Device/2021/v1/RP_Vertical_Device.xml',
-            'Geometry/VeryForwardData/data/RP_Horizontal_Device/2021/v1/RP_Horizontal_Device.xml',
-            'Geometry/VeryForwardData/data/CTPPS_2018/CTPPS_220_Right_Station/v1/CTPPS_220_Right_Station.xml',
-            'Geometry/VeryForwardData/data/CTPPS_2018/CTPPS_220_Left_Station/v1/CTPPS_220_Left_Station.xml',
-            'Geometry/VeryForwardData/data/CTPPS_2018/CTPPS_210_Right_Station/v1/CTPPS_210_Right_Station.xml',
-            'Geometry/VeryForwardData/data/CTPPS_2018/CTPPS_210_Left_Station/v1/CTPPS_210_Left_Station.xml',
-            'Geometry/VeryForwardData/data/CTPPS_Stations_Assembly.xml',
-            'Geometry/VeryForwardData/data/CTPPS_Cuts_Per_Region.xml',
-            'Geometry/VeryForwardData/data/RP_Sensitive_Dets.xml',
+# RP_Vertical_Device.xml, RP_Horizontal_Device.xml different RECO vs SIMU
+# RECO version in Geometry/VeryForwardData/data
+            'Geometry/VeryForwardData/data/CTPPS_2021/RP_Vertical_Device/v1/RP_Vertical_Device.xml',
+            'Geometry/VeryForwardData/data/CTPPS_2021/RP_Horizontal_Device/v1/RP_Horizontal_Device.xml',
+# CTPPS_220_Right_Station is for SIMU. RECO version is called RP_220_Right_Station
+# same thing for 210 and Left stations
+            'Geometry/VeryForwardData/data/CTPPS_2021/CTPPS_220_Right_Station/v1/CTPPS_220_Right_Station.xml',
+            'Geometry/VeryForwardData/data/CTPPS_2021/CTPPS_220_Left_Station/v1/CTPPS_220_Left_Station.xml',
+            'Geometry/VeryForwardData/data/CTPPS_2021/CTPPS_210_Right_Station/v1/CTPPS_210_Right_Station.xml',
+            'Geometry/VeryForwardData/data/CTPPS_2021/CTPPS_210_Left_Station/v1/CTPPS_210_Left_Station.xml',
+# CTPPS_Stations_Assembly for SIMU, RP_Stations_Assembly for RECO (CMS vs LHC coordinate system)
+            'Geometry/VeryForwardData/data/CTPPS_2021/CTPPS_Stations_Assembly/v1/CTPPS_Stations_Assembly.xml',
+            # CTPPS_Cuts_Per_Region for SIMU, RP_Cuts_Per_Region for RECO (Tube_3 in RECO -> Tube_3a and 3b in SIMU)
+            'Geometry/VeryForwardData/data/CTPPS_2021/CTPPS_Cuts_Per_Region/v1/CTPPS_Cuts_Per_Region.xml',
+            'Geometry/VeryForwardData/data/CTPPS_2021/RP_Sensitive_Dets/v1/RP_Sensitive_Dets.xml',
+#
             'Geometry/VeryForwardData/data/CTPPS_Diamond_Materials.xml',
             'Geometry/VeryForwardData/data/CTPPS_Diamond_Transformations.xml',
             'Geometry/VeryForwardData/data/CTPPS_Diamond_Parameters.xml',
@@ -2232,15 +2239,16 @@ ppsDict = {
             'Geometry/VeryForwardData/data/CTPPS_Diamond_2018/CTPPS_Diamond_Planes/CTPPS_Diamond_Plane4.xml',
             'Geometry/VeryForwardData/data/CTPPS_Diamond_2018/CTPPS_Diamond_Detector_Assembly/2021/v1/CTPPS_Diamond_Detector_Assembly.xml',
             'Geometry/VeryForwardData/data/CTPPS_Diamond_Sensitive_Dets_TimingHits.xml',
+#
             'Geometry/VeryForwardData/data/ppstrackerMaterials/v2/ppstrackerMaterials.xml',
-            'Geometry/VeryForwardData/data/CTPPS_Pixel_Module/v3/CTPPS_Pixel_Module.xml',
-            'Geometry/VeryForwardData/data/CTPPS_Pixel_Module_2x2/v3/CTPPS_Pixel_Module_2x2.xml',
-            'Geometry/VeryForwardData/data/CTPPS_Pixel_2018/CTPPS_Pixel_Assembly_Box_Real_003.xml',
-            'Geometry/VeryForwardData/data/CTPPS_Pixel_2018/CTPPS_Pixel_Assembly_Box_Real_023.xml',
-            'Geometry/VeryForwardData/data/CTPPS_Pixel_2018/CTPPS_Pixel_Assembly_Box_Real_103.xml',
-            'Geometry/VeryForwardData/data/CTPPS_Pixel_2018/CTPPS_Pixel_Assembly_Box_Real_123.xml',
-            'Geometry/VeryForwardData/data/CTPPS_Pixel_Sens.xml',
-            'Geometry/VeryForwardData/data/CTPPS_2018/RP_Dist_Beam_Cent.xml',
+            'Geometry/VeryForwardData/data/CTPPS_Pixel_2021/PPS_Pixel_Module_2x2_Run3/v1/PPS_Pixel_Module_2x2_Run3.xml',
+            'Geometry/VeryForwardData/data/CTPPS_Pixel_2021/CTPPS_Pixel_Assembly_Box_Real_023/v1/CTPPS_Pixel_Assembly_Box_Real_023.xml',
+            'Geometry/VeryForwardData/data/CTPPS_Pixel_2021/CTPPS_Pixel_Assembly_Box_Real_123/v1/CTPPS_Pixel_Assembly_Box_Real_123.xml',
+            'Geometry/VeryForwardData/data/CTPPS_Pixel_2021/CTPPS_Pixel_Assembly_Box_Real_003/v1/CTPPS_Pixel_Assembly_Box_Real_003.xml',
+            'Geometry/VeryForwardData/data/CTPPS_Pixel_2021/CTPPS_Pixel_Assembly_Box_Real_103/v1/CTPPS_Pixel_Assembly_Box_Real_103.xml',
+            'Geometry/VeryForwardData/data/CTPPS_Pixel_2021/PPS_Pixel_Sens/v1/PPS_Pixel_Sens.xml',
+            'Geometry/VeryForwardData/data/CTPPS_2021/RP_Dist_Beam_Cent/v1/RP_Dist_Beam_Cent.xml',
+
             ],
         "sim" : [
 
@@ -2254,12 +2262,12 @@ ppsDict = {
 allDicts = [ commonDict, trackerDict, caloDict, muonDict, forwardDict, ppsDict ]
 
 detectorVersionDict = {
-    ("O3","T3","C1","M1","F1","P3") : "2021",
-    ("O4","T4","C1","M1","F1","P3") : "2021ZeroMaterial",
-    ("O5","T5","C1","M1","F1","P3") : "2021FlatMinus05Percent",
-    ("O5","T6","C1","M1","F1","P3") : "2021FlatMinus10Percent",
-    ("O5","T7","C1","M1","F1","P3") : "2021FlatPlus05Percent",
-    ("O5","T8","C1","M1","F1","P3") : "2021FlatPlus10Percent",
+    ("O3","T3","C1","M1","F1","P4") : "2021",
+    ("O4","T4","C1","M1","F1","P4") : "2021ZeroMaterial",
+    ("O5","T5","C1","M1","F1","P4") : "2021FlatMinus05Percent",
+    ("O5","T6","C1","M1","F1","P4") : "2021FlatMinus10Percent",
+    ("O5","T7","C1","M1","F1","P4") : "2021FlatPlus05Percent",
+    ("O5","T8","C1","M1","F1","P4") : "2021FlatPlus10Percent",
  }
 
-deprecatedSubdets = set([ "T1", "T2", "O1", "O2", "P1", "P2" ])
+deprecatedSubdets = set([ "T1", "T2", "O1", "O2", "P1", "P2", "P3" ])

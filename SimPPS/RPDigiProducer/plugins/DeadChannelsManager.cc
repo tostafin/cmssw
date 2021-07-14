@@ -8,7 +8,7 @@
 
 DeadChannelsManager::DeadChannelsManager() { analysisMaskPresent = false; }
 
-DeadChannelsManager::DeadChannelsManager(edm::ESHandle<TotemAnalysisMask> _analysisMask) {
+DeadChannelsManager::DeadChannelsManager(TotemAnalysisMask _analysisMask) {
   analysisMask = _analysisMask;
   analysisMaskPresent = true;
 }
@@ -23,8 +23,8 @@ bool DeadChannelsManager::isChannelDead(RPDetId detectorId, unsigned short strip
   totemSymbolicId.symbolicID = symbolicId;
   if (analysisMaskPresent) {
     std::map<TotemSymbID, TotemVFATAnalysisMask>::const_iterator vfatIter =
-        analysisMask->analysisMask.find(totemSymbolicId);
-    if (vfatIter != analysisMask->analysisMask.end()) {
+        analysisMask.analysisMask.find(totemSymbolicId);
+    if (vfatIter != analysisMask.analysisMask.end()) {
       TotemVFATAnalysisMask vfatMask = vfatIter->second;
       //if channel is dead return true
       if (vfatMask.fullMask || vfatMask.maskedChannels.find(stripNumber) != vfatMask.maskedChannels.end()) {
@@ -38,7 +38,7 @@ bool DeadChannelsManager::isChannelDead(RPDetId detectorId, unsigned short strip
 void DeadChannelsManager::displayMap() {
   if (analysisMaskPresent) {
     std::map<TotemSymbID, TotemVFATAnalysisMask>::const_iterator vfatIter;
-    for (vfatIter = analysisMask->analysisMask.begin(); vfatIter != analysisMask->analysisMask.end(); vfatIter++) {
+    for (vfatIter = analysisMask.analysisMask.begin(); vfatIter != analysisMask.analysisMask.end(); vfatIter++) {
       LogDebug("PPSDigiProducer::DeadChannelsManager") << vfatIter->first.symbolicID << "\n";
       TotemVFATAnalysisMask am = vfatIter->second;
       if (am.fullMask) {

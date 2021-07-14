@@ -85,9 +85,10 @@ private:
   bool simulateDeadChannels;
 
   edm::EDGetTokenT<CrossingFrame<PSimHit>> tokenCrossingFrameTotemRP;
+  edm::ESGetToken<TotemAnalysisMask, TotemReadoutRcd> tokenAnalysisMask;
 };
 
-RPDigiProducer::RPDigiProducer(const edm::ParameterSet& conf) : conf_(conf) {
+RPDigiProducer::RPDigiProducer(const edm::ParameterSet& conf) : conf_(conf), tokenAnalysisMask(esConsumes<edm::Transition::BeginRun>()) {
   //now do what ever other initialization is needed
   produces<edm::DetSetVector<TotemRPDigi>>();
 
@@ -201,8 +202,9 @@ void RPDigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
 void RPDigiProducer::beginRun(const edm::Run& beginrun, const edm::EventSetup& es) {
   // get analysis mask to mask channels
   if (simulateDeadChannels) {
-    edm::ESHandle<TotemAnalysisMask> analysisMask;
-    es.get<TotemReadoutRcd>().get(analysisMask);
+
+    auto const& analysisMask = es.getData(tokenAnalysisMask);
+
     deadChannelsManager = DeadChannelsManager(analysisMask);  //set analysisMask in deadChannelsManager
   }
 }

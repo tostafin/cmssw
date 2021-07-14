@@ -13,7 +13,7 @@
  */
 class DeadChannelsManager {
 private:
-  edm::ESHandle<TotemAnalysisMask> analysisMask;
+  TotemAnalysisMask analysisMask;
   bool analysisMaskPresent;  //this variable indicates whether analysisMask is present or not
 
 public:
@@ -21,7 +21,7 @@ public:
 	 * This constructor allows us to set analysisMask. The analysisMask can be read from
 	 * EventSetup.
 	 */
-  DeadChannelsManager(edm::ESHandle<TotemAnalysisMask> analysisMask);
+  DeadChannelsManager(TotemAnalysisMask analysisMask);
   DeadChannelsManager();
   /**
 	 * This function answers the question whether given channel is dead or not.

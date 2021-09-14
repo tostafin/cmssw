@@ -19,13 +19,13 @@ Author: F.Ferro - INFN Genova
 <!-- https://istnazfisnucl-my.sharepoint.com/:b:/g/personal/fferro_infn_it/EZaGp04OlqRJm-IUy-UrkPcB6s8Q0eMGOGbIL6R-buTlsQ?e=b7t9oS -->
 <Constant name="AlSupportUshapeL" value="25.5*mm" />   <!-- height of the U shaped Aluminium support 1mm thick -->
 <Constant name="AlSupportUshapeW" value="50.0*mm" />   <!-- width of the U shaped Aluminium support 1mm thick -->
-<Constant name="AlSupportUshapeT" value="1.0*mm" />    <!-- thickness of the U shaped Aluminium support -->
+<Constant name="AlSupportUshapeT" value="0.9*mm" />    <!-- thickness of the U shaped Aluminium support -->
 
 
 <Constant name="AlSupportThinWindowL" value="18.3*mm" />   <!-- height of the thin Aluminium support 0.5mm thick -->
 <Constant name="AlSupportThinWindowW" value="21.6*mm" />   <!-- width of the thin Aluminium support 0.5mm thick -->
 <Constant name="AlSupportThinWindowOffsetL" value="3.5*mm" />   <!-- overhang of the thin Aluminium support 0.5mm thick wrt to the U shape -->
-<Constant name="AlSupportThinWindowT" value="0.5*mm" />   <!-- width of the thin Aluminium support -->
+<Constant name="AlSupportThinWindowT" value="0.4*mm" />   <!-- width of the thin Aluminium support -->
 <Constant name="AlSupportUshapeTopCenterL" value="[AlSupportUshapeL]+[AlSupportThinWindowOffsetL]-[AlSupportThinWindowL]" />   <!-- height of the U shaped Aluminium support 1mm thick - Central Top part -->
 <Constant name="AlSupportUshapeSideW" value="[AlSupportUshapeW]/2.-[AlSupportThinWindowW]/2." />   <!-- Width of the U shaped Aluminium support 1mm thick - Left and Right wings -->
 
@@ -50,9 +50,12 @@ Author: F.Ferro - INFN Genova
 <Constant name="GlueOnWaferW" value="16.65*mm" />   <!-- width of the glue on sensor -->
 <Constant name="GlueOnROCsL" value="2*[ROChipL]+[ROChipSpaceL]" />
 
-<!-- Al Support window WITH ONLY LATERAL RAILS -->
-<Constant name="GlueOnROCsL" value="2*[ROChipL]+[ROChipSpaceL]" />
+<!-- Al Support window defined WITH FULL ALUMINIUM WINDOW -->
+<Constant name="GlueOnROCsW" value="2*[ROChipW]+[ROChipSpaceW]" />
+
+<!-- Al Support window WITH ONLY LATERAL RAILS 
 <Constant name="GlueOnROCsW" value="[ThinWindowRailW] - [AlSupportThinWindowW]/2. + [ROChipW] + [ROChipSpaceW]/2." />
+-->
 
 </ConstantsSection>
 
@@ -80,8 +83,14 @@ Author: F.Ferro - INFN Genova
 <rSolid name="AlSupportUshapeRightSide"/>
 <Translation x="[AlSupportThinWindowW]/2.+[AlSupportUshapeSideW]/2." y="[AlSupportUshapeTopCenterL]/2.-[AlSupportUshapeL]/2." z="0."/>
 </UnionSolid>
+<!-- Al Support window defined WITH FULL ALUMINIUM WINDOW -->
+<UnionSolid name="AlSupport">
+<rSolid name="AlSupportUshape"/>
+<rSolid name="AlSupportThinWindow"/> 
+<Translation x="0" y="-[AlSupportUshapeTopCenterL]/2.-[AlSupportThinWindowL]/2." z="-[AlSupportUshapeT]/2.+[AlSupportThinWindowT]/2."/>
+</UnionSolid>
 
-<!-- Al Support window WITH ONLY LATERAL RAILS -->
+<!-- Al Support window WITH ONLY LATERAL RAILS 
 <UnionSolid name="AlSupportWithLeftRail">
 <rSolid name="AlSupportUshape"/>
 <rSolid name="AlSupportThinWindowRail"/> 
@@ -92,7 +101,7 @@ Author: F.Ferro - INFN Genova
 <rSolid name="AlSupportThinWindowRail"/> 
 <Translation x="[AlSupportThinWindowW]/2.-[ThinWindowRailW]/2." y="-[AlSupportUshapeTopCenterL]/2.-[AlSupportThinWindowL]/2." z="-[AlSupportUshapeT]/2.+[AlSupportThinWindowT]/2."/>
 </UnionSolid>
-
+-->
 
 
 
@@ -202,7 +211,15 @@ Author: F.Ferro - INFN Genova
   <Translation x="+[ROChipW]/2.+[ROChipSpaceW]/2." y="-[EnvelopL]/2.+3*[ROChipL]/2.+[ROChipSpaceL]+0.17*mm"  z="[EnvelopT]/2.-[FlexT]-[GlueT]-[WaferT]-[ROChipT]/2." />
  </PosPart>
 
-<!-- Al Support window WITH ONLY LATERAL RAILS -->
+<!-- Al Support window defined WITH FULL ALUMINIUM WINDOW -->
+
+<PosPart copyNumber="1">
+  <rParent name="PPS_Pixel_Module_2x2_Run3:Envelop"/>
+  <rChild name="PPS_Pixel_Module_2x2_Run3:GlueOnROCs"/>
+  <Translation x="0" y="-[EnvelopL]/2.+[GlueOnROCsL]/2. + 0.17*mm"  z="[EnvelopT]/2.-[FlexT]-[GlueT]-[WaferT]-[ROChipT]-[GlueT]/2." />
+ </PosPart>
+
+<!-- Al Support window WITH ONLY LATERAL RAILS 
 <PosPart copyNumber="1">
   <rParent name="PPS_Pixel_Module_2x2_Run3:Envelop"/>
   <rChild name="PPS_Pixel_Module_2x2_Run3:GlueOnROCs"/>
@@ -213,14 +230,15 @@ Author: F.Ferro - INFN Genova
   <rChild name="PPS_Pixel_Module_2x2_Run3:GlueOnROCs"/>
   <Translation x="[ROChipW]+[ROChipSpaceW]/2.-[GlueOnROCsW]/2." y="-[EnvelopL]/2.+[GlueOnROCsL]/2. + 0.17*mm"  z="[EnvelopT]/2.-[FlexT]-[GlueT]-[WaferT]-[ROChipT]-[GlueT]/2." />
  </PosPart>
-
+-->
 
 
 
 <PosPart copyNumber="1">
   <rParent name="PPS_Pixel_Module_2x2_Run3:Envelop"/>
   <rChild name="PPS_Pixel_Module_2x2_Run3:AlSupport"/>
-  <Translation x="0" y="[EnvelopL]/2.-[AlSupportUshapeTopCenterL]/2."  z="[EnvelopT]/2.-[FlexT]-[AlSupportUshapeT]/2." /> 
+ <!-- <Translation x="0" y="[EnvelopL]/2.-[AlSupportUshapeTopCenterL]/2."  z="[EnvelopT]/2.-[FlexT]-[GlueT]-[WaferT]-[ROChipT]-[GlueT]-[AlSupportThinWindowT]/2." /> -->
+ <Translation x="0" y="[EnvelopL]/2.-[AlSupportUshapeTopCenterL]/2."  z="[EnvelopT]/2.-[FlexT]-[AlSupportUshapeT]/2." /> 
  </PosPart>
 
 

@@ -40,7 +40,7 @@ totemGeomXMLFiles = cms.vstring(
     'Geometry/VeryForwardData/data/RP_Box/v3/RP_Box_123.xml',
     'Geometry/VeryForwardData/data/RP_Box/v3/RP_Box_124.xml',
     'Geometry/VeryForwardData/data/RP_Box/v3/RP_Box_125.xml',
-    'Geometry/VeryForwardData/data/RP_Hybrid/v1/RP_Hybrid.xml',
+    'Geometry/VeryForwardData/data/RP_Hybrid/v2/RP_Hybrid.xml',
     'Geometry/VeryForwardData/data/RP_Materials/v4/RP_Materials.xml',
     'Geometry/VeryForwardData/data/RP_Transformations.xml',
     'Geometry/VeryForwardData/data/RP_Detectors_Assembly.xml',
@@ -82,7 +82,7 @@ ctppsDiamondGeomXMLFiles = cms.vstring(
     'Geometry/VeryForwardData/data/CTPPS_Diamond_X_Distance.xml',
     'Geometry/VeryForwardData/data/CTPPS_Diamond_Parameters.xml',
     'Geometry/VeryForwardData/data/CTPPS_Timing_Station_Parameters.xml',
-    'Geometry/VeryForwardData/data/CTPPS_Timing_Horizontal_Pot.xml',
+    'Geometry/VeryForwardData/data/CTPPS_Timing_Horizontal_Pot/v2/CTPPS_Timing_Horizontal_Pot.xml',
     'Geometry/VeryForwardData/data/CTPPS_Timing_Positive_Station.xml',
     'Geometry/VeryForwardData/data/CTPPS_Timing_Negative_Station.xml',
     'Geometry/VeryForwardData/data/CTPPS_Diamond_2021/Reco/v1/CTPPS_Timing_Stations_Assembly.xml',
@@ -102,7 +102,7 @@ ctppsDiamondGeomXMLFiles = cms.vstring(
     'Geometry/VeryForwardData/data/CTPPS_Diamond_2021/CTPPS_Diamond_Planes/CTPPS_Diamond_Plane2.xml',
     'Geometry/VeryForwardData/data/CTPPS_Diamond_2021/CTPPS_Diamond_Planes/CTPPS_Diamond_Plane3.xml',
     'Geometry/VeryForwardData/data/CTPPS_Diamond_2021/CTPPS_Diamond_Planes/CTPPS_Diamond_Plane4.xml',
-    'Geometry/VeryForwardData/data/CTPPS_Diamond_2021/CTPPS_Diamond_Detector_Assembly.xml'
+    'Geometry/VeryForwardData/data/CTPPS_Diamond_2021/CTPPS_Diamond_Detector_Assembly/v1/CTPPS_Diamond_Detector_Assembly.xml'
     )
 
 

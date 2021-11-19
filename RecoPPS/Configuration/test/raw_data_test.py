@@ -16,7 +16,7 @@ process.MessageLogger = cms.Service("MessageLogger",
 process.source = cms.Source("PoolSource",
   fileNames = cms.untracked.vstring(
     # run 274199, fill 4961, 29 May 2016 (before TS2)
-    '/store/data/Run2016B/DoubleEG/RAW/v2/000/274/199/00000/04985451-9B26-E611-BEB9-02163E013859.root',
+#    '/store/data/Run2016B/DoubleEG/RAW/v2/000/274/199/00000/04985451-9B26-E611-BEB9-02163E013859.root',
     #'root://eostotem.cern.ch//eos/totem/user/j/jkaspar/04C8034A-9626-E611-9B6E-02163E011F93.root'
 
     # run 283877, fill 5442, 23 Oct 2016 (after TS2)
@@ -48,10 +48,10 @@ process.p = cms.Path(
 )
 
 # output configuration
-from RecoPPS.Configuration.RecoPPS_EventContent_cff import RecoPPSAOD
+from RecoPPS.Configuration.RecoCTPPS_EventContent_cff import RecoCTPPSAOD
 process.output = cms.OutputModule("PoolOutputModule",
   fileName = cms.untracked.string("file:./AOD.root"),
-  outputCommands = RecoPPSAOD.outputCommands
+  outputCommands = RecoCTPPSAOD.outputCommands
 )
 
 process.outpath = cms.EndPath(process.output)

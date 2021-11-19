@@ -1,7 +1,4 @@
-from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import *
-from RecoPPS.Configuration.recoCTPPS_cff import *
-
-alcaPPSreco = cms.Sequence( ctppsRawToDigi + recoCTPPS )
+import FWCore.ParameterSet.Config as cms
 
 from RecoPPS.Configuration.RecoCTPPS_EventContent_cff import RecoCTPPSAOD
 

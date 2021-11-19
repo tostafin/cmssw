@@ -6,7 +6,7 @@ from Configuration.Eras.Modifier_ctpps_2018_cff import ctpps_2018
 
 process = cms.Process( 'ppsAlCaReco',ctpps_2018)
 
-process.load('Calibration.PPSAlCaRecoProducer.PPSAlCaRecoProducer_Prompt_cff') 
+process.load('Calibration.PPSAlCaRecoProducer.PPSAlCaRecoProducer_Express_cff') 
 process.load('Calibration.PPSAlCaRecoProducer.PPSAlCaReco_EventContent_cff') 
 
 process.recoOutputALCAPPS = cms.OutputModule( 'PoolOutputModule',

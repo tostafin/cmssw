@@ -6,16 +6,16 @@ from Configuration.Eras.Modifier_ctpps_2018_cff import ctpps_2018
 
 process = cms.Process( 'ppsAlCaReco',ctpps_2018)
 
-process.load('Calibration.PPSAlCaRecoProducer.PPSAlCaRecoProducer_Express_cff') 
+process.load('Calibration.PPSAlCaRecoProducer.PPSAlCaRecoProducer_cff') 
 process.load('Calibration.PPSAlCaRecoProducer.PPSAlCaReco_EventContent_cff') 
 
 process.recoOutputALCAPPS = cms.OutputModule( 'PoolOutputModule',
-    fileName = cms.untracked.string( 'outputALCAPPS_RECO.root' ),
+    fileName = cms.untracked.string( 'outputALCAPPS_RECO_express.root' ),
     outputCommands = process.alcarecoPPSEventContent.outputCommands
 )
 
+process.reco = cms.Path( process.alcaPPSreco_express )
 process.recoOutput = cms.EndPath( process.recoOutputALCAPPS )
-process.reco = cms.Path( process.alcaPPSreco )
 
 process.HLTSchedule = cms.Schedule( *(process.recoOutput, process.reco))
 
@@ -31,7 +31,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_express')
 
 process.source = cms.Source( 'PoolSource',
     fileNames = cms.untracked.vstring(
-        'file:outputALCAPPS.root',
+        'file:outputALCAPPS_single.root',
     ),
     inputCommands = cms.untracked.vstring(
         'keep *'

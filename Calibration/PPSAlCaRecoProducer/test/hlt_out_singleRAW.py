@@ -1,6 +1,6 @@
-# hltGetConfiguration /users/jjhollar/ImportAlcaPaths/V4 --globaltag auto:run3_hlt --setup /dev/CMSSW_12_1_0/GRun/V14 --data --unprescale --customise HLTrigger/Configuration/customizeHLTforCMSSW.customiseFor2018Input
+# hltGetConfiguration /users/jjhollar/ImportAlcaPathsTry2/V4 --globaltag auto:run3_hlt --setup /dev/CMSSW_12_1_0/GRun/V14 --data --unprescale --customise HLTrigger/Configuration/customizeHLTforCMSSW.customiseFor2018Input
 
-# /users/jjhollar/ImportAlcaPaths/V4 (CMSSW_12_1_0)
+# /users/jjhollar/ImportAlcaPathsTry2/V4 (CMSSW_12_1_0)
 
 import FWCore.ParameterSet.Config as cms
 
@@ -8,13 +8,28 @@ process = cms.Process( "HLTX" )
 process.load("setup_dev_CMSSW_12_1_0_GRun_V14_cff")
 
 process.HLTConfigVersion = cms.PSet(
-  tableName = cms.string('/users/jjhollar/ImportAlcaPaths/V4')
+  tableName = cms.string('/users/jjhollar/ImportAlcaPathsTry2/V4')
 )
 
 process.streams = cms.PSet(  ALCAPPS = cms.vstring( 'AlCaPPS' ) )
 process.datasets = cms.PSet(  AlCaPPS = cms.vstring( 'HLT_PPSMaxTracksPerArm1_v1',
   'HLT_PPSMaxTracksPerRP4_v1' ) )
 
+process.hltGetConditions = cms.EDAnalyzer( "EventSetupRecordDataGetter",
+    verbose = cms.untracked.bool( False ),
+    toGet = cms.VPSet( 
+    )
+)
+process.hltGetRaw = cms.EDAnalyzer( "HLTGetRaw",
+    RawDataCollection = cms.InputTag( "rawDataCollector" )
+)
+process.hltPSetMap = cms.EDProducer( "ParameterSetBlobProducer" )
+process.hltBoolFalse = cms.EDFilter( "HLTBool",
+    result = cms.bool( False )
+)
+process.hltTriggerType = cms.EDFilter( "HLTTriggerTypeFilter",
+    SelectedTriggerType = cms.int32( 1 )
+)
 process.hltGtStage2Digis = cms.EDProducer( "L1TRawToDigi",
     FedIds = cms.vint32( 1404 ),
     Setup = cms.string( "stage2::GTSetup" ),
@@ -33,13 +48,6 @@ process.hltGtStage2Digis = cms.EDProducer( "L1TRawToDigi",
     lenAMC13Trailer = cms.untracked.int32( 8 ),
     debug = cms.untracked.bool( False ),
     MinFeds = cms.uint32( 0 )
-)
-process.hltPreALCAPPSOutput = cms.EDFilter( "HLTPrescaler",
-    offset = cms.uint32( 0 ),
-    L1GtReadoutRecordTag = cms.InputTag( "hltGtStage2Digis" )
-)
-process.hltTriggerType = cms.EDFilter( "HLTTriggerTypeFilter",
-    SelectedTriggerType = cms.int32( 1 )
 )
 process.hltGtStage2ObjectMap = cms.EDProducer( "L1TGlobalProducer",
     MuonInputTag = cms.InputTag( 'hltGtStage2Digis','Muon' ),
@@ -138,7 +146,7 @@ process.hltPPSPrCalFilter = cms.EDFilter( "HLTPPSCalFilter",
     do_express = cms.bool( False ),
     triggerType = cms.int32( 91 )
 )
-process.hltPPSPrCalibrationRaw = cms.EDProducer( "EvFFEDSelector",
+process.hltPPSCalibrationRaw = cms.EDProducer( "EvFFEDSelector",
     inputTag = cms.InputTag( "rawDataCollector" ),
     fedList = cms.vuint32( 579, 581, 582, 583, 586, 587, 1462, 1463 )
 )
@@ -156,13 +164,26 @@ process.hltPPSExpCalFilter = cms.EDFilter( "HLTPPSCalFilter",
     do_express = cms.bool( True ),
     triggerType = cms.int32( 91 )
 )
-process.hltPPSExpCalibrationRaw = cms.EDProducer( "EvFFEDSelector",
+process.hltFEDSelector = cms.EDProducer( "EvFFEDSelector",
     inputTag = cms.InputTag( "rawDataCollector" ),
-    fedList = cms.vuint32( 579, 581, 582, 583, 586, 587, 1462, 1463 )
+    fedList = cms.vuint32( 1023, 1024 )
+)
+process.hltTriggerSummaryAOD = cms.EDProducer( "TriggerSummaryProducerAOD",
+    throw = cms.bool( False ),
+    processName = cms.string( "@" ),
+    moduleLabelPatternsToMatch = cms.vstring( 'hlt*' ),
+    moduleLabelPatternsToSkip = cms.vstring(  )
+)
+process.hltTriggerSummaryRAW = cms.EDProducer( "TriggerSummaryProducerRAW",
+    processName = cms.string( "@" )
+)
+process.hltPreALCAPPSOutput = cms.EDFilter( "HLTPrescaler",
+    offset = cms.uint32( 0 ),
+    L1GtReadoutRecordTag = cms.InputTag( "hltGtStage2Digis" )
 )
 
 process.hltOutputALCAPPS = cms.OutputModule( "PoolOutputModule",
-    fileName = cms.untracked.string( "outputALCAPPS.root" ),
+    fileName = cms.untracked.string( "outputALCAPPS_single.root" ),
     fastCloning = cms.untracked.bool( False ),
     dataset = cms.untracked.PSet(
         filterName = cms.untracked.string( "" ),
@@ -171,11 +192,10 @@ process.hltOutputALCAPPS = cms.OutputModule( "PoolOutputModule",
     SelectEvents = cms.untracked.PSet(  SelectEvents = cms.vstring( 'HLT_PPSMaxTracksPerArm1_v1',
   'HLT_PPSMaxTracksPerRP4_v1' ) ),
     outputCommands = cms.untracked.vstring( 
-        "keep *_hltPPSExpCalibrationRaw_*_*", 
-        "keep *_hltPPSPrCalibrationRaw_*_*", 
-        "keep GlobalObjectMapRecord_hltGtStage2ObjectMap_*_*", 
-        "keep edmTriggerResults_*_*_*", 
-        "keep triggerTriggerEvent_*_*_*" )
+      'keep *_hltPPSCalibrationRaw_*_*',
+      'keep GlobalObjectMapRecord_hltGtStage2ObjectMap_*_*',
+      'keep edmTriggerResults_*_*_*',
+      'keep triggerTriggerEvent_*_*_*' )
 )
 
 process.HLTL1UnpackerSequence = cms.Sequence( process.hltGtStage2Digis + process.hltGtStage2ObjectMap )
@@ -184,17 +204,19 @@ process.HLTBeginSequence = cms.Sequence( process.hltTriggerType + process.HLTL1U
 process.HLTPPSPixelRecoSequence = cms.Sequence( process.hltCTPPSPixelDigis + process.hltCTPPSPixelClusters + process.hltCTPPSPixelRecHits + process.hltCTPPSPixelLocalTracks )
 process.HLTEndSequence = cms.Sequence( process.hltBoolEnd )
 
+process.HLTriggerFirstPath = cms.Path( process.hltGetConditions + process.hltGetRaw + process.hltPSetMap + process.hltBoolFalse )
+process.HLT_PPSMaxTracksPerRP4_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sZeroBias + process.hltPrePPSMaxTracksPerRP4 + process.HLTPPSPixelRecoSequence + process.hltPPSPrCalFilter + process.hltPPSCalibrationRaw + process.HLTEndSequence )
+process.HLT_PPSMaxTracksPerArm1_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sZeroBias + process.hltPrePPSMaxTracksPerArm1 + process.HLTPPSPixelRecoSequence + process.hltPPSExpCalFilter + process.hltPPSCalibrationRaw + process.HLTEndSequence )
+process.HLTriggerFinalPath = cms.Path( process.hltGtStage2Digis + process.hltScalersRawToDigi + process.hltFEDSelector + process.hltTriggerSummaryAOD + process.hltTriggerSummaryRAW + process.hltBoolFalse )
 process.ALCAPPSOutput = cms.EndPath( process.hltGtStage2Digis + process.hltPreALCAPPSOutput + process.hltOutputALCAPPS )
-process.HLT_PPSMaxTracksPerRP4_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sZeroBias + process.hltPrePPSMaxTracksPerRP4 + process.HLTPPSPixelRecoSequence + process.hltPPSPrCalFilter + process.hltPPSPrCalibrationRaw + process.HLTEndSequence )
-process.HLT_PPSMaxTracksPerArm1_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sZeroBias + process.hltPrePPSMaxTracksPerArm1 + process.HLTPPSPixelRecoSequence + process.hltPPSExpCalFilter + process.hltPPSExpCalibrationRaw + process.HLTEndSequence )
 
 
-process.HLTSchedule = cms.Schedule( *(process.ALCAPPSOutput, process.HLT_PPSMaxTracksPerRP4_v1, process.HLT_PPSMaxTracksPerArm1_v1, ))
+process.HLTSchedule = cms.Schedule( *(process.HLTriggerFirstPath, process.HLT_PPSMaxTracksPerRP4_v1, process.HLT_PPSMaxTracksPerArm1_v1, process.HLTriggerFinalPath, process.ALCAPPSOutput, ))
 
 
 process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:/eos/user/m/maaraujo/HLT_work/HLT_rem_322022/Skim_Run322022_LS1025to1344_1.root',
+        'file:RelVal_Raw_GRun_DATA.root',
     ),
     inputCommands = cms.untracked.vstring(
         'keep *'
@@ -209,7 +231,7 @@ if 'PrescaleService' in process.__dict__:
 
 # limit the number of events to be processed
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32( -1 )
+    input = cms.untracked.int32( 100 )
 )
 
 # enable TrigReport, TimeReport and MultiThreading
@@ -252,8 +274,8 @@ _customInfo['inputFiles'][True]  = "file:RelVal_Raw_GRun_DATA.root"
 _customInfo['inputFiles'][False] = "file:RelVal_Raw_GRun_MC.root"
 _customInfo['maxEvents' ]=  -1
 _customInfo['globalTag' ]= "auto:run3_hlt"
-# _customInfo['inputFile' ]=  [' /store/data/Run2018D/ZeroBias/RAW/v1/000/322/022/00000/7E894F17-9AAD-E811-9112-FA163E147026.root']
 _customInfo['inputFile' ]=  ['file:/eos/user/m/maaraujo/HLT_work/HLT_rem_322022/Skim_Run322022_LS1025to1344_1.root']
+# _customInfo['inputFile' ]=  [' /store/data/Run2018D/ZeroBias/RAW/v1/000/322/022/00000/7E894F17-9AAD-E811-9112-FA163E147026.root']
 _customInfo['realData'  ]=  True
 from HLTrigger.Configuration.customizeHLTforALL import customizeHLTforAll
 process = customizeHLTforAll(process,"GRun",_customInfo)

@@ -11,7 +11,7 @@ process.load('Calibration.PPSAlCaRecoProducer.PPSAlCaReco_EventContent_cff')
 
 process.recoOutputALCAPPS = cms.OutputModule( 'PoolOutputModule',
     fileName = cms.untracked.string( 'outputALCAPPS_RECO_express.root' ),
-    outputCommands = process.alcarecoPPSEventContent.outputCommands
+    outputCommands = process.alcarecoPPSEventContent_express.outputCommands
 )
 
 process.reco = cms.Path( process.alcaPPSreco_express )
@@ -31,7 +31,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_express')
 
 process.source = cms.Source( 'PoolSource',
     fileNames = cms.untracked.vstring(
-        'file:outputALCAPPS_single.root',
+        'file:/eos/project-c/ctpps/subsystems/Software/Off-line/AlCaTest/outputALCAPPS_single.root',
     ),
     inputCommands = cms.untracked.vstring(
         'keep *'

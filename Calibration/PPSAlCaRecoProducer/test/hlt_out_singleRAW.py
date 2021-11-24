@@ -193,7 +193,7 @@ process.hltOutputALCAPPS = cms.OutputModule( "PoolOutputModule",
   'HLT_PPSMaxTracksPerRP4_v1' ) ),
     outputCommands = cms.untracked.vstring( 
       'keep *_hltPPSCalibrationRaw_*_*',
-      'keep GlobalObjectMapRecord_hltGtStage2ObjectMap_*_*',
+      'keep *_hltGtStage2ObjectMap_*_*',
       'keep edmTriggerResults_*_*_*',
       'keep triggerTriggerEvent_*_*_*' )
 )

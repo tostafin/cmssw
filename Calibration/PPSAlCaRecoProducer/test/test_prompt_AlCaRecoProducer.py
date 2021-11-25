@@ -11,13 +11,14 @@ process.load('Calibration.PPSAlCaRecoProducer.PPSAlCaReco_EventContent_cff')
 
 process.recoOutputALCAPPS = cms.OutputModule( 'PoolOutputModule',
     fileName = cms.untracked.string( 'outputALCAPPS_RECO_prompt.root' ),
-    outputCommands = process.alcarecoPPSEventContent_prompt.outputCommands
+    SelectEvents = cms.untracked.PSet(
+        SelectEvents = cms.vstring('reco')
+    ),
+    outputCommands = process.alcarecoPPSEventContent_express.outputCommands
 )
 
 process.reco = cms.Path( process.alcaPPSreco_prompt )
 process.recoOutput = cms.EndPath( process.recoOutputALCAPPS )
-
-process.HLTSchedule = cms.Schedule( *(process.recoOutput, process.reco))
 
 process.options = cms.PSet(
     wantSummary = cms.untracked.bool( True ),

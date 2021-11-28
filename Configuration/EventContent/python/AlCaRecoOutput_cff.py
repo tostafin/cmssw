@@ -180,6 +180,9 @@ from Calibration.LumiAlCaRecoProducers.ALCARECOLumiPixelsMinBias_Output_cff impo
 from Calibration.LumiAlCaRecoProducers.ALCARECOAlCaPCCZeroBiasFromRECO_Output_cff import *
 from Calibration.LumiAlCaRecoProducers.ALCARECOAlCaPCCRandomFromRECO_Output_cff import *
 
+from Calibration.PPSAlCaRecoProducer.ALCARECOPPSCalMaxTracksPrompt_Output_cff import *
+from Calibration.PPSAlCaRecoProducer.ALCARECOPPSCalMaxTracksExpress_Output_cff import *
+
 ###############################################################
 # hotline skim workflows
 ###############################################################

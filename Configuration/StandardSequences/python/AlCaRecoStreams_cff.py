@@ -164,6 +164,10 @@ from CalibTracker.SiPixelQuality.ALCARECOPromptCalibProdSiPixel_cff import *
 
 from Calibration.EcalCalibAlgos.ALCARECOPromptCalibProdEcalPedestals_cff import *
 from Calibration.LumiAlCaRecoProducers.ALCARECOPromptCalibProdLumiPCC_cff import *
+
+from Calibration.PPSAlCaRecoProducer.ALCARECOPPSCalMaxTracksPrompt_cff import *
+from Calibration.PPSAlCaRecoProducer.ALCARECOPPSCalMaxTracksExpress_cff import *
+
 ###############################################################
 # hotline skim workflows
 ###############################################################
@@ -246,6 +250,8 @@ pathALCARECORpcCalHLT = cms.Path(seqALCARECORpcCalHLT)
 pathALCARECOPromptCalibProdPPSTimingCalib = cms.Path(taskALCARECOPromptCalibProdPPSTimingCalib)
 pathALCARECOPromptCalibProdPPSDiamondSampicTimingCalib = cms.Path(taskALCARECOPromptCalibProdPPSDiamondSampicTimingCalib)
 pathALCARECOPromptCalibProdPPSAlignment = cms.Path(taskALCARECOPromptCalibProdPPSAlignment)
+pathALCARECOPPSCalMaxTracksPrompt = cms.Path(seqALCARECOPPSCalMaxTracksRecoPrompt)
+pathALCARECOPPSCalMaxTracksExpress = cms.Path(seqALCARECOPPSCalMaxTracksRecoExpress)
 pathALCARECOTkAlBeamHalo = cms.Path(seqALCARECOTkAlBeamHalo*ALCARECOTkAlBeamHaloDQM)
 pathALCARECOMuAlBeamHaloOverlaps = cms.Path(seqALCARECOMuAlBeamHaloOverlaps)
 pathALCARECOMuAlBeamHalo = cms.Path(seqALCARECOMuAlBeamHalo)
@@ -1025,6 +1031,23 @@ ALCARECOStreamPromptCalibProdLumiPCC = cms.FilteredStream(
 	dataTier = cms.untracked.string('ALCARECO')
 	)
 
+ALCARECOStreamPPSCalMaxTracksPrompt = cms.FilteredStream(
+	responsible = 'Leszek Grzanka',
+	name = 'PPSCalMaxTracksPrompt',
+	paths  = (pathALCARECOPPSCalMaxTracksPrompt),
+	content = OutALCARECOPPSCalMaxTracksPrompt.outputCommands,
+	selectEvents = OutALCARECOPPSCalMaxTracksPrompt.SelectEvents,
+	dataTier = cms.untracked.string('ALCARECO')
+	)
+
+ALCARECOStreamPPSCalMaxTracksExpress = cms.FilteredStream(
+	responsible = 'Leszek Grzanka',
+	name = 'PPSCalMaxTracksExpress',
+	paths  = (pathALCARECOPPSCalMaxTracksExpress),
+	content = OutALCARECOPPSCalMaxTracksExpress.outputCommands,
+	selectEvents = OutALCARECOPPSCalMaxTracksExpress.SelectEvents,
+	dataTier = cms.untracked.string('ALCARECO')
+	)
 
 ALCARECOStreamHotline = cms.FilteredStream(
         responsible = 'Dustin Anderson',

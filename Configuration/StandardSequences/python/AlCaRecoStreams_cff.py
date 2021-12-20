@@ -890,7 +890,7 @@ ALCARECOStreamTkAlLAS = cms.FilteredStream(
 
 ALCARECOStreamPPSTimingCalib = cms.FilteredStream(
 	responsible = 'Laurent Forthomme',
-	name = 'PPSTimingCalib',
+	name = 'PromptCalibProdPPS',
 	paths  = (pathALCARECOPPSTimingCalib),
 	content = OutALCARECOPPSTimingCalib.outputCommands,
 	selectEvents = OutALCARECOPPSTimingCalib.SelectEvents,
@@ -899,7 +899,7 @@ ALCARECOStreamPPSTimingCalib = cms.FilteredStream(
 	
 ALCARECOStreamPPSDiamondSampicTimingCalib = cms.FilteredStream(
 	responsible = 'Christopher Misan',
-	name = 'PPSDiamondSampicTimingCalib',
+	name = 'PromptCalibProdPPSDiamondSampic',
 	paths  = (pathALCARECOPPSDiamondSampicTimingCalib),
 	content = OutALCARECOPPSDiamondSampicTimingCalib.outputCommands,
 	selectEvents = OutALCARECOPPSDiamondSampicTimingCalib.SelectEvents,
@@ -908,7 +908,7 @@ ALCARECOStreamPPSDiamondSampicTimingCalib = cms.FilteredStream(
 
 ALCARECOStreamPPSAlignment = cms.FilteredStream(
 	responsible = 'Mateusz Kocot',
-	name = 'PPSAlignment',
+	name = 'PromptCalibProdPPSAlig',
 	paths = (pathALCARECOPPSAlignment),
 	content = OutALCARECOPPSAlignment.outputCommands,
 	selectEvents = OutALCARECOPPSAlignment.SelectEvents,

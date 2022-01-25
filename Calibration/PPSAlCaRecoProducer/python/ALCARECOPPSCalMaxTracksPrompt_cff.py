@@ -10,19 +10,29 @@ ALCARECOPPSCalMaxTracksFilterPrompt = hlt.hltHighLevel.clone(
 from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import *
 from RecoPPS.Configuration.recoCTPPS_cff import *
 
-totemTriggerRawToDigi.rawDataTag = cms.InputTag('hltPPSCalibrationRaw')
-totemRPRawToDigi.rawDataTag = cms.InputTag('hltPPSCalibrationRaw')
-ctppsDiamondRawToDigi.rawDataTag = cms.InputTag('hltPPSCalibrationRaw')
-totemTimingRawToDigi.rawDataTag = cms.InputTag('hltPPSCalibrationRaw')
-ctppsPixelDigis.inputLabel = cms.InputTag('hltPPSCalibrationRaw')
+_totemTriggerRawToDigi = totemTriggerRawToDigi.clone(rawDataTag = cms.InputTag('hltPPSCalibrationRaw'))
+_totemTriggerRawToDigi.setLabel("totemTriggerRawToDigi")
 
-ctppsRawToDigiTask = cms.Task(
-  totemTriggerRawToDigi,
-  totemRPRawToDigi,
-  ctppsDiamondRawToDigi,
-  totemTimingRawToDigi,
-  ctppsPixelDigis
+_totemRPRawToDigi = totemRPRawToDigi.clone(rawDataTag = cms.InputTag('hltPPSCalibrationRaw'))
+_totemRPRawToDigi.setLabel("totemRPRawToDigi")
+
+_ctppsDiamondRawToDigi = ctppsDiamondRawToDigi.clone(rawDataTag = cms.InputTag('hltPPSCalibrationRaw'))
+_ctppsDiamondRawToDigi.setLabel("ctppsDiamondRawToDigi")
+
+_totemTimingRawToDigi = totemTimingRawToDigi.clone(rawDataTag = cms.InputTag('hltPPSCalibrationRaw'))
+_totemTimingRawToDigi.setLabel("totemTimingRawToDigi")
+
+_ctppsPixelDigis = ctppsPixelDigis.clone(inputLabel = cms.InputTag('hltPPSCalibrationRaw'))
+_ctppsPixelDigis.setLabel("CTPPSPixelRawToDigi")
+
+_ctppsRawToDigiTask = cms.Task(
+  _totemTriggerRawToDigi,
+  _totemRPRawToDigi,
+  _ctppsDiamondRawToDigi,
+  _totemTimingRawToDigi,
+  _ctppsPixelDigis
 )
-ctppsRawToDigi = cms.Sequence(ctppsRawToDigiTask)
 
-seqALCARECOPPSCalMaxTracksRecoPrompt = cms.Sequence( ALCARECOPPSCalMaxTracksFilterPrompt + ctppsRawToDigi + recoCTPPS )
+_ctppsRawToDigi = cms.Sequence(_ctppsRawToDigiTask)
+
+seqALCARECOPPSCalMaxTracksRecoPrompt = cms.Sequence( ALCARECOPPSCalMaxTracksFilterPrompt + _ctppsRawToDigi + recoCTPPS )

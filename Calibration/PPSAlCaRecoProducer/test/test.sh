@@ -9,4 +9,4 @@ cmsDriver.py step2  -s ALCAPRODUCER:PPSCalMaxTracksExpress,ENDJOB \
 --datatier ALCARECO \
 --eventcontent ALCARECO \
 -n 100  --filein file:/eos/project-c/ctpps/subsystems/Software/Off-line/AlCaTest/outputALCAPPS_single.root \
---fileout file:step2.root
+--fileout file:outputALCAPPS_RECO_express.root

@@ -1,3 +1,5 @@
+# I've also tried simpler tests without L1Reco stage, namely:
+# `cmsDriver.py step2  -s ALCAPRODUCER:PPSCalMaxTracksExpress,ENDJOB \``
 cmsDriver.py step2  -s L1Reco,ALCAPRODUCER:PPSCalMaxTracksExpress,ENDJOB \
 --process ALCARECO \
 --scenario pp \

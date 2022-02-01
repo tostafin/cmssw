@@ -44,9 +44,9 @@ hltPPSPerPotTrackFilter_56 = _filter.clone(
     )
 )
 
-seqALCARECOPPSCalTrackBasedSel = cms.Sequence(
-    ctppsRawToDigi *
-    recoCTPPS *
-    ALCARECOPPSCalTrackBasedSelHLT *
-    (hltPPSPerPotTrackFilter_45 + hltPPSPerPotTrackFilter_56)
-)
+# seqALCARECOPPSCalTrackBasedSel = cms.Sequence(
+#     ctppsRawToDigi *
+#     recoCTPPS *
+#     ALCARECOPPSCalTrackBasedSelHLT *
+#     (hltPPSPerPotTrackFilter_45 + hltPPSPerPotTrackFilter_56)
+# )

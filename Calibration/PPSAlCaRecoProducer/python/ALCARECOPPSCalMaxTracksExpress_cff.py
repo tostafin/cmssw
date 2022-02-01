@@ -7,28 +7,46 @@ ALCARECOPPSCalMaxTracksFilterExpress = hlt.hltHighLevel.clone(
   HLTPaths = ['HLT_PPSMaxTracksPerArm1_v1']
 )
 
-from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import totemTriggerRawToDigi as _totemTriggerRawToDigi
 from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import totemRPRawToDigi as _totemRPRawToDigi
-from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import ctppsDiamondRawToDigi as _ctppsDiamondRawToDigi
-from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import totemTimingRawToDigi as _totemTimingRawToDigi
+# from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import ctppsDiamondRawToDigi as _ctppsDiamondRawToDigi
+# from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import totemTimingRawToDigi as _totemTimingRawToDigi
 from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import ctppsPixelDigis as _ctppsPixelDigis
 
-totemTriggerRawToDigiAlCaRecoProducerExpress = _totemTriggerRawToDigi.clone(rawDataTag = cms.InputTag('hltPPSCalibrationRaw'))
-totemRPRawToDigiAlCaRecoProducerExpress = _totemRPRawToDigi.clone(rawDataTag = cms.InputTag('hltPPSCalibrationRaw'))
-ctppsDiamondRawToDigiAlCaRecoProducerExpress  = _ctppsDiamondRawToDigi.clone(rawDataTag = cms.InputTag('hltPPSCalibrationRaw'))
-totemTimingRawToDigiAlCaRecoProducerExpress = _totemTimingRawToDigi.clone(rawDataTag = cms.InputTag('hltPPSCalibrationRaw'))
-ctppsPixelDigisAlCaRecoProducerExpress = _ctppsPixelDigis.clone(inputLabel = cms.InputTag('hltPPSCalibrationRaw'))
+totemRPRawToDigi = _totemRPRawToDigi.clone(rawDataTag = 'hltPPSCalibrationRaw')
+# ctppsDiamondRawToDigi  = _ctppsDiamondRawToDigi.clone(rawDataTag = 'hltPPSCalibrationRaw')
+# totemTimingRawToDigi = _totemTimingRawToDigi.clone(rawDataTag = 'hltPPSCalibrationRaw')
+ctppsPixelDigis = _ctppsPixelDigis.clone(inputLabel = 'hltPPSCalibrationRaw')
 
-ctppsRawToDigiTaskAlCaRecoProducerExpress = cms.Task(
-  totemTriggerRawToDigiAlCaRecoProducerExpress,
-  totemRPRawToDigiAlCaRecoProducerExpress,
-  ctppsDiamondRawToDigiAlCaRecoProducerExpress,
-  totemTimingRawToDigiAlCaRecoProducerExpress,
-  ctppsPixelDigisAlCaRecoProducerExpress
+ctppsRawToDigiTask = cms.Task(
+  totemRPRawToDigi,
+  # ctppsDiamondRawToDigi,
+  # totemTimingRawToDigi,
+  ctppsPixelDigis
 )
 
-ALCARECOPPSCalMaxTracksRaw2DigiExpress = cms.Sequence(ctppsRawToDigiTaskAlCaRecoProducerExpress)
+ALCARECOPPSCalMaxTracksRaw2DigiExpress = cms.Sequence(ctppsRawToDigiTask)
 
-from RecoPPS.Configuration.recoCTPPS_cff import recoCTPPS
+from RecoPPS.Local.totemRPLocalReconstruction_cff import *
+from RecoPPS.Local.ctppsDiamondLocalReconstruction_cff import *
+from RecoPPS.Local.totemTimingLocalReconstruction_cff import *
+from RecoPPS.Local.ctppsPixelLocalReconstruction_cff import *
 
-seqALCARECOPPSCalMaxTracksRecoExpress = cms.Sequence( ALCARECOPPSCalMaxTracksFilterExpress + ALCARECOPPSCalMaxTracksRaw2DigiExpress + recoCTPPS)
+from RecoPPS.Local.ctppsLocalTrackLiteProducer_cff import ctppsLocalTrackLiteProducer
+
+from RecoPPS.ProtonReconstruction.ctppsProtons_cff import *
+
+from Geometry.VeryForwardGeometry.geometryRPFromDB_cfi import *
+from CalibPPS.ESProducers.ppsTopology_cff import *
+
+recoCTPPSTask = cms.Task(
+    # totemRPLocalReconstructionTask ,
+    # ctppsDiamondLocalReconstructionTask ,
+    # diamondSampicLocalReconstructionTask ,
+    ctppsPixelLocalReconstructionTask ,
+    ctppsLocalTrackLiteProducer ,
+    ctppsProtons
+)
+
+recoCTPPS = cms.Sequence(recoCTPPSTask)
+
+seqALCARECOPPSCalMaxTracksRecoExpress = cms.Sequence( ALCARECOPPSCalMaxTracksFilterExpress  + ALCARECOPPSCalMaxTracksRaw2DigiExpress + recoCTPPS )

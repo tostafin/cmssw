@@ -11,7 +11,6 @@ MEtoEDMConvertPPSDiamondSampicTimingCalib = cms.EDProducer('MEtoEDMConverter',
     MEPathToSave = cms.untracked.string('AlCaReco/PPSDiamondSampicTimingCalibrationPCL')
 )
 
-
 taskALCARECOPromptCalibProdPPSDiamondSampicTimingCalib = cms.Task(
     diamondSampicLocalReconstructionTask,
     PPSDiamondSampicTimingCalibrationPCLWorker,

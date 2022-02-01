@@ -56,7 +56,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_express')
 
 process.source = cms.Source( 'PoolSource',
     fileNames = cms.untracked.vstring(
-        'file:outputALCAPPS_RECO_express.root',
+        'file:step2.root',
     ),
     inputCommands = cms.untracked.vstring(
         'keep *'

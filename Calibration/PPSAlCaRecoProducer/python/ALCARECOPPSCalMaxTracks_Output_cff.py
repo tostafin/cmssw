@@ -1,8 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-OutALCARECOPPSCalMaxTracksExpress_noDrop = cms.PSet(
+OutALCARECOPPSCalMaxTracks_noDrop = cms.PSet(
     SelectEvents = cms.untracked.PSet(
-        SelectEvents = cms.vstring('pathALCARECOPPSCalMaxTracksExpress')
+        SelectEvents = cms.vstring('pathALCARECOPPSCalMaxTracks')
     ),
     outputCommands = cms.untracked.vstring(
         # timing diamonds
@@ -37,5 +37,5 @@ OutALCARECOPPSCalMaxTracksExpress_noDrop = cms.PSet(
     )
 )
 
-OutALCARECOPPSCalMaxTracksExpress = OutALCARECOPPSCalMaxTracksExpress_noDrop.clone()
-OutALCARECOPPSCalMaxTracksExpress.outputCommands.insert(0, 'drop *')
+OutALCARECOPPSCalMaxTracks = OutALCARECOPPSCalMaxTracks_noDrop.clone()
+OutALCARECOPPSCalMaxTracks.outputCommands.insert(0, 'drop *')

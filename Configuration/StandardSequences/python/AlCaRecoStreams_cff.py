@@ -130,7 +130,7 @@ from CalibMuon.RPCCalibration.ALCARECORpcCalHLT_cff import *
 # PPS calibration
 ###############################################################
 # Timing calibration
-from CalibPPS.TimingCalibration.ALCARECOPPSCalTrackBasedSel_cff import *
+#from CalibPPS.TimingCalibration.ALCARECOPPSCalTrackBasedSel_cff import *
 from CalibPPS.TimingCalibration.ALCARECOPromptCalibProdPPSTimingCalib_cff import *
 from CalibPPS.TimingCalibration.ALCARECOPromptCalibProdPPSDiamondSampicTimingCalib_cff import *
 # Alignment
@@ -165,8 +165,7 @@ from CalibTracker.SiPixelQuality.ALCARECOPromptCalibProdSiPixel_cff import *
 from Calibration.EcalCalibAlgos.ALCARECOPromptCalibProdEcalPedestals_cff import *
 from Calibration.LumiAlCaRecoProducers.ALCARECOPromptCalibProdLumiPCC_cff import *
 
-from Calibration.PPSAlCaRecoProducer.ALCARECOPPSCalMaxTracksPrompt_cff import *
-from Calibration.PPSAlCaRecoProducer.ALCARECOPPSCalMaxTracksExpress_cff import *
+from Calibration.PPSAlCaRecoProducer.ALCARECOPPSCalMaxTracks_cff import *
 
 ###############################################################
 # hotline skim workflows
@@ -206,7 +205,7 @@ pathALCARECOLumiPixelsMinBias       = cms.Path(seqALCARECOLumiPixelsMinBias)
 pathALCARECOAlCaPCCZeroBiasFromRECO = cms.Path(seqALCARECOAlCaPCCZeroBiasFromRECO)
 pathALCARECOAlCaPCCRandomFromRECO   = cms.Path(seqALCARECOAlCaPCCRandomFromRECO)
 
-pathALCARECOPPSCalTrackBasedSel = cms.Path(seqALCARECOPPSCalTrackBasedSel)
+#pathALCARECOPPSCalTrackBasedSel = cms.Path(seqALCARECOPPSCalTrackBasedSel)
 
 #### ECAL
 pathALCARECOEcalCalZElectron     = cms.Path(seqALCARECOEcalCalZElectron)
@@ -250,8 +249,7 @@ pathALCARECORpcCalHLT = cms.Path(seqALCARECORpcCalHLT)
 pathALCARECOPromptCalibProdPPSTimingCalib = cms.Path(taskALCARECOPromptCalibProdPPSTimingCalib)
 pathALCARECOPromptCalibProdPPSDiamondSampicTimingCalib = cms.Path(taskALCARECOPromptCalibProdPPSDiamondSampicTimingCalib)
 pathALCARECOPromptCalibProdPPSAlignment = cms.Path(taskALCARECOPromptCalibProdPPSAlignment)
-pathALCARECOPPSCalMaxTracksPrompt = cms.Path(seqALCARECOPPSCalMaxTracksRecoPrompt)
-pathALCARECOPPSCalMaxTracksExpress = cms.Path(seqALCARECOPPSCalMaxTracksRecoExpress)
+pathALCARECOPPSCalMaxTracks = cms.Path(seqALCARECOPPSCalMaxTracksReco)
 pathALCARECOTkAlBeamHalo = cms.Path(seqALCARECOTkAlBeamHalo*ALCARECOTkAlBeamHaloDQM)
 pathALCARECOMuAlBeamHaloOverlaps = cms.Path(seqALCARECOMuAlBeamHaloOverlaps)
 pathALCARECOMuAlBeamHalo = cms.Path(seqALCARECOMuAlBeamHalo)
@@ -517,14 +515,14 @@ ALCARECOStreamAlCaPCCRandomFromRECO = cms.FilteredStream(
 	dataTier = cms.untracked.string('ALCARECO')
 	)
 
-ALCARECOStreamPPSCalTrackBasedSel = cms.FilteredStream(
-	responsible = 'Laurent Forthomme',
-	name = 'PPSCalTrackBasedSel',
-	paths  = (pathALCARECOPPSCalTrackBasedSel),
-	content = OutALCARECOPPSCalTrackBasedSel.outputCommands,
-	selectEvents = OutALCARECOPPSCalTrackBasedSel.SelectEvents,
-	dataTier = cms.untracked.string('ALCARECO')
-	)
+# ALCARECOStreamPPSCalTrackBasedSel = cms.FilteredStream(
+# 	responsible = 'Laurent Forthomme',
+# 	name = 'PPSCalTrackBasedSel',
+# 	paths  = (pathALCARECOPPSCalTrackBasedSel),
+# 	content = OutALCARECOPPSCalTrackBasedSel.outputCommands,
+# 	selectEvents = OutALCARECOPPSCalTrackBasedSel.SelectEvents,
+# 	dataTier = cms.untracked.string('ALCARECO')
+# 	)
 
 ALCARECOStreamEcalCalZElectron = cms.FilteredStream(
 	responsible = 'Shervin Nourbakhsh',
@@ -1031,21 +1029,12 @@ ALCARECOStreamPromptCalibProdLumiPCC = cms.FilteredStream(
 	dataTier = cms.untracked.string('ALCARECO')
 	)
 
-ALCARECOStreamPPSCalMaxTracksPrompt = cms.FilteredStream(
+ALCARECOStreamPPSCalMaxTracks = cms.FilteredStream(
 	responsible = 'Leszek Grzanka',
-	name = 'PPSCalMaxTracksPrompt',
-	paths  = (pathALCARECOPPSCalMaxTracksPrompt),
-	content = OutALCARECOPPSCalMaxTracksPrompt.outputCommands,
-	selectEvents = OutALCARECOPPSCalMaxTracksPrompt.SelectEvents,
-	dataTier = cms.untracked.string('ALCARECO')
-	)
-
-ALCARECOStreamPPSCalMaxTracksExpress = cms.FilteredStream(
-	responsible = 'Leszek Grzanka',
-	name = 'PPSCalMaxTracksExpress',
-	paths  = (pathALCARECOPPSCalMaxTracksExpress),
-	content = OutALCARECOPPSCalMaxTracksExpress.outputCommands,
-	selectEvents = OutALCARECOPPSCalMaxTracksExpress.SelectEvents,
+	name = 'PPSCalMaxTracks',
+	paths  = (pathALCARECOPPSCalMaxTracks),
+	content = OutALCARECOPPSCalMaxTracks.outputCommands,
+	selectEvents = OutALCARECOPPSCalMaxTracks.SelectEvents,
 	dataTier = cms.untracked.string('ALCARECO')
 	)
 

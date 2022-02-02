@@ -2108,26 +2108,26 @@ steps['TIER0EXPSIPIXELCAL']={'-s':'RAW2DIGI,L1Reco,ALCAPRODUCER:SiPixelCalZeroBi
                           '--eventcontent':'ALCARECO',
                           }
 
-steps['TIER0EXPPPSCAL']={'-s':'RAW2DIGI,L1Reco,ALCAPRODUCER:PPSCalTrackBasedSel,ENDJOB',
-                          '--process':'ALCARECO',
-                          '--scenario': 'pp',
-                          '--era':'Run2_2017',
-                          '--conditions':'auto:run2_data',
-                          '--data': '',
-                          '--datatier':'ALCARECO',
-                          '--eventcontent':'ALCARECO',
-                          }
+# steps['TIER0EXPPPSCAL']={'-s':'RAW2DIGI,L1Reco,ALCAPRODUCER:PPSCalTrackBasedSel,ENDJOB',
+#                           '--process':'ALCARECO',
+#                           '--scenario': 'pp',
+#                           '--era':'Run2_2017',
+#                           '--conditions':'auto:run2_data',
+#                           '--data': '',
+#                           '--datatier':'ALCARECO',
+#                           '--eventcontent':'ALCARECO',
+#                           }
 
-steps['TIER0EXPPPSCALALIG']={'-s':'RAW2DIGI,L1Reco,ALCAPRODUCER:PPSCalTrackBasedSel,ENDJOB',
-                             '-n':1000,
-                             '--process':'ALCARECO',
-                             '--scenario': 'pp',
-                             '--era':'Run2_2017',
-                             '--conditions':'auto:run2_data',
-                             '--data': '',
-                             '--datatier':'ALCARECO',
-                             '--eventcontent':'ALCARECO',
-                             }
+# steps['TIER0EXPPPSCALALIG']={'-s':'RAW2DIGI,L1Reco,ALCAPRODUCER:PPSCalTrackBasedSel,ENDJOB',
+#                              '-n':1000,
+#                              '--process':'ALCARECO',
+#                              '--scenario': 'pp',
+#                              '--era':'Run2_2017',
+#                              '--conditions':'auto:run2_data',
+#                              '--data': '',
+#                              '--datatier':'ALCARECO',
+#                              '--eventcontent':'ALCARECO',
+#                              }
 
 steps['ALCASPLITHPBS']={'-s':'ALCAOUTPUT:TkAlMinBias,ALCA:PromptCalibProdBeamSpotHP+PromptCalibProdBeamSpotHPLowPU',
                         '--scenario':'pp',
@@ -2150,26 +2150,26 @@ steps['ALCASPLITSIPIXELCAL']={'-s':'ALCAOUTPUT:SiPixelCalZeroBias,ALCA:PromptCal
                         #'--filein':'file:step2.root'
                         }
 
-steps['ALCASPLITPPSCAL']={'-s':'ALCAOUTPUT:PPSCalTrackBasedSel,ALCA:PromptCalibProdPPSTimingCalib',
-                        '--scenario':'pp',
-                        '--data':'',
-                        '--era':'Run2_2017',
-                        '--datatier':'ALCARECO',
-                        '--eventcontent':'ALCARECO',
-                        '--conditions':'auto:run2_data',
-                        '--triggerResultsProcess':'RECO',
-                        }
+# steps['ALCASPLITPPSCAL']={'-s':'ALCAOUTPUT:PPSCalTrackBasedSel,ALCA:PromptCalibProdPPSTimingCalib',
+#                         '--scenario':'pp',
+#                         '--data':'',
+#                         '--era':'Run2_2017',
+#                         '--datatier':'ALCARECO',
+#                         '--eventcontent':'ALCARECO',
+#                         '--conditions':'auto:run2_data',
+#                         '--triggerResultsProcess':'RECO',
+#                         }
 
-steps['ALCASPLITPPSALIG']={'-s':'ALCAOUTPUT:PPSCalTrackBasedSel,ALCA:PromptCalibProdPPSAlignment',
-                           '-n':1000,
-                           '--scenario':'pp',
-                           '--data':'',
-                           '--era':'Run2_2017',
-                           '--datatier':'ALCARECO',
-                           '--eventcontent':'ALCARECO',
-                           '--conditions':'auto:run3_data_express',
-                           '--triggerResultsProcess':'RECO',
-                           }
+# steps['ALCASPLITPPSALIG']={'-s':'ALCAOUTPUT:PPSCalTrackBasedSel,ALCA:PromptCalibProdPPSAlignment',
+#                            '-n':1000,
+#                            '--scenario':'pp',
+#                            '--data':'',
+#                            '--era':'Run2_2017',
+#                            '--datatier':'ALCARECO',
+#                            '--eventcontent':'ALCARECO',
+#                            '--conditions':'auto:run3_data_express',
+#                            '--triggerResultsProcess':'RECO',
+#                            }
 
 steps['ALCAHARVDHPBS']={'-s':'ALCAHARVEST:%s'%(autoPCL['PromptCalibProdBeamSpotHP']),
                         #'--conditions':'auto:run2_data_promptlike',

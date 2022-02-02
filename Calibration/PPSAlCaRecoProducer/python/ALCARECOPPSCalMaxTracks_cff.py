@@ -2,9 +2,9 @@ import FWCore.ParameterSet.Config as cms
 
 import HLTrigger.HLTfilters.hltHighLevel_cfi as hlt
 
-ALCARECOPPSCalMaxTracksFilterExpress = hlt.hltHighLevel.clone(
+ALCARECOPPSCalMaxTracksFilter = hlt.hltHighLevel.clone(
   TriggerResultsTag = cms.InputTag("TriggerResults","","HLTX"),
-  HLTPaths = ['HLT_PPSMaxTracksPerArm1_v1']
+  eventSetupPathsKey = 'PPSCalMaxTracks',
 )
 
 from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import *
@@ -21,8 +21,8 @@ ctppsRawToDigiTask = cms.Task(
   ctppsPixelDigis
 )
 
-ALCARECOPPSCalMaxTracksRaw2DigiExpress = cms.Sequence(ctppsRawToDigiTask)
+ALCARECOPPSCalMaxTracksRaw2Digi = cms.Sequence(ctppsRawToDigiTask)
 
 from RecoPPS.Configuration.recoCTPPS_cff import *
 
-seqALCARECOPPSCalMaxTracksRecoExpress = cms.Sequence( ALCARECOPPSCalMaxTracksFilterExpress  + ALCARECOPPSCalMaxTracksRaw2DigiExpress + recoCTPPS )
+seqALCARECOPPSCalMaxTracksReco = cms.Sequence( ALCARECOPPSCalMaxTracksFilter  + ALCARECOPPSCalMaxTracksRaw2Digi + recoCTPPS )

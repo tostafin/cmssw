@@ -30,7 +30,7 @@ ctppsDiamondRawToDigiAlCaRecoProducer  = _ctppsDiamondRawToDigi.clone(rawDataTag
 
 # rechits step
 from RecoPPS.Local.ctppsDiamondRecHits_cfi import ctppsDiamondRecHits as _ctppsDiamondRecHits
-ctppsDiamondRecHitsAlCaRecoProducer = _ctppsDiamondRecHits.clone(digiTag = 'ctppsDiamondRawToDigiAlCaRecoProducer')
+ctppsDiamondRecHitsAlCaRecoProducer = _ctppsDiamondRecHits.clone(digiTag = cms.InputTag("ctppsDiamondRawToDigiAlCaRecoProducer","TimingDiamond"))
 
 # generation of DIGIs seem to be working, try following line
 seqALCARECOPPSCalMaxTracksReco = cms.Sequence( ALCARECOPPSCalMaxTracksFilter + ctppsDiamondRawToDigiAlCaRecoProducer )

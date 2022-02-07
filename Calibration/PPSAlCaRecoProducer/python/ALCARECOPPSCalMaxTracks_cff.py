@@ -62,7 +62,7 @@ from RecoPPS.Local.totemTimingRecHits_cfi import totemTimingRecHits as _totemTim
 from RecoPPS.Local.diamondSampicLocalTracks_cfi import diamondSampicLocalTracks as _diamondSampicLocalTracks
 #from RecoPPS.Local.totemTimingLocalTracks_cfi import totemTimingLocalTracks as _totemTimingLocalTracks
 
-totemTimingRecHitsAlCaRecoProducer = _totemTimingRecHits.clone(digiTag = 'totemTimingRawToDigiAlCaRecoProducer')
+totemTimingRecHitsAlCaRecoProducer = _totemTimingRecHits.clone(digiTag = cms.InputTag('totemTimingRawToDigiAlCaRecoProducer',"TotemTiming"))
 diamondSampicLocalTracksAlCaRecoProducer = _diamondSampicLocalTracks.clone(recHitsTag = 'totemTimingRecHitsAlCaRecoProducer')
 #totemTimingLocalTracksAlCaRecoProducer = _totemTimingLocalTracks.clone( recHitsTag= 'totemTimingRecHits')
 
@@ -77,7 +77,7 @@ from RecoPPS.Local.ctppsLocalTrackLiteProducer_cff import ctppsLocalTrackLitePro
 
 ctppsLocalTrackLiteProducerAlCaRecoProducer = _ctppsLocalTrackLiteProducer.clone(
     includeStrips = False,
-    includeDiamonds = False,  # TODO switch to true
+    includeDiamonds = True,
     includePixels = True,
     tagDiamondTrack = 'ctppsDiamondLocalTracksAlCaRecoProducer',
     tagPixelTrack = 'ctppsPixelLocalTracksAlCaRecoProducer'
@@ -93,14 +93,13 @@ ctppsProtonsAlCaRecoProducer = _ctppsProtons.clone(tagLocalTrackLite = 'ctppsLoc
 
 
 recoPPSTaskAlCaRecoProducer = cms.Task(
-    #ctppsDiamondLocalReconstructionTaskAlCaRecoProducer ,
-    #diamondSampicLocalReconstructionTaskAlCaRecoProducer ,
+    ctppsDiamondLocalReconstructionTaskAlCaRecoProducer ,
+    diamondSampicLocalReconstructionTaskAlCaRecoProducer ,
     ctppsPixelLocalReconstructionTaskAlCaRecoProducer ,
     ctppsLocalTrackLiteProducerAlCaRecoProducer ,
     ctppsProtonsAlCaRecoProducer
 )
 
 recoPPSSequenceAlCaRecoProducer = cms.Sequence(recoPPSTaskAlCaRecoProducer)
-
-seqALCARECOPPSCalMaxTracksReco = cms.Sequence( ALCARECOPPSCalMaxTracksFilter  + ALCARECOPPSCalMaxTracksRaw2Digi  + recoPPSSequenceAlCaRecoProducer)
+seqALCARECOPPSCalMaxTracksReco = cms.Sequence( ALCARECOPPSCalMaxTracksFilter  + ALCARECOPPSCalMaxTracksRaw2Digi + recoPPSSequenceAlCaRecoProducer)
 #seqALCARECOPPSCalMaxTracksReco = cms.Sequence( ALCARECOPPSCalMaxTracksFilter  + ALCARECOPPSCalMaxTracksRaw2Digi)

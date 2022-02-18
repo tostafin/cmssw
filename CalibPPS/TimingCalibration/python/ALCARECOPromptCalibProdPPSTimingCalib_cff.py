@@ -14,7 +14,7 @@ MEtoEDMConvertPPSTimingCalib = cms.EDProducer('MEtoEDMConverter',
 
 # calibrated rechits/tracks
 ctppsDiamondUncalibRecHits = _ctppsDiamondRecHits.clone(
-    applyCalibration = False
+    applyCalibration = True #Apply LUT calibration
 )
 
 if(config.useLegacyProducer != True):

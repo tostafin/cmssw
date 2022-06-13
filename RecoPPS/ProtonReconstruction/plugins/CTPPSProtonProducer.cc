@@ -199,13 +199,23 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
 
     // re-initialise algorithm upon crossing-angle change
     if (opticsWatcher_.check(iSetup)) {
-      if (hOpticalFunctions->empty()) {
+
+      // check if optical functions are provided for all RPs
+      bool opticsPresentForAllPlanes = true;
+      for (unsigned int idx = 0; idx < hTracks->size(); ++idx){
+        auto oit = hOpticalFunctions->find(hTracks->at(idx).rpId());
+        if (oit == hOpticalFunctions->end()) {  // optics not found for one of the RPs
+          opticsPresentForAllPlanes = false;
+        }
+      }
+
+      if (!hOpticalFunctions->empty() && opticsPresentForAllPlanes) {
+        algorithm_.init(*hOpticalFunctions);
+        opticsValid_ = true;
+      } else {
         edm::LogInfo("CTPPSProtonProducer") << "No optical functions available, reconstruction disabled.";
         algorithm_.release();
         opticsValid_ = false;
-      } else {
-        algorithm_.init(*hOpticalFunctions);
-        opticsValid_ = true;
       }
     }
 

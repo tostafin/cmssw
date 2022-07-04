@@ -1,1 +1,38 @@
 Introduction to CMSSW: http://cms-sw.github.io
+
+This branch concerns the new TOTEM T2 detector for Run 3, specifically the part for reconstruction real data; see 
+(on GitHub) forthommel:nt2_reco_and_simu-12_5_X for simulation and reconstruction, and forthommel:nt2_reco-12_4_X for some 
+online DQM (data quality monitor) plots for T2, under DQM/CTPPS. 
+
+You can test it on CC8 / lxplus8.cern.ch , which is the expected production version for CMSSW 12_5
+
+1. Make a project area with the latest version of 12_5 (12_5_0_pre3 as of this writing)
+ "cmsrel CMSSW_12_5_0_pre3"
+ If this fails, it may be due to the gcc version setting being outdated; try:
+  "scram list CMSSW|grep 12_5" , and then "export $SCRAM_ARCH=el8_amd64_gcc10"
+  2. "cd CMSSW_12_5_0_pre3/src" & "cmsenv", to be able to run the code in this project area with "cmsRun" command etc.
+  3. "git cms-init", to be able to use cms-specific git commands in the project area; you need to add some GitHub account info here,
+  see the CMSSW and GitHub section of the Introduction to CMSSW above.
+  4. Add a remote and switch to this branch: 
+   "git remote add oljemark https://github.com/oljemark/cmssw.git" & "git fetch oljemark" & "git checkout nt2_reco_onlyS-12_5_X"
+   Replace "oljemark" with "forthommel" to access the other branches noted above.
+  5. Rebase with the version of CMSSW you are presently using & commit the branch to your GitHub profile, or somewhere else:
+   "git checkout -b yourbranchname" & "git rebase -i from-CMSSW_12_5_0_pre3" (exit text editor) & "git push my-cmssw yourbranchname"
+  6. Your project area is in a sparse checkout state: to test the T2 code, add the following directories with "git cms-addpkg -f mylist.txt" :
+   CalibPPS/ESProducers
+   CondFormats/PPSObjects
+   DataFormats/CTPPSDetId
+   DataFormats/FEDRawData
+   DataFormats/TotemReco
+   EventFilter/CTPPSRawToDigi
+   Geometry/ForwardGeometry
+   Geometry/Records
+   Geometry/VeryForwardGeometryBuilder
+   RecoPPS/Local
+  7. Compile the code: "scram b -j 8"
+  8. Try out T2 reconstruction with a test file based on Run 2 PPS diamond detector data: 
+   "cd RecoPPS/Local/test" & "cmsRun totemT2_reco_cfg.py". This fails on 12_5_0_pre3 due to PR https://github.com/cms-sw/cmssw/pull/38366
+   , but works on 12_5_0_pre2, to be fixed.
+  9. At present, try it in 12_5_0_pre2, with branch forthommel:nt2_reco_and_simu-12_5_X ; to be able to read the Run 2 data file, 
+   a CMS GRID certificate is necessary, see: https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookStartingGrid#ObtainingCert
+   and https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideLcgAccess

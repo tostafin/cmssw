@@ -31,10 +31,12 @@ You can test it on CC8 / lxplus8.cern.ch , which is the expected production vers
    RecoPPS/Local
   7. Compile the code: "scram b -j 8"
   8. Try out T2 reconstruction with a test file based on Run 2 PPS diamond detector data: 
-   "cd RecoPPS/Local/test" & "cmsRun totemT2_reco_cfg.py". This fails on 12_5_0_pre3 due to PR https://github.com/cms-sw/cmssw/pull/38366
-   , but works on 12_5_0_pre2, to be fixed.
-  9. At present, try it in 12_5_0_pre2, with branch forthommel:nt2_reco_and_simu-12_5_X ; to be able to read the Run 2 data file, 
-   a CMS GRID certificate is necessary, see: https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookStartingGrid#ObtainingCert
+   "cd RecoPPS/Local/test" & "cmsRun totemT2_reco_cfg.py". This failed on 12_5_0_pre3 due to PR https://github.com/cms-sw/cmssw/pull/38366
+   , but worked on 12_5_0_pre2, now fixed.
+  9. Try it on this branch (or in 12_5_0_pre2, with branch forthommel:nt2_reco_and_simu-12_5_X ).
+   To be able to read the Run 2 data file, a CMS GRID certificate is necessary, 
+   see: https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookStartingGrid#ObtainingCert
    and https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideLcgAccess
    After getting the certificate and registering in the cms VOMS, make a proxy weekly with
    "voms-proxy-init --rfc --voms cms -valid 192:00"
+  10. Analyse the produced ROOT file with "root" & "new TBrowser", see https://root.cern.ch/doc/master/classTBrowser.html

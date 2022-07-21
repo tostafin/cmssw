@@ -46,6 +46,9 @@ private:
   std::unique_ptr<TotemT2Segmentation> segm_;
   MonitorElement* m_digis_mult_[2][TotemT2DetId::maxPlane + 1];
   MonitorElement* m_rechits_mult_[2][TotemT2DetId::maxPlane + 1];
+
+  std::unordered_map<unsigned int, MonitorElement*> numberOfActivePlanes_;
+  std::unordered_map<unsigned int, MonitorElement*> activePlanes_;
 };
 
 TotemT2DQMSource::TotemT2DQMSource(const edm::ParameterSet& iConfig)
@@ -88,6 +91,20 @@ void TotemT2DQMSource::bookHistograms(DQMStore::IBooker& ibooker, const edm::Run
                                                  summary_nbinsy);
     }
 
+  for (unsigned short i = 0; i < 4; ++i) {
+        numberOfActivePlanes_[i] = ibooker.book1D("number of active planes (quarter " + std::to_string(i) + ")",
+                                        "active planes;number of active planes",
+                                        6,
+                                        -0.5,
+                                        5.5);
+  }
+  for (unsigned short i = 0; i < 2; ++i) {
+        activePlanes_[i] = ibooker.book1D("active planes (arm " + std::to_string(i) + ")",
+                                        "active planes;plane number",
+                                        8,
+                                        -0.5,
+                                        7.5);
+  }
   // build a segmentation helper for the size of histograms previously booked
   segm_ = std::make_unique<TotemT2Segmentation>(iSetup.getData(geometryToken_), summary_nbinsx, summary_nbinsy);
 }
@@ -101,13 +118,35 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       (void)digi;  //FIXME make use of them
     }
   }
+
   // fill rechits information
+  std::unordered_map<unsigned int, std::set<unsigned int>> planes;
   for (const auto& ds_rechits : iEvent.get(rechitToken_)) {
     const TotemT2DetId detid(ds_rechits.detId());
     for (const auto& rechit : ds_rechits) {
       segm_->fill(m_rechits_mult_[detid.arm()][detid.plane()]->getTH2D(), detid);
       (void)rechit;  //FIXME make use of them
+
+      unsigned short pl = detid.plane();    
+      if(detid.arm() == 0){
+        if(pl % 2 == 0){
+          planes[0].insert(pl);
+        }else{
+          planes[1].insert(pl);
+        }
+      }else{
+        if(pl % 2 == 0){
+          planes[2].insert(pl);
+        }else{
+          planes[3].insert(pl);
+        }
+      }
+
+      activePlanes_[detid.arm()]->Fill(pl);
     }
+  }
+  for (const auto& plt : numberOfActivePlanes_) {
+    plt.second->Fill(planes[plt.first].size());
   }
 }
 

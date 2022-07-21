@@ -295,9 +295,7 @@ EfficiencyTool_2018DQMWorker::EfficiencyTool_2018DQMWorker(const edm::ParameterS
     : geomEsToken_(esConsumes<edm::Transition::BeginRun>()),
       lhcInfoToken_(esConsumes(edm::ESInputTag("", "")))
  {
-  edm::LogWarning("MyInfoLog") << "Inside a consturctor";
   producerTag = iConfig.getUntrackedParameter<std::string>("producerTag");
-  edm::LogWarning("MyInfoLog") << "Got producer Tag";
 
   pixelLocalTrackToken_ =
       consumes<edm::DetSetVector<CTPPSPixelLocalTrack>>(edm::InputTag("ctppsPixelLocalTracks", "", producerTag));
@@ -337,7 +335,6 @@ EfficiencyTool_2018DQMWorker::EfficiencyTool_2018DQMWorker(const edm::ParameterS
   mapXmin = 0. * TMath::Cos(detectorTiltAngle / 180. * TMath::Pi());
   mapXmax = 30. * TMath::Cos(detectorTiltAngle / 180. * TMath::Pi());  //18.4 is default angle
   detectorRotationAngle = iConfig.getUntrackedParameter<double>("detectorRotationAngle");
-  edm::LogWarning("MyInfoLog") << "Parameters was set before calling initialize()";
 
   initialize();
   
@@ -354,7 +351,6 @@ EfficiencyTool_2018DQMWorker::EfficiencyTool_2018DQMWorker(const edm::ParameterS
   binGroupingX = iConfig.getUntrackedParameter<int>("binGroupingX");  // UNUSED!
   binGroupingY = iConfig.getUntrackedParameter<int>("binGroupingY");  // UNUSED!
   recoInfoCut_ = iConfig.getUntrackedParameter<int>("recoInfo");
-  edm::LogWarning("MyInfoLog") << "Before computing binning arrays";
   // Compute binning arrays
   for (auto detID_and_coordinate : mapXbin_changeCoordinate) {
     CTPPSPixelDetId detId = detID_and_coordinate.first;
@@ -369,7 +365,6 @@ EfficiencyTool_2018DQMWorker::EfficiencyTool_2018DQMWorker(const edm::ParameterS
         xBinEdges[detId].push_back(nBinsX_small * mapXbinSize_small + (i - nBinsX_small) * mapXbinSize_large);
     }
   }
-  edm::LogWarning("MyInfoLog") << "Consturctor Done";
 }
 
 EfficiencyTool_2018DQMWorker::~EfficiencyTool_2018DQMWorker() {}
@@ -892,7 +887,6 @@ void EfficiencyTool_2018DQMWorker::dqmBeginRun(edm::Run const &, edm::EventSetup
 
 void EfficiencyTool_2018DQMWorker::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup) {
   using namespace edm;
-  edm::LogWarning("MyInfoLog") << "Starting analyze function";
 
   double weight = 1;
   Handle<edm::DetSetVector<CTPPSPixelLocalTrack>> pixelLocalTracks;
@@ -905,9 +899,7 @@ void EfficiencyTool_2018DQMWorker::analyze(const edm::Event &iEvent, const edm::
   // edm::ESHandle<LHCInfo> pSetup;
   // const std::string label = "";
   // iSetup.get<LHCInfoRcd>().get(label, pSetup);
-  edm::LogWarning("MyInfoLog") << "Before get data lhcInfoToken_";
   auto const& dataLHCInfo = iSetup.getData(lhcInfoToken_);
-  edm::LogWarning("MyInfoLog") << "After get data from lhcInfoToken_";
 
   // re-initialise algorithm upon crossing-angle change
   // const LHCInfo *pInfo = pSetup.product();

@@ -204,7 +204,7 @@ process.MessageLogger.statistics = cms.untracked.vstring()
 
 
 #CONFIGURE PROCESS
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) ) # TODO: This is a temporary change. Change to -1 before merging 
 
 
 #SETUP GLOBAL TAG

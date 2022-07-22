@@ -1,8 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+from Configuration.AlCa.GlobalTag import GlobalTag
 import FWCore.ParameterSet.VarParsing as VarParsing
 
-process = cms.Process("Demo")
+process = cms.Process("Demo") # TODO: make sure if demo is right name for the process
 
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True),
@@ -47,6 +48,7 @@ inputFiles = cms.untracked.vstring( *fileList)
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("DQM.Integration.config.environment_cfi")
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load("Geometry.VeryForwardGeometry.geometryRPFromDD_2018_cfi")
 
 process.MessageLogger = cms.Service("MessageLogger",
@@ -72,7 +74,7 @@ process.MessageLogger = cms.Service("MessageLogger",
         ),
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) ) # TODO: change to -1 when testing done
 
 if options.useJsonFile == True:
     print("Using JSON file...")
@@ -105,33 +107,39 @@ lastRunOfTheYear  = 324897
 runNumber=options.runNumber
 
 
-if runNumber < firstRunOfTheYear:
-    print("This run belongs to before 2018 data taking")
-elif runNumber <= lastRunPreTs1:
-    print("Analyzing Pre-TS1 data")
-elif runNumber <= lastRunPreTs2:
-    print("Analyzing data taken between TS1 and TS2")
-    for i in range(4):
-        if (i == 1 or i == 3):
-            fiducialYLow[i] -= 0.5
-            fiducialYHigh[i] -= 0.5
-        else:
-            fiducialYLow[i] += 0.5
-            fiducialYHigh[i] += 0.5
-elif runNumber <= lastRunOfTheYear:
-    print("Analyzing Post-TS2 data")
-    for i in range(4):
-        if (i == 1 or i == 3):
-            fiducialYLow[i] -= 1
-            fiducialYHigh[i] -= 1
-        else:
-            fiducialYLow[i] += 1
-            fiducialYHigh[i] += 1
-elif runNumber > lastRunOfTheYear:
-    print("This run doesn't belong to 2018 data taking")
+def print_information_about_LHC_run():
+    #TODO: this method compares str with int
+    print(runNumber)
+    return
+    if runNumber < firstRunOfTheYear:
+        print("This run belongs to before 2018 data taking")
+    elif runNumber <= lastRunPreTs1:
+        print("Analyzing Pre-TS1 data")
+    elif runNumber <= lastRunPreTs2:
+        print("Analyzing data taken between TS1 and TS2")
+        for i in range(4):
+            if (i == 1 or i == 3):
+                fiducialYLow[i] -= 0.5
+                fiducialYHigh[i] -= 0.5
+            else:
+                fiducialYLow[i] += 0.5
+                fiducialYHigh[i] += 0.5
+    elif runNumber <= lastRunOfTheYear:
+        print("Analyzing Post-TS2 data")
+        for i in range(4):
+            if (i == 1 or i == 3):
+                fiducialYLow[i] -= 1
+                fiducialYHigh[i] -= 1
+            else:
+                fiducialYLow[i] += 1
+                fiducialYHigh[i] += 1
+    elif runNumber > lastRunOfTheYear:
+        print("This run doesn't belong to 2018 data taking")
+
+print_information_about_LHC_run()   
 
 #SETUP GLOBAL TAG
-#process.GlobalTag = GlobalTag(process.GlobalTag, '113X_dataRun2_v6')
+process.GlobalTag = GlobalTag(process.GlobalTag, '123X_dataRun2_v4') #TODO why Global tag is commented out
 
 
 #SETUP INPUT
@@ -157,7 +165,7 @@ process.worker = DQMEDAnalyzer('ReferenceAnalysisDQMWorker',
     fiducialXHigh=cms.untracked.vdouble(fiducialXHigh),
     fiducialYLow=cms.untracked.vdouble(fiducialYLow),
     fiducialYHigh=cms.untracked.vdouble(fiducialYHigh),
-    producerTag=cms.untracked.string("ReMiniAOD"),
+    producerTag=cms.untracked.string("CTPPSTestProtonReconstruction"),
     detectorTiltAngle=cms.untracked.double(18.4),
     detectorRotationAngle=cms.untracked.double(-8),
     useMultiRPEfficiency=cms.untracked.bool(False),

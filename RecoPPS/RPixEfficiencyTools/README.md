@@ -50,3 +50,8 @@ Instruction on how to setup and run efficiency suite in CMSSW_11_3_2 environment
 	TODO: Probalby outputDirectoryPath doesn't change the output path. 
 	```cmsRun python/ReferenceAnalysisDQMHarvester_cfg.py inputFileName=tmp_reference_anailsis_worker_output.root outputDirectoryPath=OutputFiles```
 
+# TODO
+1. [ ]  method `print_information_about_LHC_run` is not extracted and is not working in modules 
+	TODO: extract the method to other file and fix it to print correct informations
+2. [ ] Global tag is set in every python file separately - if you change a global tag you need to edit four files!!!
+

@@ -3,7 +3,16 @@ from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
 from Configuration.AlCa.GlobalTag import GlobalTag
 import FWCore.ParameterSet.VarParsing as VarParsing
 
-process = cms.Process("Demo") # TODO: make sure if demo is right name for the process
+#GLOBAL CONSTANT VARIABLES
+# fiducial variables restricts the area to analyze 
+# - the current setup covers the whole possible area 
+fiducialXLow = [0,0,0,0]
+fiducialXHigh = [99,99,99,99]
+fiducialYLow = [-99.,-99.,-99.,-99.]
+fiducialYHigh = [99.,99.,99.,99.]
+
+#SETUP PROCESS
+process = cms.Process("Demo")
 
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True),
@@ -85,61 +94,12 @@ if options.useJsonFile == True:
         jsonFileName = options.jsonFileName
     print(jsonFileName)
     process.source.lumisToProcess = LumiList.LumiList(filename = jsonFileName).getVLuminosityBlockRange()
-# Fiducial region for tracks
-# RP order 0_0, 0_2, 1_0, 1_2 at the top left angle of the RP track map (for tilted pots)
-# cuts
-# fiducialXLow = [2.85,2.28,3.28,2.42]
-# fiducialYLow = [-11.5,-10.9,-11.6,-10.3]
-# fiducialYHigh = [3.8,4.4,3.7,5.2]
 
-# no cuts
-fiducialXLow = [0,0,0,0]
-fiducialXHigh = [99,99,99,99]
-fiducialYLow = [-99.,-99.,-99.,-99.]
-fiducialYHigh = [99.,99.,99.,99.]
-
-
-firstRunOfTheYear = 314247
-lastRunPreTs1     = 317696
-lastRunPreTs2     = 322633
-lastRunOfTheYear  = 324897
 
 runNumber=options.runNumber
 
-
-def print_information_about_LHC_run():
-    #TODO: this method compares str with int
-    print(runNumber)
-    return
-    if runNumber < firstRunOfTheYear:
-        print("This run belongs to before 2018 data taking")
-    elif runNumber <= lastRunPreTs1:
-        print("Analyzing Pre-TS1 data")
-    elif runNumber <= lastRunPreTs2:
-        print("Analyzing data taken between TS1 and TS2")
-        for i in range(4):
-            if (i == 1 or i == 3):
-                fiducialYLow[i] -= 0.5
-                fiducialYHigh[i] -= 0.5
-            else:
-                fiducialYLow[i] += 0.5
-                fiducialYHigh[i] += 0.5
-    elif runNumber <= lastRunOfTheYear:
-        print("Analyzing Post-TS2 data")
-        for i in range(4):
-            if (i == 1 or i == 3):
-                fiducialYLow[i] -= 1
-                fiducialYHigh[i] -= 1
-            else:
-                fiducialYLow[i] += 1
-                fiducialYHigh[i] += 1
-    elif runNumber > lastRunOfTheYear:
-        print("This run doesn't belong to 2018 data taking")
-
-print_information_about_LHC_run()   
-
 #SETUP GLOBAL TAG
-process.GlobalTag = GlobalTag(process.GlobalTag, '123X_dataRun2_v4') #TODO why Global tag is commented out
+process.GlobalTag = GlobalTag(process.GlobalTag, '123X_dataRun2_v4')
 
 
 #SETUP INPUT

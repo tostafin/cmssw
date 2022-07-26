@@ -16,14 +16,14 @@ process.options = cms.untracked.PSet(
     FailPath = cms.untracked.vstring('ProductNotFound','Type Mismatch')
     )
 options = VarParsing.VarParsing()
-options.register('inputFileName',
-                '',
+options.register('inputFileName', # parameter name 
+                '', # default value - empty means no default value
                 VarParsing.VarParsing.multiplicity.singleton,
                 VarParsing.VarParsing.varType.string,
                 "input ROOT file name (file created by DQMWorker)")
 
 options.register('outputDirectoryPath',
-                '',
+                './OutputFiles/',
                 VarParsing.VarParsing.multiplicity.singleton,
                 VarParsing.VarParsing.varType.string,
                 "directory in which the output ROOT file will be saved")
@@ -82,11 +82,11 @@ process.harvester = DQMEDHarvester('ReferenceAnalysisDQMHarvester',
 #CONFIGURE DQM Saver
 process.dqmEnv.subSystemFolder = "CalibPPS"
 process.dqmSaver.convention = 'Offline'
-process.dqmSaver.workflow = "/CalibPPS/AlignmentGlobal/CMSSW_11_3_0_pre4"
+process.dqmSaver.workflow = "/CalibPPS/AlignmentGlobal/CMSSW_11_3_0_pre4" #TODO
 process.dqmSaver.saveByRun = -1
 process.dqmSaver.saveAtJobEnd = True
 process.dqmSaver.forceRunNumber = 999999
-process.dqmSaver.dirName = './OutputFiles/'
+process.dqmSaver.dirName = options.outputDirectoryPath # todo confirm if this works
 
 #SCHEDULE JOB
 process.path = cms.Path(

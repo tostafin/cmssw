@@ -7,16 +7,16 @@ ssh <username>@lxplus.cern.ch
 ssh mobrzut@lxpllus.cern.ch
 ```
 
-2. Go to your afs directory (this project was tested with afs not eos - probalby some problems with eos)
-ex. (check if you have afs enabled and at least 5Gb of storage [cern resources portal](https://resources.web.cern.ch/resources/Manage/ListServices.aspx))
+2. Go to your afs directory *(note1: this project was tested with afs not eos - probalby some problems with eos)*
+*(note2: check if you have afs enabled and at least 5Gb of storage [cern resources portal](https://resources.web.cern.ch/resources/Manage/ListServices.aspx))*
 
 ```
 #example
 cd /afs/cern.ch/user/m/mobrzut
 ```
-3. It's best to create a separate folder (ex. `mkdir automation`) and setup there a CMSSW (follow project setup on readme)
+3. It's best to create a separate folder (ex. `mkdir automation`) and setup there a CMSSW. (follow `project setup` section on readme)
 
-### Onboarding How to browse root files
+### Onboarding - how to browse root files
 There are a bunch of methods to browse histograms of root file. 
 **Method 1**
 1. Connect to ssh with flag -XY
@@ -57,7 +57,7 @@ Instruction on how to setup and run efficiency suite in CMSSW_11_3_2 environment
 
 ## How to test Efficiency Analyis and Reference Analysis 
 1. Set up CMSSW_12_4_0 project (follow steps 1-7 of `Project Setup` section) just checkout different branch
-	1. (STEP 4 modification) `git cms-merge-topic matt628:automation/for_CMSSW12-update-DQMWorker`
+	1. *(STEP 4 modification)* `git cms-merge-topic matt628:automation/for_CMSSW12-update-DQMWorker`
 	2. Remember to run cmsenv in each terminal session at src directory
 	3. Remember to create needed directories:
 		```mkdir InputFiles OutputFiles Jobs LogFiles```
@@ -94,8 +94,12 @@ Instruction on how to setup and run efficiency suite in CMSSW_11_3_2 environment
 	TODO: Probably outputDirectoryPath doesn't change the output path. 
 	```cmsRun python/ReferenceAnalysisDQMHarvester_cfg.py inputFileName=tmp.root outputDirectoryPath=OutputFiles```
 5. Verification
-	1. Open root file from RA Harvester *(More instruction in Onboarding section of this readme)*
+	1. Open root file from RA Harvester *(note: More instruction in the `Onboarding section` of this readme)*
 	2. Check a few histograms. Ex.`h2RefinedTrackEfficiency_am0_*`, `h2TrackHitDistribution_*`
+	Below images of example histograms.
+	![](ReadmeResources/h2_RefinedTrackEfficiency_example_histogram.png)
+	![](ReadmeResources/h2_HitTrackDistribution_example_histogram.png)
+
 	3. You can limit data to `colz` (Set `draw option`) 
 
 # TODO - Hope it will be done in a finite time :)  

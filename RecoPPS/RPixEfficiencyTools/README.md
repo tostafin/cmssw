@@ -103,7 +103,6 @@ Instruction on how to setup and run efficiency suite in CMSSW_11_3_2 environment
 	3. You can limit data to `colz` (Set `draw option`) 
 
 # TODO - Hope it will be done in a finite time :)  
-1. [ ]  method `print_information_about_LHC_run` is not extracted and is not working in modules 
-	TODO: extract the method to other file and fix it to print correct information
-2. [ ] Global tag is set in every python file separately - if you change a global tag you need to edit four files!!!
+1. [ ] Global tag is set in every python file separately - if you change a global tag you need to edit four files!!!
+2. [ ] Set default parameters for input and output files or directories in config files  
 

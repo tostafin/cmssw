@@ -46,16 +46,14 @@ std::vector<std::pair<short, short> > TotemT2Segmentation::computeBins(const Tot
   const float max_half_angle_rad = 0.4;
   // find the coordinates of the tile centre to extract its angle
   const auto tile_centre = geom_.tile(detid).centre();
-  const auto tile_angle_rad = std::atan2(tile_centre.y(), tile_centre.x()) *
-                              (detid.arm() == 1 ? 1. : -1.);  //FIXME ensure convention is correct
-
+  const auto tile_angle_rad = std::atan2(tile_centre.y(), tile_centre.x()) * (detid.arm() == 1 ? 1. : -1.);  //FIXME ensure convention is correct
+  // edm::LogWarning("Totem T2 Segm ") << tile_centre << detid;
   // Geometric way of associating a DetId to a vector<ix, iy> of bins given the size (nx_, ny_) of
   // the TH2D('s) to be filled
   for (size_t ix = 0; ix < nbinsx_; ++ix)
     for (size_t iy = 0; iy < nbinsy_; ++iy) {
       const auto ell_rad_norm = std::pow((ix - ox) / ax, 2) + std::pow((iy - oy) / by, 2);
-      if (ell_rad_norm < 1. && ell_rad_norm >= 0.1 &&
-          fabs(std::atan2(iy - oy, ix - ox) - tile_angle_rad) < max_half_angle_rad)
+      if (ell_rad_norm < 1.0 && ell_rad_norm >= 0.1 && fabs(std::atan2(iy - oy, ix - ox) - tile_angle_rad) < max_half_angle_rad)
         bins.emplace_back(ix, iy);
     }
 

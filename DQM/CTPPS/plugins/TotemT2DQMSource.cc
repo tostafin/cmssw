@@ -49,6 +49,7 @@ private:
 
   std::unordered_map<unsigned int, MonitorElement*> numberOfActivePlanes_;
   std::unordered_map<unsigned int, MonitorElement*> activePlanes_;
+  void fillActivePlanes(std::unordered_map<unsigned int, std::set<unsigned int>>&, const TotemT2DetId);
 };
 
 TotemT2DQMSource::TotemT2DQMSource(const edm::ParameterSet& iConfig)
@@ -113,6 +114,7 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   // fill digis information
   for (const auto& ds_digis : iEvent.get(digiToken_)) {
     const TotemT2DetId detid(ds_digis.detId());
+    // edm::LogWarning("Totem T2 DQM source ") << ds_digis.detId() << detid;
     for (const auto& digi : ds_digis) {
       segm_->fill(m_digis_mult_[detid.arm()][detid.plane()]->getTH2D(), detid);
       (void)digi;  //FIXME make use of them
@@ -127,27 +129,32 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       segm_->fill(m_rechits_mult_[detid.arm()][detid.plane()]->getTH2D(), detid);
       (void)rechit;  //FIXME make use of them
 
-      unsigned short pl = detid.plane();    
-      if(detid.arm() == 0){
-        if(pl % 2 == 0){
-          planes[0].insert(pl);
-        }else{
-          planes[1].insert(pl);
-        }
-      }else{
-        if(pl % 2 == 0){
-          planes[2].insert(pl);
-        }else{
-          planes[3].insert(pl);
-        }
-      }
-
-      activePlanes_[detid.arm()]->Fill(pl);
+      fillActivePlanes(planes, detid);
     }
   }
   for (const auto& plt : numberOfActivePlanes_) {
     plt.second->Fill(planes[plt.first].size());
   }
 }
+
+void TotemT2DQMSource::fillActivePlanes(std::unordered_map<unsigned int, std::set<unsigned int>>& planes, const TotemT2DetId detid){
+  unsigned short pl = detid.plane();    
+  if(detid.arm() == 0){
+    if(pl % 2 == 0){
+      planes[0].insert(pl);
+    }else{
+      planes[1].insert(pl);
+    }
+  }else{
+    if(pl % 2 == 0){
+      planes[2].insert(pl);
+    }else{
+      planes[3].insert(pl);
+    }
+  }
+
+  activePlanes_[detid.arm()]->Fill(pl);
+}
+
 
 DEFINE_FWK_MODULE(TotemT2DQMSource);

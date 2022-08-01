@@ -896,16 +896,10 @@ void EfficiencyTool_2018DQMWorker::analyze(const edm::Event &iEvent, const edm::
     return;
   h1BunchCrossing_->Fill(iEvent.eventAuxiliary().bunchCrossing(), weight);
 
-  // edm::ESHandle<LHCInfo> pSetup;
-  // const std::string label = "";
-  // iSetup.get<LHCInfoRcd>().get(label, pSetup);
   auto const& dataLHCInfo = iSetup.getData(lhcInfoToken_);
 
   // re-initialise algorithm upon crossing-angle change
-  // const LHCInfo *pInfo = pSetup.product();
-  const LHCInfo *pInfo = &dataLHCInfo; //TODO: change code to use reference isntead of pointer
-
-  h1CrossingAngle_->Fill(pInfo->crossingAngle(), weight);
+  h1CrossingAngle_->Fill(dataLHCInfo.crossingAngle(), weight);
 
   for (const auto &rpPixeltrack : *pixelLocalTracks) {
     if ((uint32_t)minTracksPerEvent > rpPixeltrack.size() || rpPixeltrack.size() > (uint32_t)maxTracksPerEvent)
@@ -1061,14 +1055,9 @@ void EfficiencyTool_2018DQMWorker::analyze(const edm::Event &iEvent, const edm::
   Handle<reco::ForwardProtonCollection> multiRP_protons;
   iEvent.getByToken(multiRP_protonsToken_, multiRP_protons);
 
-  // edm::ESHandle<LHCInfo> lhcInfo;
-  // iSetup.get<LHCInfoRcd>().get("", lhcInfo);
-  // const LHCInfo *pLhcInfo = lhcInfo.product();
   auto const& dataLHCInfo2 = iSetup.getData(lhcInfoToken_);
-  const LHCInfo *pInfo2 = &dataLHCInfo2; //TODO: change code to use reference isntead of pointer
 
-
-  double xangle = pInfo2->crossingAngle();
+  double xangle = dataLHCInfo2.crossingAngle();
 
   trackMux_.clear();
   for (auto &proton_Tag : *protons) {

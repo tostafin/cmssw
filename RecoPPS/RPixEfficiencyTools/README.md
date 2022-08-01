@@ -4,10 +4,10 @@
 ```
 ssh <username>@lxplus.cern.ch
 # example
-ssh mobrzut@lxpllus.cern.ch
+ssh mobrzut@lxplus.cern.ch
 ```
 
-2. Go to your afs directory *(note1: this project was tested with afs not eos - probalby some problems with eos)*
+2. Go to your afs directory *(note1: HTCondor submission required - currently not available on eos)*
 *(note2: check if you have afs enabled and at least 5Gb of storage [cern resources portal](https://resources.web.cern.ch/resources/Manage/ListServices.aspx))*
 
 ```
@@ -33,45 +33,47 @@ root
 new TBrowser
 ```
 
-4. You can exit from root by calling exit method 
-```exit(0)```
+4. You can exit from root by quit command  
+```.q```
 
 **Method 2**
-Install VS code extension `ROOT File Viewer` by *Alberto Perez de Rada Fiol*. 
+Install VS code extension [ROOT File Viewer](https://marketplace.visualstudio.com/items?itemName=albertopdrf.root-file-viewer) by *Alberto Perez de Rada Fiol*. 
 Then navigate to root file via UI of VS Code and open it. 
 ***Warning:** This extension might not show all histograms*
  
 ## Project setup 
-Instruction on how to setup and run efficiency suite in CMSSW_11_3_2 environment:
-1. Preprare CMSSW_11_3_2 environment with: cmsrel CMSSW_11_3_2
-2. Go to newly created directory: cd CMSSW_11_3_2
-3. Setup cms environmental variables: cmsenv
-4. Merge with the topic containing efficiency suite: git cms-merge-topic varsill:from-CMSSW_11_3_2
-5. Compile the solution: scram b -j10
-6. Switch directory to the one containing the source code: cd src/RecoPPS/RPixEfficiencyTools
-7. Create directories for files used during the run: mkdir InputFiles OutputFiles Jobs LogFiles
+Instruction on how to setup and run efficiency suite in CMSSW_12_4_0 environment:
+
+1. Preprare CMSSW_12_4_0 environment with: `cmsrel CMSSW_12_4_0`
+2. Go to newly created directory: `cd CMSSW_12_4_0`
+3. Setup cms environmental variables: `cmsenv`
+4. Merge with the main branch containing efficiency suite: `git cms-merge-topic CTPPPS:rolling_calib_efficiency_tracking_12_4_0`
+5. Compile the solution `scram b -j10`
+6. Switch directory to the one containing the source code: `cd src/RecoPPS/RPixEfficiencyTools`
+7. Create directories for files used during the run: `mkdir InputFiles OutputFiles Jobs LogFiles`
+
+### Preparation fo Input File list
 8. Prepare the input .dat file for the chosen era with <era name>. For instance, you can specify this file to load all the input .root files from the chosen directory by typing:
 	ls /path/to/your/input/files/*.root | sed 's/^/file:/' > InputFiles/Era<era name>.dat
-9. *(probably outdated to delete)* bash submitEfficiencyAnalysisEra.sh <era name>
 
 
-## How to test Efficiency Analyis and Reference Analysis 
+## How to test Efficiency Analyis (referred as EA) and Reference Analysis (referred as RA)
 1. Set up CMSSW_12_4_0 project (follow steps 1-7 of `Project Setup` section) just checkout different branch
-	1. *(STEP 4 modification)* `git cms-merge-topic matt628:automation/for_CMSSW12-update-DQMWorker`
-	2. Remember to run cmsenv in each terminal session at src directory
+	1. *(STEP 4 modification)* `git cms-merge-topic CTPPS:MO/automation/for_CMSSW12-update-DQMWorker`
+	2. Remember to run `cmsenv` in each terminal session at src directory
 	3. Remember to create needed directories:
 		```mkdir InputFiles OutputFiles Jobs LogFiles```
 2. Prepare test file and test setup:
-	1. **file** *(note/TODO: this file makes sense for EA, but doesn't make sense for RA please find a better file )* `/eos/project-c/ctpps/subsystems/Pixel/RPixTracking/EfficiencyCalculation2018/ReRecoEras_CMSSW_10_6_10/EGamma/re-MINIAOD/ctpps_2018A_pixelefficiency_singleele200630_073503/0000/reMINIAOD_A.root`
+	1. **file** *(note/TODO: this file is for EA, it works with RA (suitable for simple test)  but the results are not useful from physics perspective)* `/eos/project-c/ctpps/subsystems/Pixel/RPixTracking/EfficiencyCalculation2018/ReRecoEras_CMSSW_10_6_10/EGamma/re-MINIAOD/ctpps_2018A_pixelefficiency_singleele200630_073503/0000/reMINIAOD_A.root`
 	2. **file list to analyse** Just create .dat file with paths you want to analyse.
 	```ls /eos/project-c/ctpps/subsystems/Pixel/RPixTracking/EfficiencyCalculation2018/ReRecoEras_CMSSW_10_6_10/EGamma/re-MINIAOD/ctpps_2018A_pixelefficiency_singleele200630_073503/0000/*.root | sed 's/^/file:/' > InputFiles/Era.dat```
-	3. **Set up config files** (.py files in python folder).  You just need make step 1 manually, all others values are correct. They are put here for debugging purposes.  
-		1. **MaxEvents** as test file is big just set maxEvents to smaller value ex. `100000`
+	3. **Set up config files** (.py files in python folder).  You just need to make step 1 manually, all others values are correct. They are put here for debugging purposes.  
+		1. **maxEvents** as test file is big just set maxEvents to smaller value ex. `100000`
 		2. **Global tag** Use `123X_dataRun2_v4` Global Tag in the python files.
-		3. **Process**  `eras.Run2_2018`
+		3. **Process**  `eras.Run2_2018` (Change according to the period you want to analyse)
 		4. **Producer Tag** `CTPPSTestProtonReconstruction`
 		
-3. Run Efficiency analysis (referred as EA).
+3. Run Efficiency analysis.
 	1. **Run EA (efficiency analysis) worker**
 		```cmsRun python/EfficiencyAnalysisDQMWorker_cfg.py sourceFileList=InputFiles/Era.dat outputFileName=ea_tmp.root bunchSelection=NoSelection```
 	2. **Run EA (efficiency analysis) harvester** To run EA you need to specify 5 paramteres
@@ -82,7 +84,7 @@ Instruction on how to setup and run efficiency suite in CMSSW_11_3_2 environment
 		5. **campaign** provides a unique naming for distinction between same workflow ex. `25_07_22`
 	```cmsRun python/EfficiencyAnalysisDQMHarvester_cfg.py inputFileName=ea_tmp.root outputDirectoryPath=OutputFiles workflow=randomNameWorkflow dataPeriod=dumbDataPeriod campaign=fooCampaignName```
 
-4. Run Reference Analysis (referred as RA)
+4. Run Reference Analysis 
 	1. **Run RA worker** 
 		1. **sourceFileList** self describing
 		2. **outputFileName** self describing 
@@ -104,5 +106,6 @@ Instruction on how to setup and run efficiency suite in CMSSW_11_3_2 environment
 
 # TODO - Hope it will be done in a finite time :)  
 1. [ ] Global tag is set in every python file separately - if you change a global tag you need to edit four files!!!
-2. [ ] Set default parameters for input and output files or directories in config files  
+2. [ ] Era modifier is set in every python file separately
+3. [ ] Set default parameters for input and output files or directories in config files  
 

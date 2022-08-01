@@ -6,8 +6,8 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 
 
 #GLOBAL CONSTANT VARIABLES
-# fiducial variables restricts the area to analyze 
-# - the current setup covers the whole possible area
+# fiducial variables restrict the area to analyze 
+# - the current parameters cover the whole possible area
 fiducialXLow = [0,0,0,0]
 fiducialYLow = [-99.,-99.,-99.,-99.]
 fiducialYHigh = [99.,99.,99.,99.]

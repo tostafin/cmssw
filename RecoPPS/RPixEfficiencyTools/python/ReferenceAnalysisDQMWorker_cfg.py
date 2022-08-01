@@ -4,8 +4,8 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 import FWCore.ParameterSet.VarParsing as VarParsing
 
 #GLOBAL CONSTANT VARIABLES
-# fiducial variables restricts the area to analyze 
-# - the current setup covers the whole possible area 
+# fiducial variables restrict the area to analyze 
+# - the current parameters cover the whole possible area 
 fiducialXLow = [0,0,0,0]
 fiducialXHigh = [99,99,99,99]
 fiducialYLow = [-99.,-99.,-99.,-99.]

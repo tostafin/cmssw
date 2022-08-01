@@ -102,11 +102,11 @@ void TotemT2DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSe
 
 void TotemT2DigiProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
     edm::ParameterSetDescription desc;
-    desc.add<vector<std::string>>("t2FilesVec")->setComment("path to fake T2 root data");
+    desc.add<std::vector<std::string>>("t2FilesVec")->setComment("path to fake T2 root data");
 
     edm::ParameterSetDescription idmap_valid;
     idmap_valid.add<unsigned int>("treeChId", 0)->setComment("Channel id retrieved from tree");
-    idmap_valid.add<vector<unsigned int>>("detId")->setComment("mapped TotemT2DetId's for this channel");
+    idmap_valid.add<std::vector<unsigned int>>("detId")->setComment("mapped TotemT2DetId's for this channel");
 
     desc.addVPSet("idsMapping", idmap_valid);
 

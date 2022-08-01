@@ -36,8 +36,8 @@ public:
 private:
     void produce(edm::Event&, const edm::EventSetup&) override;
 
-    std::vector<std::string> t2FilesVec_;
-    std::unordered_map<unsigned int, std::vector<unsigned int>> detid_vs_chid_;
+    std::string t2DataFile;
+    std::vector<std::vector<unsigned int>> testCasesVec;
     std::unique_ptr<TChain> inputTree_;
     
     // CONSTANTS
@@ -53,17 +53,14 @@ private:
     const double sToNs_ = std::pow(10, 9);
 };
 
-TotemT2DigiProducer::TotemT2DigiProducer(const edm::ParameterSet& iConfig) : t2FilesVec_(iConfig.getParameter<std::vector<std::string>>("t2FilesVec")){
-    for (const auto& id_map : iConfig.getParameter<std::vector<edm::ParameterSet>>("idsMapping")){
-        unsigned int treeChId = id_map.getParameter<unsigned int>("treeChId");
-        detid_vs_chid_[treeChId] = id_map.getParameter<std::vector<unsigned int>>("detId");
+TotemT2DigiProducer::TotemT2DigiProducer(const edm::ParameterSet& iConfig) : t2DataFile(iConfig.getParameter<std::string>("t2DataFile")){
+    for (const auto& ids : iConfig.getParameter<std::vector<edm::ParameterSet>>("testCasesSet")){
+        testCasesVec.push_back(ids.getParameter<std::vector<unsigned int>>("detId"));
     }
 
     inputTree_ = std::make_unique<TChain>("tree");
 
-    for (const auto& fname : t2FilesVec_){
-        inputTree_->Add(fname.c_str());
-    }
+    inputTree_->Add(t2DataFile.c_str());
 
     produces<edm::DetSetVector<TotemT2Digi>>("TotemT2");
 }
@@ -94,11 +91,12 @@ void TotemT2DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSe
         unsigned short te = (unsigned short) floor(trailingEdge * sToNs_ * timeSliceNsInverted_);
         TotemT2Digi digiTmp(dummyGeo_, dummyId_, dummyMarker_, le, te); 
 
-        auto vec = detid_vs_chid_.at(channelNo);
-        for (const auto& id : vec) {
-            TotemT2DetId detId(id);
-            edm::DetSet<TotemT2Digi>& digis_for_detid = digi->find_or_insert(detId);
-            digis_for_detid.push_back(digiTmp);
+        for(auto vec : testCasesVec){
+            for (const auto& id : vec) {
+                TotemT2DetId detId(id);
+                edm::DetSet<TotemT2Digi>& digis_for_detid = digi->find_or_insert(detId);
+                digis_for_detid.push_back(digiTmp);
+            }
         }
     }
 
@@ -107,13 +105,12 @@ void TotemT2DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSe
 
 void TotemT2DigiProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
     edm::ParameterSetDescription desc;
-    desc.add<std::vector<std::string>>("t2FilesVec")->setComment("path to fake T2 root data");
+    desc.add<std::string>("t2DataFile")->setComment("path to fake T2 root data");
 
     edm::ParameterSetDescription idmap_valid;
-    idmap_valid.add<unsigned int>("treeChId", 0)->setComment("Channel id retrieved from tree");
-    idmap_valid.add<std::vector<unsigned int>>("detId")->setComment("mapped TotemT2DetId's for this channel");
+    idmap_valid.add<std::vector<unsigned int>>("detId")->setComment("mapped TotemT2DetId's for some test case");
 
-    desc.addVPSet("idsMapping", idmap_valid);
+    desc.addVPSet("testCasesSet", idmap_valid);
 
     descriptions.add("TotemT2DigiProducer", desc);
 }

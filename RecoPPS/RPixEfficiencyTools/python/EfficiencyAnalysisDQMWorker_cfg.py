@@ -19,7 +19,7 @@ process = cms.Process("DQMWorkerProcess", eras.Run2_2018,eras.run2_miniAOD_devel
 #SETUP PARAMETERS
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(False),
-    FailPath = cms.untracked.vstring('ProductNotFound','Type Mismatch')
+    FailPath = cms.untracked.vstring('Type Mismatch') # not crashing on this exception type
     )
 options = VarParsing.VarParsing ()
 options.register('outputFileName',
@@ -205,7 +205,11 @@ process.worker = DQMEDAnalyzer('EfficiencyTool_2018DQMWorker',
     fiducialXLow=cms.untracked.vdouble(fiducialXLow),
     fiducialYLow=cms.untracked.vdouble(fiducialYLow),
     fiducialYHigh=cms.untracked.vdouble(fiducialYHigh),
-    producerTag=cms.untracked.string("CTPPSTestProtonReconstruction"),
+    # producerTag=cms.untracked.string("CTPPSTestProtonReconstruction"),
+    producerTag=cms.untracked.string(""), #TODO: should deal with different producer tags  
+    # ex.  "ctppsPixelLocalTracks"     ""           "RECO" (phisics dataset)
+    # ex. "ctppsPixelLocalTracksAlCaRecoProducer"   ""                "ALCARECO"  (alcaPPS)
+
     detectorTiltAngle=cms.untracked.double(18.4),
     detectorRotationAngle=cms.untracked.double(-8),
 

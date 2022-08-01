@@ -7,7 +7,7 @@ from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
 
 #SETUP PROCESS
-process = cms.Process("DQMHarvesterProcess", eras.Run2_2017,eras.run2_miniAOD_devel)
+process = cms.Process("DQMHarvesterProcess", eras.Run2_2018,eras.run2_miniAOD_devel)
 
 
 #SPECIFY INPUT PARAMETERS
@@ -85,7 +85,7 @@ process.load("DQMServices.Components.DQMEnvironment_cfi")
 process.load("Geometry.VeryForwardGeometry.geometryRPFromDD_2018_cfi")
 
 #SETUP GLOBAL TAG
-process.GlobalTag = GlobalTag(process.GlobalTag, '113X_dataRun2_v6')
+process.GlobalTag = GlobalTag(process.GlobalTag, '123X_dataRun2_v4')
 
 
 #PREPARE SOURCE

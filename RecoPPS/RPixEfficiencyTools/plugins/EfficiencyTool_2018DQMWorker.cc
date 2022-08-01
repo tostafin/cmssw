@@ -124,6 +124,7 @@ private:
   edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelLocalTrack>> pixelLocalTrackToken_;
   edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelRecHit>> pixelRecHitToken_;
   edm::ESGetToken<CTPPSGeometry, VeryForwardRealGeometryRecord> geomEsToken_;
+  edm::ESGetToken<LHCInfo, LHCInfoRcd> lhcInfoToken_;
 
   bool isCorrelationPlotEnabled;
   bool supplementaryPlots;
@@ -291,7 +292,9 @@ private:
 };
 
 EfficiencyTool_2018DQMWorker::EfficiencyTool_2018DQMWorker(const edm::ParameterSet &iConfig)
-    : geomEsToken_(esConsumes<edm::Transition::BeginRun>()) {
+    : geomEsToken_(esConsumes<edm::Transition::BeginRun>()),
+      lhcInfoToken_(esConsumes(edm::ESInputTag("", "")))
+ {
   producerTag = iConfig.getUntrackedParameter<std::string>("producerTag");
 
   pixelLocalTrackToken_ =
@@ -332,6 +335,7 @@ EfficiencyTool_2018DQMWorker::EfficiencyTool_2018DQMWorker(const edm::ParameterS
   mapXmin = 0. * TMath::Cos(detectorTiltAngle / 180. * TMath::Pi());
   mapXmax = 30. * TMath::Cos(detectorTiltAngle / 180. * TMath::Pi());  //18.4 is default angle
   detectorRotationAngle = iConfig.getUntrackedParameter<double>("detectorRotationAngle");
+
   initialize();
   
   //INTERPOT
@@ -883,6 +887,7 @@ void EfficiencyTool_2018DQMWorker::dqmBeginRun(edm::Run const &, edm::EventSetup
 
 void EfficiencyTool_2018DQMWorker::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup) {
   using namespace edm;
+
   double weight = 1;
   Handle<edm::DetSetVector<CTPPSPixelLocalTrack>> pixelLocalTracks;
   iEvent.getByToken(pixelLocalTrackToken_, pixelLocalTracks);
@@ -891,13 +896,10 @@ void EfficiencyTool_2018DQMWorker::analyze(const edm::Event &iEvent, const edm::
     return;
   h1BunchCrossing_->Fill(iEvent.eventAuxiliary().bunchCrossing(), weight);
 
-  edm::ESHandle<LHCInfo> pSetup;
-  const std::string label = "";
-  iSetup.get<LHCInfoRcd>().get(label, pSetup);
+  auto const& dataLHCInfo = iSetup.getData(lhcInfoToken_);
 
   // re-initialise algorithm upon crossing-angle change
-  const LHCInfo *pInfo = pSetup.product();
-  h1CrossingAngle_->Fill(pInfo->crossingAngle(), weight);
+  h1CrossingAngle_->Fill(dataLHCInfo.crossingAngle(), weight);
 
   for (const auto &rpPixeltrack : *pixelLocalTracks) {
     if ((uint32_t)minTracksPerEvent > rpPixeltrack.size() || rpPixeltrack.size() > (uint32_t)maxTracksPerEvent)
@@ -1053,10 +1055,9 @@ void EfficiencyTool_2018DQMWorker::analyze(const edm::Event &iEvent, const edm::
   Handle<reco::ForwardProtonCollection> multiRP_protons;
   iEvent.getByToken(multiRP_protonsToken_, multiRP_protons);
 
-  edm::ESHandle<LHCInfo> lhcInfo;
-  iSetup.get<LHCInfoRcd>().get("", lhcInfo);
-  const LHCInfo *pLhcInfo = lhcInfo.product();
-  double xangle = pLhcInfo->crossingAngle();
+  auto const& dataLHCInfo2 = iSetup.getData(lhcInfoToken_);
+
+  double xangle = dataLHCInfo2.crossingAngle();
 
   trackMux_.clear();
   for (auto &proton_Tag : *protons) {

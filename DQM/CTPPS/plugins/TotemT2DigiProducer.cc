@@ -1,8 +1,14 @@
-// system include files
+/****************************************************************************
+ *
+ * This is a part of TOTEM offline software.
+ * Author:
+ *   Arkadiusz Cwikla
+ *
+ ****************************************************************************/
+
 #include <memory>
 #include <string>
 
-// user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h"
 
@@ -43,9 +49,8 @@ private:
     const unsigned char dummyMarker_ = 'm';
     // conversion constant between time slice and absolute time (in ns) - but inverted
     const double timeSliceNsInverted_ = 1024.0 / 25.0;
-    // conversion constant between nanoseconds and seconds
-    const double nsToS_ = std::pow(10, 9);
-
+    // conversion constant between seconds and nanoseconds
+    const double sToNs_ = std::pow(10, 9);
 };
 
 TotemT2DigiProducer::TotemT2DigiProducer(const edm::ParameterSet& iConfig) : t2FilesVec_(iConfig.getParameter<std::vector<std::string>>("t2FilesVec")){
@@ -85,8 +90,8 @@ void TotemT2DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSe
     inputTree_->GetEntry(eventNum);
 
     if(channelNo == channelNumber_){
-        unsigned short le = (unsigned short) floor(leadingEdge * nsToS_ * timeSliceNsInverted_);
-        unsigned short te = (unsigned short) floor(trailingEdge * nsToS_ * timeSliceNsInverted_);
+        unsigned short le = (unsigned short) floor(leadingEdge * sToNs_ * timeSliceNsInverted_);
+        unsigned short te = (unsigned short) floor(trailingEdge * sToNs_ * timeSliceNsInverted_);
         TotemT2Digi digiTmp(dummyGeo_, dummyId_, dummyMarker_, le, te); 
 
         auto vec = detid_vs_chid_.at(channelNo);

@@ -16,7 +16,7 @@ process = cms.Process("Demo")
 
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True),
-    FailPath = cms.untracked.vstring('ProductNotFound','Type Mismatch')
+    FailPath = cms.untracked.vstring('Type Mismatch')
     )
 options = VarParsing.VarParsing ()
 options.register('outputFileName',

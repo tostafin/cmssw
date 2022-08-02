@@ -13,7 +13,7 @@ process = cms.Process("DQMHarvesterProcess", eras.Run2_2018,eras.run2_miniAOD_de
 #SPECIFY INPUT PARAMETERS
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(False),
-    FailPath = cms.untracked.vstring('ProductNotFound','Type Mismatch')
+    FailPath = cms.untracked.vstring('Type Mismatch')
     )
 options = VarParsing.VarParsing()
 options.register('inputFileName',

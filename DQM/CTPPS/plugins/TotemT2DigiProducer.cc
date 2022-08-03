@@ -40,6 +40,15 @@ private:
     std::vector<std::vector<unsigned int>> testCasesVec;
     std::unique_ptr<TChain> inputTree_;
     
+    // variables to read data from branches    
+    int eventNo;
+    int numberOfChannels;
+    int channelNo;
+    double maxAmplitude;
+    double leadingEdge;
+    double trailingEdge;
+    double tot;
+
     // CONSTANTS
     // only channel 4 contains meaningful data
     const short channelNumber_ = 4;
@@ -62,21 +71,6 @@ TotemT2DigiProducer::TotemT2DigiProducer(const edm::ParameterSet& iConfig) : t2D
 
     inputTree_->Add(t2DataFile.c_str());
 
-    produces<edm::DetSetVector<TotemT2Digi>>("TotemT2");
-}
-
-void TotemT2DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
-    int eventNum = iEvent.id().event();
-    auto digi = std::make_unique<edm::DetSetVector<TotemT2Digi>>();
-
-    int eventNo;
-    int numberOfChannels;
-    int channelNo;
-    double maxAmplitude;
-    double leadingEdge;
-    double trailingEdge;
-    double tot;
-
     inputTree_->SetBranchAddress("eventNo", &eventNo);
     inputTree_->SetBranchAddress("numberOfChannels", &numberOfChannels);
     inputTree_->SetBranchAddress("channelNo", &channelNo);
@@ -84,8 +78,16 @@ void TotemT2DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSe
     inputTree_->SetBranchAddress("LeadingEdge", &leadingEdge);
     inputTree_->SetBranchAddress("TrailingEdge", &trailingEdge);
     inputTree_->SetBranchAddress("TOT", &tot);
-    inputTree_->GetEntry(eventNum);
 
+    produces<edm::DetSetVector<TotemT2Digi>>("TotemT2");
+}
+
+void TotemT2DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
+    int eventNum = iEvent.id().event();
+    auto digi = std::make_unique<edm::DetSetVector<TotemT2Digi>>();
+
+    inputTree_->GetEntry(eventNum);
+    
     if(channelNo == channelNumber_){
         unsigned short le = (unsigned short) floor(leadingEdge * sToNs_ * timeSliceNsInverted_);
         unsigned short te = (unsigned short) floor(trailingEdge * sToNs_ * timeSliceNsInverted_);

@@ -1,7 +1,6 @@
 import FWCore.ParameterSet.Config as cms
-import string
 
-MAX_NUMBER_OF_EVENTS = 80000
+MAX_NUMBER_OF_EVENTS = 80
 PATH_TO_FAKE_T2_DATA = "/eos/home-a/acwikla/data/nT2_Nino.root"
 
 process = cms.Process('RECODQM')
@@ -78,14 +77,15 @@ ids_arm_1 = ids[len(ids)//2:]
 
 ids_arm_0_plane_0 = ids_arm_0[:4]
 ids_arm_1_plane_1 = ids_arm_1[4:8]
+ids_arm_0_plane_all_tile_0 = ids_arm_0[0::4]
 
 # fake digi producer
 process.totemT2Digis = cms.EDProducer('TotemT2DigiProducer',
 	t2DataFile=cms.string(PATH_TO_FAKE_T2_DATA),
     # set of test cases
 	testCasesSet = cms.VPSet(
-		cms.PSet(detId = cms.vuint32(*ids_arm_0_plane_0)),
-		cms.PSet(detId = cms.vuint32(*ids_arm_1_plane_1))
+		cms.PSet(detId = cms.vuint32(*ids_arm_0_plane_all_tile_0))
+		# cms.PSet(detId = cms.vuint32(*ids_arm_1_plane_1))
 	)
 )
 

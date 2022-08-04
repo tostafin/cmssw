@@ -84,6 +84,17 @@ process.totemT2Digis = cms.EDProducer('TotemT2DigiProducer',
 	t2DataFile=cms.string(PATH_TO_FAKE_T2_DATA),
     # set of test cases
 	testCasesSet = cms.VPSet(
+		cms.PSet(detId = cms.vuint32(*ids_arm_0_plane_all_tile_0)),
+		# cms.PSet(detId = cms.vuint32(*ids_arm_0_plane_all_tile_0)),
+		# cms.PSet(detId = cms.vuint32(*ids_arm_1_plane_1))
+	)
+)
+
+# fake digi analyzer
+process.totemT2DigiAnalyzer = cms.EDAnalyzer('TotemT2DigiAnalyzer',
+    digisTag = cms.InputTag('totemT2Digis', 'TotemT2'),
+    numberOfAllEvents = cms.uint32(MAX_NUMBER_OF_EVENTS),
+    testCasesSet = cms.VPSet(
 		cms.PSet(detId = cms.vuint32(*ids_arm_0_plane_all_tile_0))
 		# cms.PSet(detId = cms.vuint32(*ids_arm_1_plane_1))
 	)
@@ -96,13 +107,14 @@ process.load('DQM.CTPPS.totemT2DQMSource_cfi')
 
 process.path = cms.Path(
     process.totemT2Digis *
-    process.totemT2RecHits *
-    process.totemT2DQMSource
+    process.totemT2DigiAnalyzer
+    # process.totemT2RecHits *
+    # process.totemT2DQMSource
 )
 
 process.end_path = cms.EndPath(
-    process.dqmEnv +
-    process.dqmSaver
+    # process.dqmEnv +
+    # process.dqmSaver
 )
 
 process.schedule = cms.Schedule(

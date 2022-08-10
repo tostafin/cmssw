@@ -11,3 +11,4 @@ automation/crab_*
 *.root
 crab_mobrzut*
 .__afs108D
+crab_ctrl_*

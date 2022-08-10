@@ -39,6 +39,9 @@ private:
     std::string t2DataFile;
     std::vector<std::vector<unsigned int>> testCasesVec;
     std::unique_ptr<TChain> inputTree_;
+
+    // event counter for each id
+    std::unordered_map<unsigned int, unsigned int> event_counters_;
     
     // variables to read data from branches    
     int eventNo;
@@ -62,9 +65,19 @@ private:
     const double sToNs_ = std::pow(10, 9);
 };
 
-TotemT2DigiProducer::TotemT2DigiProducer(const edm::ParameterSet& iConfig) : t2DataFile(iConfig.getParameter<std::string>("t2DataFile")){
-    for (const auto& ids : iConfig.getParameter<std::vector<edm::ParameterSet>>("testCasesSet")){
-        testCasesVec.push_back(ids.getParameter<std::vector<unsigned int>>("detId"));
+TotemT2DigiProducer::TotemT2DigiProducer(const edm::ParameterSet& iConfig)
+    : t2DataFile(iConfig.getParameter<std::string>("t2DataFile")){
+    for (const auto& idsAndLimits : iConfig.getParameter<std::vector<edm::ParameterSet>>("testCasesSet")){
+        std::vector<unsigned int> ids = idsAndLimits.getParameter<std::vector<unsigned int>>("detId");
+        unsigned int limit = idsAndLimits.getParameter<unsigned int>("eventLimit");
+
+        testCasesVec.push_back(ids);
+        for(auto id : ids){
+            if(event_counters_.find(id) == event_counters_.end()){
+                event_counters_[id] = 0;
+            }
+            event_counters_[id] += limit;
+        }
     }
 
     inputTree_ = std::make_unique<TChain>("tree");
@@ -95,9 +108,14 @@ void TotemT2DigiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSe
 
         for(auto vec : testCasesVec){
             for (const auto& id : vec) {
-                TotemT2DetId detId(id);
-                edm::DetSet<TotemT2Digi>& digis_for_detid = digi->find_or_insert(detId);
-                digis_for_detid.push_back(digiTmp);
+                // check if limit was reached
+                if(event_counters_[id] > 0){
+                    TotemT2DetId detId(id);
+                    edm::DetSet<TotemT2Digi>& digis_for_detid = digi->find_or_insert(detId);
+                    digis_for_detid.push_back(digiTmp);
+                    
+                    event_counters_[id]--;
+                }
             }
         }
     }
@@ -111,6 +129,7 @@ void TotemT2DigiProducer::fillDescriptions(edm::ConfigurationDescriptions& descr
 
     edm::ParameterSetDescription idmap_valid;
     idmap_valid.add<std::vector<unsigned int>>("detId")->setComment("mapped TotemT2DetId's for some test case");
+    idmap_valid.add<unsigned int>("eventLimit")->setComment("event limit for some test case");
 
     desc.addVPSet("testCasesSet", idmap_valid);
 

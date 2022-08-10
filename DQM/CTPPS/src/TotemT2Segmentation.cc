@@ -46,8 +46,7 @@ std::vector<std::pair<short, short> > TotemT2Segmentation::computeBins(const Tot
   const float max_half_angle_rad = 0.4;
   // find the coordinates of the tile centre to extract its angle
   const auto tile_centre = geom_.tile(detid).centre();
-  const auto tile_angle_rad = std::atan2(tile_centre.y(), tile_centre.x()) * (detid.arm() == 1 ? 1. : -1.);  //FIXME ensure convention is correct
-  // edm::LogWarning("Totem T2 Segm ") << tile_centre << detid;
+  const auto tile_angle_rad = std::atan2(tile_centre.y(), tile_centre.x()); // * (detid.arm() == 1 ? 1. : -1.);  //FIXME ensure convention is correct
   // Geometric way of associating a DetId to a vector<ix, iy> of bins given the size (nx_, ny_) of
   // the TH2D('s) to be filled
   for (size_t ix = 0; ix < nbinsx_; ++ix)

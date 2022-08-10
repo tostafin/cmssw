@@ -1,9 +1,11 @@
+# test to check if producer works correctly
+
 import FWCore.ParameterSet.Config as cms
 
 MAX_NUMBER_OF_EVENTS = 6000
 PATH_TO_FAKE_T2_DATA = "/eos/home-a/acwikla/data/nT2_Nino.root"
 
-process = cms.Process('RECODQM')
+process = cms.Process('TESTDIGIPRODUCER')
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(MAX_NUMBER_OF_EVENTS) )
 
@@ -24,13 +26,6 @@ process.MessageLogger = cms.Service("MessageLogger",
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
-
-# load DQM framework
-process.load("DQM.Integration.config.environment_cfi")
-process.dqmEnv.subSystemFolder = "CTPPS"
-process.dqmEnv.eventInfoFolder = "EventInfo"
-process.dqmSaver.path = ""
-process.dqmSaver.tag = "CTPPS"
 
 ids = [
     # arm 0
@@ -101,34 +96,24 @@ test_cases = cms.VPSet(
 		cms.PSet(detId = cms.vuint32(*ids_arm_1_plane_all_tile_3), eventLimit = cms.uint32(500)),
 )
 
-test_cases_1 = cms.VPSet(
-		cms.PSet(detId = cms.vuint32(*ids_arm_0_plane_all_tile_0)),
-	)
-    
 # fake digi producer
 process.totemT2Digis = cms.EDProducer('TotemT2DigiProducer',
 	t2DataFile=cms.string(PATH_TO_FAKE_T2_DATA),
-    # set of test cases
 	testCasesSet = test_cases
 )
 
-process.load('Geometry.ForwardCommonData.totemT22021V2XML_cfi')
-process.load('Geometry.ForwardGeometry.totemGeometryESModule_cfi')
-process.load('RecoPPS.Local.totemT2RecHits_cfi')
-process.load('DQM.CTPPS.totemT2DQMSource_cfi')
+# fake digi analyzer
+process.totemT2DigiAnalyzer = cms.EDAnalyzer('TotemT2DigiAnalyzer',
+    digisTag = cms.InputTag('totemT2Digis', 'TotemT2'),
+    numberOfAllEvents = cms.uint32(MAX_NUMBER_OF_EVENTS),
+    testCasesSet = test_cases
+)
 
 process.path = cms.Path(
     process.totemT2Digis *
-    process.totemT2RecHits *
-    process.totemT2DQMSource
-)
-
-process.end_path = cms.EndPath(
-    process.dqmEnv +
-    process.dqmSaver
+    process.totemT2DigiAnalyzer
 )
 
 process.schedule = cms.Schedule(
-    process.path,
-    process.end_path
+    process.path
 )

@@ -24,9 +24,8 @@
 class TotemT2DigiAnalyzer : public edm::one::EDAnalyzer<> {
 public:
   explicit TotemT2DigiAnalyzer(const edm::ParameterSet&);
-//   ~TotemT2DigiAnalyzer();
 
-//   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
   void beginJob() override;
@@ -37,8 +36,8 @@ private:
   std::vector<std::vector<unsigned int>> testCasesVec;
   unsigned int numberOfAllEvents;
 
-  std::unordered_map<unsigned int, unsigned int> ids_counters_;
   std::unordered_map<unsigned int, unsigned int> event_counters_;
+  unsigned int allEventCounter_ = 0;
 
 };
 
@@ -46,65 +45,69 @@ TotemT2DigiAnalyzer::TotemT2DigiAnalyzer(const edm::ParameterSet& iConfig) :
         digiToken_(consumes<edm::DetSetVector<TotemT2Digi>>(iConfig.getParameter<edm::InputTag>("digisTag"))),
         numberOfAllEvents(iConfig.getParameter<unsigned int>("numberOfAllEvents")) {
 
-    for (const auto& ids : iConfig.getParameter<std::vector<edm::ParameterSet>>("testCasesSet")){
-        testCasesVec.push_back(ids.getParameter<std::vector<unsigned int>>("detId"));
+    for (const auto& idsAndLimits : iConfig.getParameter<std::vector<edm::ParameterSet>>("testCasesSet")){
+        std::vector<unsigned int> ids = idsAndLimits.getParameter<std::vector<unsigned int>>("detId");
+        unsigned int limit = idsAndLimits.getParameter<unsigned int>("eventLimit");
+
+        testCasesVec.push_back(ids);
+        for(auto id : ids){
+            if(event_counters_.find(id) == event_counters_.end()){
+                event_counters_[id] = 0;
+            }
+            event_counters_[id] += limit;
+        }
     }
 
 }
 
 void TotemT2DigiAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-    edm::LogWarning("analyze job") << "whatsup";
+    allEventCounter_++;
     for (const auto& ds_digis : iEvent.get(digiToken_)) {
         const TotemT2DetId detid(ds_digis.detId());
         for (const auto& digi : ds_digis) {
-            event_counters_[detid]++;
+            event_counters_[detid]--;
             (void)digi;
         }
-  }
-
+    }
 }
 
 // ------------ method called once each job just before starting event loop  ------------
 void TotemT2DigiAnalyzer::beginJob() {
-    edm::LogWarning("Begin job") << "hello";
-    for(auto vec : testCasesVec){
-        for (const auto& id : vec) {
-            // count how many times each id appeared in test cases
-            if(ids_counters_.find(id) != ids_counters_.end()){
-                ids_counters_[id]++;
-            }else{
-                ids_counters_[id] = 0;
-            }
-            // initialize event counter for each id
-            event_counters_[id] = 0;
-        }
-    }
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void TotemT2DigiAnalyzer::endJob() {
-    for(auto vec : testCasesVec){
-        for (const auto& id : vec) {
-            edm::LogWarning("End job summary: ") << "there should be " << numberOfAllEvents << " events, there is " << event_counters_[id] * ids_counters_[id] << " events";
-            // ids_counters[id];
-            // event_counters_[id];
+    edm::LogWarning("End job summary: events")
+            << "total number of events: " << allEventCounter_ << " expected: " << numberOfAllEvents;
+    for (const auto kv : event_counters_) {
+        const auto id = kv.first;
+        const TotemT2DetId detid(id);
+        unsigned int totalDigisPerId = event_counters_[id];
+        edm::LogWarning("End job summary: digis")
+            << "for det id: " << id << " - " << detid << "\n"
+            << "digi counter is : " << totalDigisPerId << " expected: " << 0;
+        if(totalDigisPerId != 0){
+            throw cms::Exception("TotemT2DigiAnalyzer") 
+            << "total number of digis and expected do not match \n"
+            << "for det id: " << id << " - " << detid << "\n"
+            << "digi counter is : " << totalDigisPerId << " expected: " << 0;
         }
     }
 }
 
-// // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
-// void TotemT2DigiAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-//   //The following says we do not know what parameters are allowed so do no validation
-//   // Please change this to state exactly what you do use, even if it is no parameters
-// //   edm::ParameterSetDescription desc;
-// //   desc.setUnknown();
-// //   descriptions.addDefault(desc);
+// ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
+void TotemT2DigiAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+    edm::ParameterSetDescription desc;
+    desc.add<edm::InputTag>("digisTag")->setComment("digis tag");
+    desc.add<unsigned int>("numberOfAllEvents")->setComment("how much events should be analyzed");
 
-//   //Specify that only 'tracks' is allowed
-//   //To use, remove the default given above and uncomment below
-//   //ParameterSetDescription desc;
-//   //desc.addUntracked<edm::InputTag>("tracks","ctfWithMaterialTracks");
-//   //descriptions.addWithDefaultLabel(desc);
-// }
+    edm::ParameterSetDescription idmap_valid;
+    idmap_valid.add<std::vector<unsigned int>>("detId")->setComment("mapped TotemT2DetId's for some test case");
+    idmap_valid.add<unsigned int>("eventLimit")->setComment("event limit for some test case");
+
+    desc.addVPSet("testCasesSet", idmap_valid);
+
+    descriptions.add("TotemT2DigiAnalyzer", desc);
+}
 
 DEFINE_FWK_MODULE(TotemT2DigiAnalyzer);

@@ -91,7 +91,6 @@ void TotemT2DQMSource::bookHistograms(DQMStore::IBooker& ibooker, const edm::Run
                                                  summary_nbinsy,
                                                  0.,
                                                  summary_nbinsy);
-      // edm::LogWarning("Totem T2 DQM source ") << path << ' ' << changePathToParentDir(path);
     }
     ibooker.setCurrentFolder(changePathToParentDir(path));
 
@@ -122,7 +121,6 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   // fill digis information
   for (const auto& ds_digis : iEvent.get(digiToken_)) {
     const TotemT2DetId detid(ds_digis.detId());
-    // edm::LogWarning("Totem T2 DQM source ") << ds_digis.detId() << detid;
     for (const auto& digi : ds_digis) {
       segm_->fill(m_digis_mult_[detid.arm()][detid.plane()]->getTH2D(), detid);
       (void)digi;  //FIXME make use of them

@@ -104,11 +104,9 @@ test_cases = cms.VPSet(
 test_cases_1 = cms.VPSet(
 		cms.PSet(detId = cms.vuint32(*ids_arm_0_plane_all_tile_0)),
 	)
-    
 # fake digi producer
 process.totemT2Digis = cms.EDProducer('TotemT2DigiProducer',
 	t2DataFile=cms.string(PATH_TO_FAKE_T2_DATA),
-    # set of test cases
 	testCasesSet = test_cases
 )
 
@@ -118,14 +116,19 @@ process.load('RecoPPS.Local.totemT2RecHits_cfi')
 process.load('DQM.CTPPS.totemT2DQMSource_cfi')
 
 process.path = cms.Path(
-    process.totemT2Digis *
-    process.totemT2RecHits *
-    process.totemT2DQMSource
+    process.totemT2Digis 
+)
+
+process.output = cms.OutputModule("PoolOutputModule",
+    fileName = cms.untracked.string("file:emulated_digi_test.root"),
+    outputCommands = cms.untracked.vstring(
+        'drop *',
+        'keep *_totemT2*_*_*',
+    ),
 )
 
 process.end_path = cms.EndPath(
-    process.dqmEnv +
-    process.dqmSaver
+    process.output
 )
 
 process.schedule = cms.Schedule(

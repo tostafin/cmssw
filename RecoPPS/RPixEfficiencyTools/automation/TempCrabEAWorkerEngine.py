@@ -27,7 +27,7 @@ workflow=environ.get("WORKFLOW")
 dataset=environ.get("DATASET")
 proxy=environ.get("PROXY")
 
-template_for_first_module = "TempSteps/CrabConfigTemplateForFirstModule.py"
+template_for_first_module = "CrabConfigTemplateForFirstModule.py"
 
 @ctrl.define_status_enum
 class TaskStatusEnum(enum.Enum):

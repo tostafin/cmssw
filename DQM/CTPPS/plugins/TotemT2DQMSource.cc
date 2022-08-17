@@ -58,6 +58,9 @@ private:
   void clearTriggerBitset();
   bool areChannelsTriggered(unsigned int arm, unsigned int channel, bool planeIsEven);
 
+  MonitorElement* HPTDCErrorFlags_2D = nullptr;
+  void bookErrorFlagsHistogram(DQMStore::IBooker&);
+
   std::string changePathToParentDir(std::string);
 };
 
@@ -73,6 +76,8 @@ void TotemT2DQMSource::dqmBeginRun(const edm::Run&, const edm::EventSetup&) {}
 void TotemT2DQMSource::bookHistograms(DQMStore::IBooker& ibooker, const edm::Run&, const edm::EventSetup& iSetup) {
   ibooker.cd();
   ibooker.setCurrentFolder("CTPPS/TotemT2");
+
+  bookErrorFlagsHistogram(ibooker);
 
   const size_t summary_nbinsx = 25, summary_nbinsy = 25;
 
@@ -224,6 +229,23 @@ bool TotemT2DQMSource::areChannelsTriggered(unsigned int arm, unsigned int chann
   unsigned int triggeredChannelsNumber = (mask & hitTilesArray_[arm]).count();
   
   return triggeredChannelsNumber >= MINIMAL_TRIGGER;
+}
+
+void TotemT2DQMSource::bookErrorFlagsHistogram(DQMStore::IBooker& ibooker){
+  HPTDCErrorFlags_2D = ibooker.book2D("HPTDC Errors", " HPTDC Errors", 16, -0.5, 16.5, 9, -0.5, 8.5);
+  for (unsigned short error_index = 1; error_index < 16; ++error_index)
+    HPTDCErrorFlags_2D->setBinLabel(error_index, "Good EC");
+  HPTDCErrorFlags_2D->setBinLabel(16, "Wrong EC");
+
+  int tmpIndex = 0;
+  HPTDCErrorFlags_2D->setBinLabel(++tmpIndex, "DB 0 TDC 18", /* axis */ 2);
+  HPTDCErrorFlags_2D->setBinLabel(++tmpIndex, "DB 0 TDC 17", /* axis */ 2);
+  HPTDCErrorFlags_2D->setBinLabel(++tmpIndex, "DB 0 TDC 16", /* axis */ 2);
+  HPTDCErrorFlags_2D->setBinLabel(++tmpIndex, "DB 0 TDC 15", /* axis */ 2);
+  HPTDCErrorFlags_2D->setBinLabel(++tmpIndex, "DB 1 TDC 18", /* axis */ 2);
+  HPTDCErrorFlags_2D->setBinLabel(++tmpIndex, "DB 1 TDC 17", /* axis */ 2);
+  HPTDCErrorFlags_2D->setBinLabel(++tmpIndex, "DB 1 TDC 16", /* axis */ 2);
+  HPTDCErrorFlags_2D->setBinLabel(++tmpIndex, "DB 1 TDC 15", /* axis */ 2);
 }
 
 std::string TotemT2DQMSource::changePathToParentDir(std::string path) {

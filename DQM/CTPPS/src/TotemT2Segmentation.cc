@@ -43,7 +43,7 @@ std::vector<std::pair<short, short> > TotemT2Segmentation::computeBins(const Tot
   // compute the ellipse parameters
   const auto ax = ceil(nbinsx_ * 0.5), by = ceil(nbinsy_ * 0.5);
 
-  const float max_half_angle_rad = 0.4;
+  const float max_half_angle_rad = 0.3;
   // find the coordinates of the tile centre to extract its angle
   const auto tile_centre = geom_.tile(detid).centre();
   const auto tile_angle_rad = std::atan2(tile_centre.y(), tile_centre.x()); // * (detid.arm() == 1 ? 1. : -1.);  //FIXME ensure convention is correct

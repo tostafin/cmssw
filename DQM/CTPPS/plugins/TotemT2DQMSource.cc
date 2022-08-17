@@ -50,6 +50,14 @@ private:
   std::unordered_map<unsigned int, MonitorElement*> numberOfActivePlanes_;
   std::unordered_map<unsigned int, MonitorElement*> activePlanes_;
   void fillActivePlanes(std::unordered_map<unsigned int, std::set<unsigned int>>&, const TotemT2DetId);
+
+  std::unordered_map<unsigned int, MonitorElement*> definetelyTriggerPlots_;
+  const unsigned int MINIMAL_TRIGGER = 3;
+  std::bitset<(TotemT2DetId::maxPlane+1) * (TotemT2DetId::maxChannel+1)> hitTilesArray_[2];
+  void fillTriggerBitset(const TotemT2DetId detid);
+  void clearTriggerBitset();
+  bool areChannelsTriggered(unsigned int arm, unsigned int channel, bool planeIsEven);
+
   std::string changePathToParentDir(std::string);
 };
 
@@ -112,7 +120,17 @@ void TotemT2DQMSource::bookHistograms(DQMStore::IBooker& ibooker, const edm::Run
                                     -0.5,
                                     5.5);
 
+    definetelyTriggerPlots_[arm] = ibooker.book2DD("trigger emulator",
+                                                 title + " trigger emulator;arbitrary unit;arbitrary unit",
+                                                 summary_nbinsx,
+                                                 0.,
+                                                 summary_nbinsx,
+                                                 summary_nbinsy,
+                                                 0.,
+                                                 summary_nbinsy);
+
   }
+
   // build a segmentation helper for the size of histograms previously booked
   segm_ = std::make_unique<TotemT2Segmentation>(iSetup.getData(geometryToken_), summary_nbinsx, summary_nbinsy);
 }
@@ -124,6 +142,8 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     for (const auto& digi : ds_digis) {
       segm_->fill(m_digis_mult_[detid.arm()][detid.plane()]->getTH2D(), detid);
       (void)digi;  //FIXME make use of them
+
+      fillTriggerBitset(detid);
     }
   }
 
@@ -138,9 +158,21 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       fillActivePlanes(planes, detid);
     }
   }
+
   for (const auto& plt : numberOfActivePlanes_) {
     plt.second->Fill(planes[plt.first].size());
   }
+
+  for (unsigned short arm = 0; arm <= CTPPSDetId::maxArm; ++arm)
+    for (unsigned short plane = 0; plane <= 1; ++plane)
+      for (unsigned short id = 0; id <= TotemT2DetId::maxChannel; ++id) {
+        const TotemT2DetId detid(arm, plane, id);
+        if(areChannelsTriggered(arm, id, plane%2==0)){
+          segm_->fill(definetelyTriggerPlots_[detid.arm()]->getTH2D(), detid);
+        }
+      }
+
+  clearTriggerBitset();
 }
 
 void TotemT2DQMSource::fillActivePlanes(std::unordered_map<unsigned int, std::set<unsigned int>>& planes, const TotemT2DetId detid){
@@ -160,6 +192,38 @@ void TotemT2DQMSource::fillActivePlanes(std::unordered_map<unsigned int, std::se
   }
 
   activePlanes_[detid.arm()]->Fill(pl);
+}
+
+void TotemT2DQMSource::fillTriggerBitset(const TotemT2DetId detid){
+  unsigned short arm = detid.arm();
+  unsigned short pl = detid.plane();
+  unsigned short ch = detid.channel();
+  hitTilesArray_[arm][4*pl + ch] = 1;
+}
+
+void TotemT2DQMSource::clearTriggerBitset(){
+  for(unsigned int i = 0; i <= CTPPSDetId::maxArm; ++i){
+    hitTilesArray_[i].reset();
+  }
+}
+
+bool TotemT2DQMSource::areChannelsTriggered(unsigned int arm, unsigned int channel, bool planeIsEven){
+  // prepare mask
+  std::bitset<(TotemT2DetId::maxPlane+1) * (TotemT2DetId::maxChannel+1)> mask; 
+  // start from 0 or 1 whether plane is even or not
+  unsigned int pl = 1;
+  if(planeIsEven){
+    pl = 0;
+  }
+  // set only even or only odd plane bits for this channel
+  for(; pl <= TotemT2DetId::maxPlane; pl+=2){
+    mask[4*pl+channel] = 1;  
+  }
+
+  // check how many masked channels were hit
+  unsigned int triggeredChannelsNumber = (mask & hitTilesArray_[arm]).count();
+  
+  return triggeredChannelsNumber >= MINIMAL_TRIGGER;
 }
 
 std::string TotemT2DQMSource::changePathToParentDir(std::string path) {

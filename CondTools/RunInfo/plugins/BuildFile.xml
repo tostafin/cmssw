@@ -64,3 +64,7 @@
 <library file="LHCInfoPerFillAnalyzer.cc" name="LHCInfoPerFillAnalyzer">
   <flags EDM_PLUGIN="1"/>
 </library>
+
+<library file="LHCInfoPerLSPopConAnalyzer.cc" name="CondToolsLHCInfoPerLSPopConAnalyzer">
+  <flags EDM_PLUGIN="1"/>
+</library>

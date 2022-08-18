@@ -184,7 +184,9 @@ bool LHCInfoPerLSPopConSourceHandler::getCTTPSData(cond::persistency::Session& s
   CTPPSDataQuery->addToOutputList(std::string("DIP_UPDATE_TIME"));
   CTPPSDataQuery->addToOutputList(std::string("LUMI_SECTION"));
   CTPPSDataQuery->addToOutputList(std::string("XING_ANGLE_P5_X_URAD"));
+  CTPPSDataQuery->addToOutputList(std::string("XING_ANGLE_P5_Y_URAD"));
   CTPPSDataQuery->addToOutputList(std::string("BETA_STAR_P5_X_M"));
+  CTPPSDataQuery->addToOutputList(std::string("BETA_STAR_P5_Y_M"));
   //WHERE CLAUSE
   coral::AttributeList CTPPSDataBindVariables;
   CTPPSDataBindVariables.extend<coral::TimeStamp>(std::string("beginFillTime"));
@@ -200,13 +202,16 @@ bool LHCInfoPerLSPopConSourceHandler::getCTTPSData(cond::persistency::Session& s
   CTPPSDataOutput.extend<coral::TimeStamp>(std::string("DIP_UPDATE_TIME"));
   CTPPSDataOutput.extend<int>(std::string("LUMI_SECTION"));
   CTPPSDataOutput.extend<float>(std::string("XING_ANGLE_P5_X_URAD"));
+  CTPPSDataOutput.extend<float>(std::string("XING_ANGLE_P5_Y_URAD"));
   CTPPSDataOutput.extend<float>(std::string("BETA_STAR_P5_X_M"));
+  CTPPSDataOutput.extend<float>(std::string("BETA_STAR_P5_Y_M"));
   CTPPSDataQuery->defineOutput(CTPPSDataOutput);
   //execute the query
   coral::ICursor& CTPPSDataCursor = CTPPSDataQuery->execute();
   cond::Time_t dipTime = 0;
   unsigned int lumiSection = 0;
-  float crossingAngle = 0., betastar = 0.;
+  float crossingAngleX = 0., betaStarX = 0.;
+  float crossingAngleY = 0., betaStarY = 0.;
 
   bool ret = false;
   LHCInfoPerLSImpl::LumiSectionFilter filter(m_tmpBuffer);
@@ -227,17 +232,28 @@ bool LHCInfoPerLSPopConSourceHandler::getCTTPSData(cond::persistency::Session& s
         coral::Attribute const& crossingAngleXAttribute =
             CTPPSDataCursor.currentRow()[std::string("XING_ANGLE_P5_X_URAD")];
         if (!crossingAngleXAttribute.isNull()) {
-          crossingAngle = crossingAngleXAttribute.data<float>();
+          crossingAngleX = crossingAngleXAttribute.data<float>();
+        }
+        coral::Attribute const& crossingAngleYAttribute =
+            CTPPSDataCursor.currentRow()[std::string("XING_ANGLE_P5_Y_URAD")];
+        if (!crossingAngleYAttribute.isNull()) {
+          crossingAngleY = crossingAngleYAttribute.data<float>();
         }
         coral::Attribute const& betaStarXAttribute = CTPPSDataCursor.currentRow()[std::string("BETA_STAR_P5_X_M")];
         if (!betaStarXAttribute.isNull()) {
-          betastar = betaStarXAttribute.data<float>();
+          betaStarX = betaStarXAttribute.data<float>();
+        }
+        coral::Attribute const& betaStarYAttribute = CTPPSDataCursor.currentRow()[std::string("BETA_STAR_P5_Y_M")];
+        if (!betaStarYAttribute.isNull()) {
+          betaStarY = betaStarYAttribute.data<float>();
         }
         for (auto it = filter.current(); it != m_tmpBuffer.end(); it++) {
           // set the current values to all of the payloads of the lumi section samples after the current since
           LHCInfoPerLS& payload = *(it->second);
-          payload.setCrossingAngleX(crossingAngle);
-          payload.setBetaStarX(betastar);
+          payload.setCrossingAngleX(crossingAngleX);
+          payload.setCrossingAngleY(crossingAngleY);
+          payload.setBetaStarX(betaStarX);
+          payload.setBetaStarY(betaStarY);
           payload.setLumiSection(lumiSection);
         }
       }

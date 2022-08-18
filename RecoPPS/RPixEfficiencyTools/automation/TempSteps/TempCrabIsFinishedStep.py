@@ -12,11 +12,11 @@ sys.path.append(parent)
 from urllib3 import proxy_from_url
 import automation_control as ctrl
 
-number = 25
+number = 37
 
 campaign = f'ctrl_camp{number}'
 workflow = f'crtl_workflow{number}'
-data_period = f''
+data_period = 'foo_36' # todo use correct dataperiod number 
 proxy = '/afs/cern.ch/user/m/mobrzut/public/jenkins_proxy/jenkins.pem'
 
 

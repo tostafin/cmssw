@@ -60,6 +60,7 @@ private:
 
   MonitorElement* HPTDCErrorFlags_2D = nullptr;
   void bookErrorFlagsHistogram(DQMStore::IBooker&);
+  void fillErrorFlagsHistogram(TotemT2Digi digi);
 
   std::string changePathToParentDir(std::string);
 };
@@ -146,9 +147,10 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     const TotemT2DetId detid(ds_digis.detId());
     for (const auto& digi : ds_digis) {
       segm_->fill(m_digis_mult_[detid.arm()][detid.plane()]->getTH2D(), detid);
-      (void)digi;  //FIXME make use of them
+      // (void)digi;  //FIXME make use of them
 
       fillTriggerBitset(detid);
+      fillErrorFlagsHistogram(digi);
     }
   }
 
@@ -232,7 +234,7 @@ bool TotemT2DQMSource::areChannelsTriggered(unsigned int arm, unsigned int chann
 }
 
 void TotemT2DQMSource::bookErrorFlagsHistogram(DQMStore::IBooker& ibooker){
-  HPTDCErrorFlags_2D = ibooker.book2D("HPTDC Errors", " HPTDC Errors", 16, -0.5, 16.5, 9, -0.5, 8.5);
+  HPTDCErrorFlags_2D = ibooker.book2D("HPTDC Errors?", " HPTDC Errors?", 16, -0.5, 16.5, 9, -0.5, 8.5);
   for (unsigned short error_index = 1; error_index < 16; ++error_index)
     HPTDCErrorFlags_2D->setBinLabel(error_index, "Good EC");
   HPTDCErrorFlags_2D->setBinLabel(16, "Wrong EC");
@@ -246,6 +248,14 @@ void TotemT2DQMSource::bookErrorFlagsHistogram(DQMStore::IBooker& ibooker){
   HPTDCErrorFlags_2D->setBinLabel(++tmpIndex, "DB 1 TDC 17", /* axis */ 2);
   HPTDCErrorFlags_2D->setBinLabel(++tmpIndex, "DB 1 TDC 16", /* axis */ 2);
   HPTDCErrorFlags_2D->setBinLabel(++tmpIndex, "DB 1 TDC 15", /* axis */ 2);
+}
+
+void TotemT2DQMSource::fillErrorFlagsHistogram(TotemT2Digi digi){
+  // dummy filling, just to test histogram
+  int hptdcErrorIndex = std::rand() % 16;
+  int verticalIndex = std::rand() % 8;
+  HPTDCErrorFlags_2D->Fill(hptdcErrorIndex, verticalIndex);
+  (void)digi;
 }
 
 std::string TotemT2DQMSource::changePathToParentDir(std::string path) {

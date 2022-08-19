@@ -44,26 +44,125 @@ private:
   edm::EDGetTokenT<edmNew::DetSetVector<TotemT2RecHit>> rechitToken_;
 
   std::unique_ptr<TotemT2Segmentation> segm_;
-  MonitorElement* m_digis_mult_[2][TotemT2DetId::maxPlane + 1];
-  MonitorElement* m_rechits_mult_[2][TotemT2DetId::maxPlane + 1];
 
-  std::unordered_map<unsigned int, MonitorElement*> numberOfActivePlanes_;
-  std::unordered_map<unsigned int, MonitorElement*> activePlanes_;
   void fillActivePlanes(std::unordered_map<unsigned int, std::set<unsigned int>>&, const TotemT2DetId);
 
-  std::unordered_map<unsigned int, MonitorElement*> definetelyTriggerPlots_;
-  const unsigned int MINIMAL_TRIGGER = 3;
-  std::bitset<(TotemT2DetId::maxPlane+1) * (TotemT2DetId::maxChannel+1)> hitTilesArray_[2];
   void fillTriggerBitset(const TotemT2DetId detid);
   void clearTriggerBitset();
-  bool areChannelsTriggered(unsigned int arm, unsigned int channel, bool planeIsEven);
+  bool areChannelsTriggered(const TotemT2DetId detid);
 
+  double HPTDC_BIN_WIDTH_NS = 25. / 1024;
   MonitorElement* HPTDCErrorFlags_2D = nullptr;
   void bookErrorFlagsHistogram(DQMStore::IBooker&);
   void fillErrorFlagsHistogram(TotemT2Digi digi);
 
-  std::string changePathToParentDir(std::string);
+  void fillEdges(TotemT2Digi digi, TotemT2DetId detid);
+
+  struct SectorPlots{
+    MonitorElement* activePlanes = nullptr;
+    MonitorElement* activePlanesCount = nullptr;
+
+    MonitorElement* triggerEmulator = nullptr;
+    std::bitset<(TotemT2DetId::maxPlane+1) * (TotemT2DetId::maxChannel+1)> hitTilesArray;
+    static const unsigned int MINIMAL_TRIGGER = 3;
+
+    MonitorElement *leadingEdge = nullptr, *trailingEdge = nullptr, *timeOverTreshold = nullptr;
+  
+    SectorPlots() = default;
+    SectorPlots(DQMStore::IBooker& ibooker, unsigned int id);
+  };
+
+  struct PlanePlots{
+    MonitorElement* digisMultiplicity = nullptr;
+    MonitorElement* rechitMultiplicity = nullptr;
+    
+    PlanePlots() = default;
+    PlanePlots(DQMStore::IBooker& ibooker, unsigned int id);
+  };
+
+  // struct ChannelPlots{
+  //   ChannelPlots() = default;
+  //   ChannelPlots(DQMStore::IBooker& ibooker, unsigned int id);
+  // };
+
+  std::unordered_map<unsigned int, SectorPlots> sectorPlots_;
+  std::unordered_map<unsigned int, PlanePlots> planePlots_;
+
 };
+
+TotemT2DQMSource::SectorPlots::SectorPlots(DQMStore::IBooker& ibooker, unsigned int id){
+  std::string title, path;
+
+  TotemT2DetId(id).armName(path, TotemT2DetId::nPath);
+  ibooker.setCurrentFolder(path);
+
+  TotemT2DetId(id).armName(title, TotemT2DetId::nFull);
+
+  activePlanes = ibooker.book1D("active planes",
+                                  title + " which planes are active;plane number",
+                                  8,
+                                  -0.5,
+                                  7.5);
+                                  
+  activePlanesCount = ibooker.book1D("number of active planes",
+                                  title + " how many planes are active;number of active planes",
+                                  8,
+                                  -0.5,
+                                  7.5);
+
+  const size_t summary_nbinsx = 25, summary_nbinsy = 25; // TODO make it a parameter
+  triggerEmulator = ibooker.book2DD("trigger emulator",
+                                  title + " trigger emulator;arbitrary unit;arbitrary unit",
+                                  summary_nbinsx,
+                                  0.,
+                                  summary_nbinsx,
+                                  summary_nbinsy,
+                                  0.,
+                                  summary_nbinsy);
+  int windowsNum = 20; // TODO make it a parameter
+  leadingEdge = ibooker.book1D("leading edge",
+                                  title + " leading edge (DIGIs); leading edge (ns)",
+                                  25 * windowsNum,
+                                  0,
+                                  25 * windowsNum);
+  trailingEdge = ibooker.book1D("trailing edge",
+                                  title + " trailing edge (DIGIs); trailing edge (ns)",
+                                  25 * windowsNum,
+                                  0,
+                                  25 * windowsNum);
+
+  timeOverTreshold = ibooker.book1D("time over threshold",
+                                  title + " time over threshold;time over threshold (ns)",
+                                  250, 
+                                  -25, 
+                                  100);                                         
+
+}
+
+TotemT2DQMSource::PlanePlots::PlanePlots(DQMStore::IBooker& ibooker, unsigned int id){
+  std::string title, path;
+  TotemT2DetId(id).planeName(title, TotemT2DetId::nFull);
+  TotemT2DetId(id).planeName(path, TotemT2DetId::nPath);
+  ibooker.setCurrentFolder(path);
+
+  const size_t summary_nbinsx = 25, summary_nbinsy = 25; // TODO make it a parameter
+  digisMultiplicity = ibooker.book2DD("digis multiplicity",
+                                        title + " digis multiplicity;x;y", // TODO change x and y 
+                                        summary_nbinsx,
+                                        0.,
+                                        summary_nbinsx,
+                                        summary_nbinsy,
+                                        0.,
+                                        summary_nbinsy);
+  rechitMultiplicity = ibooker.book2DD("rechits multiplicity",
+                                        title + " rechits multiplicity;x;y",
+                                        summary_nbinsx,
+                                        0.,
+                                        summary_nbinsx,
+                                        summary_nbinsy,
+                                        0.,
+                                        summary_nbinsy);
+}
 
 TotemT2DQMSource::TotemT2DQMSource(const edm::ParameterSet& iConfig)
     : geometryToken_(esConsumes<TotemGeometry, TotemGeometryRcd, edm::Transition::BeginRun>()),
@@ -76,65 +175,21 @@ void TotemT2DQMSource::dqmBeginRun(const edm::Run&, const edm::EventSetup&) {}
 
 void TotemT2DQMSource::bookHistograms(DQMStore::IBooker& ibooker, const edm::Run&, const edm::EventSetup& iSetup) {
   ibooker.cd();
-  ibooker.setCurrentFolder("CTPPS/TotemT2");
+  ibooker.setCurrentFolder("TotemT2");
 
   bookErrorFlagsHistogram(ibooker);
 
   const size_t summary_nbinsx = 25, summary_nbinsy = 25;
 
   for (unsigned int arm = 0; arm <= CTPPSDetId::maxArm; ++arm){
-    std::string title, path;
     for (unsigned int pl = 0; pl <= TotemT2DetId::maxPlane; ++pl) {
       const TotemT2DetId detid(arm, pl, 0);
-      detid.planeName(title, TotemT2DetId::nFull);
-      detid.planeName(path, TotemT2DetId::nPath);
-      ibooker.setCurrentFolder(path);
-      m_digis_mult_[arm][pl] = ibooker.book2DD("digis multiplicity",
-                                               title + " digis multiplicity;x;y",
-                                               summary_nbinsx,
-                                               0.,
-                                               summary_nbinsx,
-                                               summary_nbinsy,
-                                               0.,
-                                               summary_nbinsy);
-      m_rechits_mult_[arm][pl] = ibooker.book2DD("rechits multiplicity",
-                                                 title + " rechits multiplicity;x;y",
-                                                 summary_nbinsx,
-                                                 0.,
-                                                 summary_nbinsx,
-                                                 summary_nbinsy,
-                                                 0.,
-                                                 summary_nbinsy);
+      const TotemT2DetId planeId(detid.planeId());
+      planePlots_[planeId] = PlanePlots(ibooker, planeId);
     }
-    ibooker.setCurrentFolder(changePathToParentDir(path));
-
-    activePlanes_[arm] = ibooker.book1D("active planes (arm " + std::to_string(arm) + ")",
-                                    "which planes are active;plane number",
-                                    8,
-                                    -0.5,
-                                    7.5);
-                                    
-    numberOfActivePlanes_[arm] = ibooker.book1D("number of active planes (even planes)",
-                                    "how many planes are active;number of active planes",
-                                    6,
-                                    -0.5,
-                                    5.5);
-
-    numberOfActivePlanes_[arm+2] = ibooker.book1D("number of active planes (odd planes)",
-                                    "how many planes are active;number of active planes",
-                                    6,
-                                    -0.5,
-                                    5.5);
-
-    definetelyTriggerPlots_[arm] = ibooker.book2DD("trigger emulator",
-                                                 title + " trigger emulator;arbitrary unit;arbitrary unit",
-                                                 summary_nbinsx,
-                                                 0.,
-                                                 summary_nbinsx,
-                                                 summary_nbinsy,
-                                                 0.,
-                                                 summary_nbinsy);
-
+    const TotemT2DetId detid(arm, 0, 0);
+    const TotemT2DetId secId(detid.armId());
+    sectorPlots_[secId] = SectorPlots(ibooker, secId);
   }
 
   // build a segmentation helper for the size of histograms previously booked
@@ -145,12 +200,14 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   // fill digis information
   for (const auto& ds_digis : iEvent.get(digiToken_)) {
     const TotemT2DetId detid(ds_digis.detId());
+    const TotemT2DetId planeId(detid.planeId());
     for (const auto& digi : ds_digis) {
-      segm_->fill(m_digis_mult_[detid.arm()][detid.plane()]->getTH2D(), detid);
+      segm_->fill(planePlots_[planeId].digisMultiplicity->getTH2D(), detid);
       // (void)digi;  //FIXME make use of them
 
       fillTriggerBitset(detid);
       fillErrorFlagsHistogram(digi);
+      fillEdges(digi, detid);
     }
   }
 
@@ -158,24 +215,26 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   std::unordered_map<unsigned int, std::set<unsigned int>> planes;
   for (const auto& ds_rechits : iEvent.get(rechitToken_)) {
     const TotemT2DetId detid(ds_rechits.detId());
+    const TotemT2DetId planeId(detid.planeId());
     for (const auto& rechit : ds_rechits) {
-      segm_->fill(m_rechits_mult_[detid.arm()][detid.plane()]->getTH2D(), detid);
+      segm_->fill(planePlots_[planeId].rechitMultiplicity->getTH2D(), detid);
       (void)rechit;  //FIXME make use of them
 
       fillActivePlanes(planes, detid);
     }
   }
 
-  for (const auto& plt : numberOfActivePlanes_) {
-    plt.second->Fill(planes[plt.first].size());
+  for (const auto& plt : sectorPlots_) {
+    plt.second.activePlanesCount->Fill(planes[plt.first].size());
   }
 
   for (unsigned short arm = 0; arm <= CTPPSDetId::maxArm; ++arm)
     for (unsigned short plane = 0; plane <= 1; ++plane)
       for (unsigned short id = 0; id <= TotemT2DetId::maxChannel; ++id) {
         const TotemT2DetId detid(arm, plane, id);
-        if(areChannelsTriggered(arm, id, plane%2==0)){
-          segm_->fill(definetelyTriggerPlots_[detid.arm()]->getTH2D(), detid);
+        if(areChannelsTriggered(detid)){
+          const TotemT2DetId secId(detid.armId());
+          segm_->fill(sectorPlots_[secId].triggerEmulator->getTH2D(), detid);
         }
       }
 
@@ -183,54 +242,43 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 }
 
 void TotemT2DQMSource::fillActivePlanes(std::unordered_map<unsigned int, std::set<unsigned int>>& planes, const TotemT2DetId detid){
-  unsigned short pl = detid.plane();    
-  if(detid.arm() == 0){
-    if(pl % 2 == 0){
-      planes[0].insert(pl);
-    }else{
-      planes[2].insert(pl);
-    }
-  }else{
-    if(pl % 2 == 0){
-      planes[1].insert(pl);
-    }else{
-      planes[3].insert(pl);
-    }
-  }
+  const TotemT2DetId secId(detid.armId());
+  unsigned short pl = detid.plane();
 
-  activePlanes_[detid.arm()]->Fill(pl);
+  planes[secId].insert(pl);    
+  // this metod is not SRP
+  sectorPlots_[secId].activePlanes->Fill(pl); // move it to another method
 }
 
 void TotemT2DQMSource::fillTriggerBitset(const TotemT2DetId detid){
-  unsigned short arm = detid.arm();
+  const TotemT2DetId secId(detid.armId());
   unsigned short pl = detid.plane();
   unsigned short ch = detid.channel();
-  hitTilesArray_[arm][4*pl + ch] = 1;
+  sectorPlots_[secId].hitTilesArray[4*pl + ch] = 1;
 }
 
 void TotemT2DQMSource::clearTriggerBitset(){
-  for(unsigned int i = 0; i <= CTPPSDetId::maxArm; ++i){
-    hitTilesArray_[i].reset();
+  for(auto& sectorPlot : sectorPlots_){
+    sectorPlot.second.hitTilesArray.reset();
   }
 }
 
-bool TotemT2DQMSource::areChannelsTriggered(unsigned int arm, unsigned int channel, bool planeIsEven){
+bool TotemT2DQMSource::areChannelsTriggered(const TotemT2DetId detid){
+  unsigned int channel = detid.channel();
+
   // prepare mask
   std::bitset<(TotemT2DetId::maxPlane+1) * (TotemT2DetId::maxChannel+1)> mask; 
-  // start from 0 or 1 whether plane is even or not
-  unsigned int pl = 1;
-  if(planeIsEven){
-    pl = 0;
-  }
+  // check if plane is even or not
+  unsigned int pl = detid.plane() % 2 == 0 ? 0 : 1;
   // set only even or only odd plane bits for this channel
   for(; pl <= TotemT2DetId::maxPlane; pl+=2){
     mask[4*pl+channel] = 1;  
   }
-
+  const TotemT2DetId secId(detid.armId());
   // check how many masked channels were hit
-  unsigned int triggeredChannelsNumber = (mask & hitTilesArray_[arm]).count();
+  unsigned int triggeredChannelsNumber = (mask & sectorPlots_[secId].hitTilesArray).count();
   
-  return triggeredChannelsNumber >= MINIMAL_TRIGGER;
+  return triggeredChannelsNumber >= SectorPlots::MINIMAL_TRIGGER;
 }
 
 void TotemT2DQMSource::bookErrorFlagsHistogram(DQMStore::IBooker& ibooker){
@@ -258,11 +306,10 @@ void TotemT2DQMSource::fillErrorFlagsHistogram(TotemT2Digi digi){
   (void)digi;
 }
 
-std::string TotemT2DQMSource::changePathToParentDir(std::string path) {
-  std::string toReplace = "/plane ";
-  path = path.substr(0, path.find(toReplace));
-  return path;
+void TotemT2DQMSource::fillEdges(TotemT2Digi digi, TotemT2DetId detid){
+  const TotemT2DetId secId(detid.armId());
+  sectorPlots_[secId].leadingEdge->Fill(HPTDC_BIN_WIDTH_NS * digi.leadingEdge());
+  sectorPlots_[secId].trailingEdge->Fill(HPTDC_BIN_WIDTH_NS * digi.trailingEdge());
 }
-
 
 DEFINE_FWK_MODULE(TotemT2DQMSource);

@@ -88,7 +88,7 @@ size_t LHCInfoPerLSPopConSourceHandler::getLumiData(const cond::OMSService& oms,
                                                const boost::posix_time::ptime& beginFillTime,
                                                const boost::posix_time::ptime& endFillTime) {
   auto query = oms.query("lumisections");
-  query->addOutputVars({"start_time", "delivered_lumi", "recorded_lumi"});
+  query->addOutputVars({"start_time", "run_number"});
     query->filterEQ("fill_number", fillId);
   query->filterGT("start_time", beginFillTime).filterLT("start_time", endFillTime);
   query->limit(kLumisectionsQueryLimit);
@@ -103,6 +103,7 @@ size_t LHCInfoPerLSPopConSourceHandler::getLumiData(const cond::OMSService& oms,
       LHCInfoPerLS* thisLumiSectionInfo = new LHCInfoPerLS(*m_fillPayload);
       m_tmpBuffer.emplace_back(std::make_pair(cond::time::from_boost(lumiTime), thisLumiSectionInfo));
       LHCInfoPerLS& payload = *thisLumiSectionInfo;
+      payload.setRunNumber(r.get<cond::Time_t>("run_number"));
 
       condIovs << cond::time::from_boost(lumiTime) << " ";
       posixIovs << lumiTime << " ";

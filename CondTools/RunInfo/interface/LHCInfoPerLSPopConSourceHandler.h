@@ -29,6 +29,9 @@ private:
   bool makeFillPayload(std::unique_ptr<LHCInfoPerLS>& targetPayload,
                        const cond::OMSServiceResult& queryResult);
 
+  void addPayloadToBuffer(cond::OMSServiceResultRef& row);
+  size_t bufferAllLS(const cond::OMSServiceResult& queryResult);
+  size_t bufferFirstStableBeamLS(const cond::OMSServiceResult& queryResult);
 
   size_t getLumiData(const cond::OMSService& service,
                      unsigned short fillId,

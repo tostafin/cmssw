@@ -83,32 +83,66 @@ bool LHCInfoPerLSPopConSourceHandler::makeFillPayload (std::unique_ptr<LHCInfoPe
   return ret;
 }
 
+void LHCInfoPerLSPopConSourceHandler::addPayloadToBuffer(cond::OMSServiceResultRef& row)
+{
+  auto lumiTime = row.get<boost::posix_time::ptime>("start_time");
+  LHCInfoPerLS* thisLumiSectionInfo = new LHCInfoPerLS(*m_fillPayload);
+  m_tmpBuffer.emplace_back(std::make_pair(cond::time::from_boost(lumiTime), thisLumiSectionInfo));
+
+  thisLumiSectionInfo->setRunNumber(row.get<cond::Time_t>("run_number"));
+}
+
+size_t LHCInfoPerLSPopConSourceHandler::bufferAllLS(const cond::OMSServiceResult& queryResult)
+{
+  for (auto r : queryResult) {
+      addPayloadToBuffer(r);
+  }
+  return queryResult.size();
+}
+
+size_t LHCInfoPerLSPopConSourceHandler::bufferFirstStableBeamLS(const cond::OMSServiceResult& queryResult)
+{
+  for (auto r : queryResult) {
+    if(r.get<std::string>("beams_stable") == "true") {
+      addPayloadToBuffer(r);
+      edm::LogInfo(m_name) << "Buffered first lumisection of stable beam: LS: "
+       << r.get<std::string>("lumisection_number")
+       << " run: " << r.get<std::string>("run_number");
+
+      return 1;
+    }
+  }
+  return 0;
+}
+
 size_t LHCInfoPerLSPopConSourceHandler::getLumiData(const cond::OMSService& oms,
-                                               unsigned short fillId,
-                                               const boost::posix_time::ptime& beginFillTime,
-                                               const boost::posix_time::ptime& endFillTime) {
+                                                    unsigned short fillId,
+                                                    const boost::posix_time::ptime& beginFillTime,
+                                                    const boost::posix_time::ptime& endFillTime) {
   auto query = oms.query("lumisections");
-  query->addOutputVars({"start_time", "run_number"});
-    query->filterEQ("fill_number", fillId);
+  query->addOutputVars({"start_time", "run_number", "beams_stable", "lumisection_number"});
+  query->filterEQ("fill_number", fillId);
   query->filterGT("start_time", beginFillTime).filterLT("start_time", endFillTime);
   query->limit(kLumisectionsQueryLimit);
   size_t nlumi = 0;
   if (query->execute()) {
-    auto res = query->result();
-    std::stringstream condIovs;
-    std::stringstream posixIovs;
-    for (auto r : res) {
-      nlumi++;
-      auto lumiTime = r.get<boost::posix_time::ptime>("start_time");
-      LHCInfoPerLS* thisLumiSectionInfo = new LHCInfoPerLS(*m_fillPayload);
-      m_tmpBuffer.emplace_back(std::make_pair(cond::time::from_boost(lumiTime), thisLumiSectionInfo));
-      LHCInfoPerLS& payload = *thisLumiSectionInfo;
-      payload.setRunNumber(r.get<cond::Time_t>("run_number"));
-
-      condIovs << cond::time::from_boost(lumiTime) << " ";
-      posixIovs << lumiTime << " ";
+    auto queryResult = query->result();
+    if(m_endFill){
+      nlumi = bufferAllLS(queryResult);
     }
-    
+    else {
+      nlumi = bufferFirstStableBeamLS(queryResult);
+      if(!nlumi && !queryResult.empty())
+      {
+        auto firstRow = *queryResult.begin();
+        addPayloadToBuffer(firstRow);
+        nlumi++;
+      }
+    }
+    edm::LogInfo(m_name) << "Found " << queryResult.size() << " lumisections during the fill " << fillId;
+  }
+    else {
+    edm::LogInfo(m_name) << "OMS query for lumisections of fill " << fillId << "failed, status:" << query->status();
   }
   return nlumi;
 }
@@ -141,7 +175,7 @@ namespace LHCInfoPerLSImpl {
           cond::Time_t upper = cond::time::MAX_VAL;
           if (currUp != end)
             upper = currUp->first;
-          if (dipTime < upper)
+          if (dipTime < upper && currentDipTime >= currLow->first)
             return false;
           else {
             search = true;
@@ -442,6 +476,7 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
       edm::LogInfo(m_name) << "Searching new fill after " << boost::posix_time::to_simple_string(targetTime);
       boost::posix_time::ptime startTime = targetTime + boost::posix_time::seconds(1);
       query->filterNotNull("start_stable_beam").filterGT("start_time", startTime).filterNotNull("fill_number");
+      query->filterLT("start_time", m_endTime);
       if (m_endFill)
         query->filterNotNull("end_time");
       bool foundFill = query->execute();
@@ -469,8 +504,7 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
     }
 
 
-    size_t nlumi = getLumiData(oms, lhcFill, startSampleTime, endSampleTime);
-    edm::LogInfo(m_name) << "Found " << nlumi << " lumisections during the fill " << lhcFill;
+    getLumiData(oms, lhcFill, startSampleTime, endSampleTime);
     boost::posix_time::ptime flumiStart = cond::time::to_boost(m_tmpBuffer.front().first);
     boost::posix_time::ptime flumiStop = cond::time::to_boost(m_tmpBuffer.back().first);
     edm::LogInfo(m_name) << "First lumi starts at " << flumiStart << " last lumi starts at " << flumiStop;

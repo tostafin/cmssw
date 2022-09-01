@@ -49,7 +49,7 @@
 
 <library file="LHCInfoPerLSWriter.cc" name="LHCInfoPerLSWriter">
   <flags EDM_PLUGIN="1"/>
-</library>
+</library>  
 
 
 <library file="LHCInfoPerLSAnalyzer.cc" name="LHCInfoPerLSAnalyzer">
@@ -66,5 +66,9 @@
 </library>
 
 <library file="LHCInfoPerLSPopConAnalyzer.cc" name="CondToolsLHCInfoPerLSPopConAnalyzer">
+  <flags EDM_PLUGIN="1"/>
+</library>
+
+<library file="LHCInfoPerFillPopConAnalyzer.cc" name="CondToolsLHCInfoPerFillPopConAnalyzer">
   <flags EDM_PLUGIN="1"/>
 </library>

@@ -164,10 +164,6 @@ void LHCInfoPerFillPopConSourceHandler::addPayloadToBuffer(cond::OMSServiceResul
   LHCInfoPerFill& payload = *thisLumiSectionInfo;
   payload.setDelivLumi(delivLumi);
   payload.setRecLumi(recLumi);
-  edm::LogInfo(m_name) << "set on IOV " << cond::time::from_boost(lumiTime) << " " <<
-    boost::posix_time::to_iso_extended_string(lumiTime) << ": " <<
-    "delivLumi= " << delivLumi << "in pld: " << payload.delivLumi()<<
-    " recLumi= " << recLumi << "in pld: " << payload.recLumi();
 }
 
 size_t LHCInfoPerFillPopConSourceHandler::getLumiData(const cond::OMSService& oms,
@@ -182,6 +178,7 @@ size_t LHCInfoPerFillPopConSourceHandler::getLumiData(const cond::OMSService& om
   query->limit(kLumisectionsQueryLimit);
   if (query->execute()) {
     auto queryResult = query->result();
+    edm::LogInfo(m_name) << "Found " << queryResult.size() << " lumisections with STABLE BEAM during the fill " << fillId;
     if(m_endFill) {
       auto lastRow = queryResult.back();
       addPayloadToBuffer(lastRow);
@@ -328,10 +325,10 @@ bool LHCInfoPerFillPopConSourceHandler::getCTTPSData(cond::persistency::Session&
   CTPPSDataQuery->addToOutputList(std::string("DIP_UPDATE_TIME"));
   CTPPSDataQuery->addToOutputList(std::string("LHC_STATE"));
   CTPPSDataQuery->addToOutputList(std::string("LHC_COMMENT"));
-  //dbg
+  if (m_debug) {
   CTPPSDataQuery->addToOutputList(std::string("RUN_NUMBER"));
   CTPPSDataQuery->addToOutputList(std::string("LUMI_SECTION"));
-  //dbge
+  }
   //WHERE CLAUSE
   coral::AttributeList CTPPSDataBindVariables;
   CTPPSDataBindVariables.extend<coral::TimeStamp>(std::string("beginFillTime"));
@@ -347,24 +344,22 @@ bool LHCInfoPerFillPopConSourceHandler::getCTTPSData(cond::persistency::Session&
   CTPPSDataOutput.extend<coral::TimeStamp>(std::string("DIP_UPDATE_TIME"));
   CTPPSDataOutput.extend<std::string>(std::string("LHC_STATE"));
   CTPPSDataOutput.extend<std::string>(std::string("LHC_COMMENT"));
-  //dbg
-  CTPPSDataOutput.extend<int>(std::string("RUN_NUMBER"));
-  CTPPSDataOutput.extend<int>(std::string("LUMI_SECTION"));
-  //dbge
+  if (m_debug) {
+    CTPPSDataOutput.extend<int>(std::string("RUN_NUMBER"));
+    CTPPSDataOutput.extend<int>(std::string("LUMI_SECTION"));
+  }
   CTPPSDataQuery->defineOutput(CTPPSDataOutput);
   //execute the query
   coral::ICursor& CTPPSDataCursor = CTPPSDataQuery->execute();
   cond::Time_t dipTime = 0;
   std::string lhcState = "", lhcComment = "", ctppsStatus = "";
-  //dbg
+
+  //debug informations
   unsigned int lumiSection = 0;
   cond::Time_t runNumber = 0;
-  
   cond::Time_t savedDipTime = 0;
   unsigned int savedLumiSection = 0;
   cond::Time_t savedRunNumber = 0;
-  //dbge
-
 
   bool ret = false;
   LHCInfoPerFillImpl::LumiSectionFilter filter(m_tmpBuffer);
@@ -387,16 +382,17 @@ bool LHCInfoPerFillPopConSourceHandler::getCTTPSData(cond::persistency::Session&
           lhcComment = lhcCommentAttribute.data<std::string>();
         }
 
-        //dbg
-        coral::Attribute const& runNumberAttribute = CTPPSDataCursor.currentRow()[std::string("RUN_NUMBER")];
-        if (!runNumberAttribute.isNull()) {
-          runNumber = runNumberAttribute.data<int>();
+        if (m_debug) {
+          coral::Attribute const& runNumberAttribute = CTPPSDataCursor.currentRow()[std::string("RUN_NUMBER")];
+          if (!runNumberAttribute.isNull()) {
+            runNumber = runNumberAttribute.data<int>();
+          }
+          coral::Attribute const& lumiSectionAttribute = CTPPSDataCursor.currentRow()[std::string("LUMI_SECTION")];
+          if (!lumiSectionAttribute.isNull()) {
+            lumiSection = lumiSectionAttribute.data<int>();
+          }
         }
-        coral::Attribute const& lumiSectionAttribute = CTPPSDataCursor.currentRow()[std::string("LUMI_SECTION")];
-        if (!lumiSectionAttribute.isNull()) {
-          lumiSection = lumiSectionAttribute.data<int>();
-        }
-        
+
         for (auto it = filter.current(); it != m_tmpBuffer.end(); it++) {
           // set the current values to all of the payloads of the lumi section samples after the current since
           LHCInfoPerFill& payload = *(it->second);
@@ -404,21 +400,21 @@ bool LHCInfoPerFillPopConSourceHandler::getCTTPSData(cond::persistency::Session&
           payload.setLhcComment(lhcComment);
           payload.setCtppsStatus(ctppsStatus);
 
-          //dbg
-          savedDipTime = dipTime;
-          savedLumiSection = lumiSection;
-          savedRunNumber = runNumber;
-          //dbge
+          if (m_debug) {
+            savedDipTime = dipTime;
+            savedLumiSection = lumiSection;
+            savedRunNumber = runNumber;
+          }
         }
       }
     }
   }
-  //dbg
-  edm::LogInfo(m_name) << "Last assigned: " << "DipTime: " << savedDipTime << " "
-  << "LumiSection: " << savedLumiSection << " "
-  << "RunNumber: " << savedRunNumber;
+  if (m_debug) {
+    edm::LogInfo(m_name) << "Last assigned: " << "DipTime: " << savedDipTime << " "
+    << "LumiSection: " << savedLumiSection << " "
+    << "RunNumber: " << savedRunNumber;
+  }
   return ret;
-  //dbge
 }
 
 namespace LHCInfoPerFillImpl {
@@ -624,24 +620,12 @@ namespace LHCInfoPerFillImpl {
         prevPayload = iov.second;
       }
     }
-    edm::LogInfo("transferPayloads") << "TRANSFERED COND IOVS: " << condIovs.str();
-    edm::LogInfo("transferPayloads") << "FORMATTED COND IOVS: " << formattedIovs.str();
+    edm::LogInfo("transferPayloads") << "TRANSFERED IOVS: " << condIovs.str();
+    edm::LogInfo("transferPayloads") << "FORMATTED TRANSFERED IOVS: " << formattedIovs.str();
     return niovs;
   }
 
 }  // namespace LHCInfoPerFillImpl
-
-void LHCInfoPerFillPopConSourceHandler::duplicateToBuffer(const LHCInfoPerFill& targetPayload,
-                                                          const cond::OMSServiceResult& queryResult) {
-  auto row = *queryResult.begin();
-  cond::Time_t stableBeamStart = cond::time::from_boost(row.get<boost::posix_time::ptime>("start_stable_beam"));
-  cond::Time_t stableBeamEnd = cond::time::from_boost(row.get<boost::posix_time::ptime>("end_stable_beam"));
-  if(m_endFill) {
-    m_tmpBuffer.emplace_back(std::make_pair(stableBeamEnd, targetPayload.cloneFill()));
-  } else {
-    m_tmpBuffer.emplace_back(std::make_pair(stableBeamStart, targetPayload.cloneFill()));
-  }
-}
 
 void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
   //reference to the last payload in the tag
@@ -718,20 +702,6 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
     oms.connect(m_omsBaseUrl);
     auto query = oms.query("fills");
 
-    // if (!m_endFill and m_prevPayload->fillNumber() and m_prevPayload->endTime() == 0ULL) {
-    //   // execute the query for the current fill
-    //   edm::LogInfo(m_name) << "Searching started fill #" << m_prevPayload->fillNumber();
-    //   query->filterEQ("fill_number", m_prevPayload->fillNumber());
-    //   bool foundFill = query->execute();
-    //   if (foundFill)
-    //     foundFill = LHCInfoPerFillImpl::makeFillPayload(m_fillPayload, query->result());
-    //   if (!foundFill) {
-    //     edm::LogError(m_name) << "Could not find fill #" << m_prevPayload->fillNumber();
-    //     break;
-    //   }
-    //   updateEcal = true;
-    //   startSampleTime = cond::time::to_boost(lastSince);
-    // } else {
     edm::LogInfo(m_name) << "Searching new fill after " << boost::posix_time::to_simple_string(targetTime);
     boost::posix_time::ptime startTime = targetTime + boost::posix_time::seconds(1);
     query->filterNotNull("start_stable_beam").filterGT("start_time", startTime).filterNotNull("fill_number");
@@ -747,8 +717,8 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
         addEmptyPayload(targetSince);
       break;
     }
+    
     startSampleTime = cond::time::to_boost(m_fillPayload->createTime());
-    // }
     cond::Time_t startFillTime = m_fillPayload->createTime();
     cond::Time_t endFillTime = m_fillPayload->endTime();
     unsigned short lhcFill = m_fillPayload->fillNumber();
@@ -762,11 +732,9 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
       endSampleTime = cond::time::to_boost(endFillTime);
       targetSince = endFillTime;
     }
-    // duplicateToBuffer(*m_fillPayload, query->result());
 
     getDipData(oms, startSampleTime, endSampleTime);
     getLumiData(oms, lhcFill, startSampleTime, endSampleTime);
-    // edm::LogInfo(m_name) << "Found " << nlumi << " lumisections during the fill " << lhcFill;
     boost::posix_time::ptime flumiStart = cond::time::to_boost(m_tmpBuffer.front().first);
     boost::posix_time::ptime flumiStop = cond::time::to_boost(m_tmpBuffer.back().first);
     edm::LogInfo(m_name) << "First lumi starts at " << flumiStart << " last lumi starts at " << flumiStop;

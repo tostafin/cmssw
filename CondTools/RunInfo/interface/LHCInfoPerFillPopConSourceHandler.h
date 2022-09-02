@@ -40,8 +40,6 @@ private:
                    const boost::posix_time::ptime& upperTime,
                    bool update);
 
-  void duplicateToBuffer(const LHCInfoPerFill& targetPayload, const cond::OMSServiceResult& queryResult);
-
 private:
   bool m_debug;
   // starting date for sampling

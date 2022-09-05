@@ -177,17 +177,19 @@ size_t LHCInfoPerFillPopConSourceHandler::getLumiData(const cond::OMSService& om
   query->filterEQ("beams_stable", "true");
   query->limit(kLumisectionsQueryLimit);
   if (query->execute()) {
+    int nLumi = 0;
     auto queryResult = query->result();
     edm::LogInfo(m_name) << "Found " << queryResult.size() << " lumisections with STABLE BEAM during the fill " << fillId;
+   
     if(m_endFill) {
-      auto lastRow = queryResult.back();
-      addPayloadToBuffer(lastRow);
-      return 1;
-    } else {
       auto firstRow = queryResult.front();
       addPayloadToBuffer(firstRow);
-      return 1;
+      nLumi++;
     }
+
+    auto lastRow = queryResult.back();
+    addPayloadToBuffer(lastRow);
+    nLumi++;
   }
   return 0;
 }
@@ -686,7 +688,7 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
     session3.transaction().commit();
   }
 
-  bool iovAdded = false;
+  // bool iovAdded = false;
   while (true) {
     if (targetSince >= endIov) {
       edm::LogInfo(m_name) << "Sampling ended at the time "
@@ -713,8 +715,8 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
       foundFill = LHCInfoPerFillImpl::makeFillPayload(m_fillPayload, query->result());
     if (!foundFill) {
       edm::LogInfo(m_name) << "No fill found - END of job.";
-      if (iovAdded)
-        addEmptyPayload(targetSince);
+      // if (iovAdded)
+      //   addEmptyPayload(targetSince);
       break;
     }
     
@@ -748,7 +750,7 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
     size_t niovs = LHCInfoPerFillImpl::transferPayloads(m_tmpBuffer, m_iovs, m_prevPayload);
     edm::LogInfo(m_name) << "Added " << niovs << " iovs within the Fill time";
     m_tmpBuffer.clear();
-    iovAdded = true;
+    // iovAdded = true;
     if (m_prevPayload->fillNumber() and m_fillPayload->endTime() != 0ULL)
       addEmptyPayload(m_fillPayload->endTime());
   }

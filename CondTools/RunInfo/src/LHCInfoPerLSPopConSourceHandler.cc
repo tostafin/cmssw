@@ -451,7 +451,7 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
     }
   }
 
-  bool iovAdded = false;
+  // bool iovAdded = false;
   while (true) {
     if (targetSince >= endIov) {
       edm::LogInfo(m_name) << "Sampling ended at the time "
@@ -490,8 +490,8 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
         foundFill = makeFillPayload(m_fillPayload, query->result());
       if (!foundFill) {
         edm::LogInfo(m_name) << "No fill found - END of job.";
-        if (iovAdded)
-          addEmptyPayload(targetSince);
+        // if (iovAdded)
+        //   addEmptyPayload(targetSince);
         break;
       }
       startSampleTime = cond::time::to_boost(m_startFillTime);
@@ -525,7 +525,7 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
       m_prevEndFillTime = m_endFillTime;
     }
     m_tmpBuffer.clear();
-    iovAdded = true;
+    // iovAdded = true;
     if (m_prevPayload->fillNumber() and m_endFillTime != 0ULL)
       addEmptyPayload(m_endFillTime);
   }

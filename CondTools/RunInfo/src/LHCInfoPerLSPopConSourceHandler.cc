@@ -88,8 +88,6 @@ void LHCInfoPerLSPopConSourceHandler::addPayloadToBuffer(cond::OMSServiceResultR
   auto lumiTime = row.get<boost::posix_time::ptime>("start_time");
   LHCInfoPerLS* thisLumiSectionInfo = new LHCInfoPerLS(*m_fillPayload);
   m_tmpBuffer.emplace_back(std::make_pair(cond::time::from_boost(lumiTime), thisLumiSectionInfo));
-
-  thisLumiSectionInfo->setRunNumber(row.get<cond::Time_t>("run_number"));
 }
 
 size_t LHCInfoPerLSPopConSourceHandler::bufferAllLS(const cond::OMSServiceResult& queryResult)
@@ -218,6 +216,7 @@ bool LHCInfoPerLSPopConSourceHandler::getCTTPSData(cond::persistency::Session& s
   //SELECT clause
   CTPPSDataQuery->addToOutputList(std::string("DIP_UPDATE_TIME"));
   CTPPSDataQuery->addToOutputList(std::string("LUMI_SECTION"));
+  CTPPSDataQuery->addToOutputList(std::string("RUN_NUMBER"));
   CTPPSDataQuery->addToOutputList(std::string("XING_ANGLE_P5_X_URAD"));
   CTPPSDataQuery->addToOutputList(std::string("XING_ANGLE_P5_Y_URAD"));
   CTPPSDataQuery->addToOutputList(std::string("BETA_STAR_P5_X_M"));
@@ -236,6 +235,7 @@ bool LHCInfoPerLSPopConSourceHandler::getCTTPSData(cond::persistency::Session& s
   coral::AttributeList CTPPSDataOutput;
   CTPPSDataOutput.extend<coral::TimeStamp>(std::string("DIP_UPDATE_TIME"));
   CTPPSDataOutput.extend<int>(std::string("LUMI_SECTION"));
+  CTPPSDataOutput.extend<int>(std::string("RUN_NUMBER"));
   CTPPSDataOutput.extend<float>(std::string("XING_ANGLE_P5_X_URAD"));
   CTPPSDataOutput.extend<float>(std::string("XING_ANGLE_P5_Y_URAD"));
   CTPPSDataOutput.extend<float>(std::string("BETA_STAR_P5_X_M"));
@@ -245,6 +245,7 @@ bool LHCInfoPerLSPopConSourceHandler::getCTTPSData(cond::persistency::Session& s
   coral::ICursor& CTPPSDataCursor = CTPPSDataQuery->execute();
   cond::Time_t dipTime = 0;
   unsigned int lumiSection = 0;
+  cond::Time_t runNumber = 0;
   float crossingAngleX = 0., betaStarX = 0.;
   float crossingAngleY = 0., betaStarY = 0.;
 
@@ -263,6 +264,10 @@ bool LHCInfoPerLSPopConSourceHandler::getCTTPSData(cond::persistency::Session& s
         coral::Attribute const& lumiSectionAttribute = CTPPSDataCursor.currentRow()[std::string("LUMI_SECTION")];
         if (!lumiSectionAttribute.isNull()) {
           lumiSection = lumiSectionAttribute.data<int>();
+        }
+        coral::Attribute const& runNumberAttribute = CTPPSDataCursor.currentRow()[std::string("RUN_NUMBER")];
+        if (!runNumberAttribute.isNull()) {
+          runNumber = runNumberAttribute.data<int>();
         }
         coral::Attribute const& crossingAngleXAttribute =
             CTPPSDataCursor.currentRow()[std::string("XING_ANGLE_P5_X_URAD")];
@@ -290,6 +295,7 @@ bool LHCInfoPerLSPopConSourceHandler::getCTTPSData(cond::persistency::Session& s
           payload.setBetaStarX(betaStarX);
           payload.setBetaStarY(betaStarY);
           payload.setLumiSection(lumiSection);
+          payload.setRunNumber(runNumber);
         }
       }
     }

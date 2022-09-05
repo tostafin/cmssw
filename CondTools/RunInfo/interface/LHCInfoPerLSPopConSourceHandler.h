@@ -59,6 +59,7 @@ private:
   cond::Time_t m_startFillTime;
   cond::Time_t m_endFillTime;
   cond::Time_t m_prevEndFillTime;
+  cond::Time_t m_prevStartFillTime;
   std::vector<std::pair<cond::Time_t, std::shared_ptr<LHCInfoPerLS> > > m_tmpBuffer;
   bool m_lastPayloadEmpty = false;
 };

@@ -319,6 +319,7 @@ void LHCInfoPerLSPopConSourceHandler::addEmptyPayload(cond::Time_t iov) {
     m_iovs.insert(std::make_pair(iov, newPayload));
     m_prevPayload = newPayload;
     m_prevEndFillTime = 0;
+    m_prevStartFillTime = 0;
   }
 }
 
@@ -436,6 +437,8 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
         if (!result.empty()) {
           auto endFillTime = (*result.begin()).get<boost::posix_time::ptime>("end_time");
           m_prevEndFillTime = cond::time::from_boost(endFillTime);
+          auto startFillTime = (*result.begin()).get<boost::posix_time::ptime>("start_time");
+          m_prevStartFillTime = cond::time::from_boost(startFillTime);
         }
         else {
           foundFill = false;
@@ -448,6 +451,7 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
     else
     {
       m_prevEndFillTime = 0;
+      m_prevStartFillTime = 0;
     }
   }
 
@@ -480,8 +484,13 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
       startSampleTime = cond::time::to_boost(lastSince);
     } else {
       edm::LogInfo(m_name) << "Searching new fill after " << boost::posix_time::to_simple_string(targetTime);
-      boost::posix_time::ptime startTime = targetTime + boost::posix_time::seconds(1);
-      query->filterNotNull("start_stable_beam").filterGT("start_time", startTime).filterNotNull("fill_number");
+      query->filterNotNull("start_stable_beam").filterNotNull("fill_number");
+      if (targetTime > cond::time::to_boost(m_prevStartFillTime)) {
+        query->filterGE("start_time", targetTime);
+      } else {
+        query->filterGT("start_time", targetTime);
+      }
+
       query->filterLT("start_time", m_endTime);
       if (m_endFill)
         query->filterNotNull("end_time");
@@ -523,6 +532,7 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
     edm::LogInfo(m_name) << "Added " << niovs << " iovs within the Fill time";
     if(niovs){
       m_prevEndFillTime = m_endFillTime;
+      m_prevStartFillTime = m_startFillTime;
     }
     m_tmpBuffer.clear();
     // iovAdded = true;

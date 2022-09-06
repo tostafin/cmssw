@@ -579,6 +579,8 @@ namespace LHCInfoImpl {
                           std::map<cond::Time_t, std::shared_ptr<LHCInfo>>& iovsToTransfer,
                           std::shared_ptr<LHCInfo>& prevPayload) {
     size_t niovs = 0;
+    std::stringstream condIovs;
+    std::stringstream formattedIovs;
     for (auto& iov : buffer) {
       bool add = false;
       auto payload = iov.second;
@@ -593,10 +595,14 @@ namespace LHCInfoImpl {
       }
       if (add) {
         niovs++;
+        condIovs << since << " ";
+        formattedIovs << boost::posix_time::to_iso_extended_string(cond::time::to_boost(since)) << " ";
         iovsToTransfer.insert(std::make_pair(since, payload));
         prevPayload = iov.second;
       }
     }
+    edm::LogInfo("transferPayloads") << "TRANSFERED COND IOVS: " << condIovs.str();
+    edm::LogInfo("transferPayloads") << "FORMATTED COND IOVS: " << formattedIovs.str();
     return niovs;
   }
 
@@ -661,7 +667,7 @@ void LHCInfoPopConSourceHandler::getNewObjects() {
     session3.transaction().commit();
   }
 
-  bool iovAdded = false;
+  // bool iovAdded = false;
   while (true) {
     if (targetSince >= endIov) {
       edm::LogInfo(m_name) << "Sampling ended at the time "
@@ -701,8 +707,8 @@ void LHCInfoPopConSourceHandler::getNewObjects() {
         foundFill = LHCInfoImpl::makeFillPayload(m_fillPayload, query->result());
       if (!foundFill) {
         edm::LogInfo(m_name) << "No fill found - END of job.";
-        if (iovAdded)
-          addEmptyPayload(targetSince);
+        // if (iovAdded)
+        //   addEmptyPayload(targetSince);
         break;
       }
       startSampleTime = cond::time::to_boost(m_fillPayload->createTime());
@@ -737,7 +743,7 @@ void LHCInfoPopConSourceHandler::getNewObjects() {
     size_t niovs = LHCInfoImpl::transferPayloads(m_tmpBuffer, m_iovs, m_prevPayload);
     edm::LogInfo(m_name) << "Added " << niovs << " iovs within the Fill time";
     m_tmpBuffer.clear();
-    iovAdded = true;
+    // iovAdded = true;
     if (m_prevPayload->fillNumber() and m_fillPayload->endTime() != 0ULL)
       addEmptyPayload(m_fillPayload->endTime());
   }

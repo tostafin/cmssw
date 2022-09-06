@@ -1,3 +1,5 @@
+import sys
+
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('test')
@@ -13,16 +15,19 @@ process.MessageLogger = cms.Service("MessageLogger",
     )
 )
 
+iov = int(7133383367994638336  if len(sys.argv) < 3 else sys.argv[2])
+print("iov:", iov)
+
 process.source = cms.Source('EmptyIOVSource',
-    timetype = cms.string('runnumber'),
-    firstValue = cms.uint64(1),
-    lastValue = cms.uint64(1),
+    timetype = cms.string('timestamp'),
+    firstValue = cms.uint64(iov  ),
+    lastValue = cms.uint64(iov ),
     interval = cms.uint64(1)
 )
 
 # load info from database
 process.load('CondCore.CondDB.CondDB_cfi')
-process.CondDB.connect = 'sqlite_file:LHCInfoPerFill.sqlite' # SQLite input
+process.CondDB.connect = 'sqlite_file:../python/lhcinfo_pop_test.db' # SQLite input
 
 process.PoolDBESSource = cms.ESSource('PoolDBESSource',
     process.CondDB,
@@ -30,7 +35,7 @@ process.PoolDBESSource = cms.ESSource('PoolDBESSource',
     toGet = cms.VPSet(
         cms.PSet(
             record = cms.string('LHCInfoPerFillRcd'),
-            tag = cms.string('LHCInfoPerFillFake')
+            tag = cms.string('perFill_10_end')
         )
     )
 )

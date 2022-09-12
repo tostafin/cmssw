@@ -278,8 +278,8 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
             if (verbosity_)
               ssLog << std::endl << "* reconstruction from track " << idx << std::endl;
 
-            singleRPResultsIndexed[idx] =
-                algorithm_.reconstructFromSingleRP(CTPPSLocalTrackLiteRef(hTracks, idx), lhcInfoCombined, ssLog);
+            singleRPResultsIndexed[idx] = algorithm_.reconstructFromSingleRP(CTPPSLocalTrackLiteRef(hTracks, idx),
+                                                                             lhcInfoCombined.energy(), ssLog);
           }
         }
 
@@ -439,7 +439,8 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
               ssLog << std::endl << "    time = " << time << " +- " << time_unc << std::endl;
 
             // process tracking-RP data
-            reco::ForwardProton proton = algorithm_.reconstructFromMultiRP(sel_track_for_kin_reco, lhcInfoCombined, ssLog);
+            reco::ForwardProton proton = algorithm_.reconstructFromMultiRP(sel_track_for_kin_reco,
+                                                                           lhcInfoCombined.energy(), ssLog);
 
             // save combined output
             proton.setContributingLocalTracks(sel_tracks);

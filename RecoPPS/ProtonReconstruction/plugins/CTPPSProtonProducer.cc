@@ -127,6 +127,8 @@ CTPPSProtonProducer::CTPPSProtonProducer(const edm::ParameterSet &iConfig)
       geometryToken_(esConsumes<CTPPSGeometry, VeryForwardRealGeometryRecord>()),
       ppsAssociationCutsToken_(
           esConsumes<PPSAssociationCuts, PPSAssociationCutsRcd>(edm::ESInputTag("", ppsAssociationCutsLabel_))) {
+  edm::LogWarning("CTPPSProtonProducer") << "consturcting CTPPSProtonProducer";
+
   if (doSingleRPReconstruction_)
     produces<reco::ForwardProtonCollection>(singleRPReconstructionLabel_);
 
@@ -204,6 +206,8 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
   if (!hTracks->empty()) {
     // get conditions
     LHCInfoCombined lhcInfoCombined(iSetup, lhcInfoPerLSToken_, lhcInfoPerFillToken_, lhcInfoToken_);
+
+    edm::LogWarning("CTPPSProtonProducer") << "LHCInfoCombined: \n" << lhcInfoCombined;
 
     edm::ESHandle<LHCInterpolatedOpticalFunctionsSetCollection> hOpticalFunctions =
         iSetup.getHandle(opticalFunctionsToken_);
@@ -460,6 +464,9 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
       if (verbosity_)
         edm::LogInfo("CTPPSProtonProducer") << ssLog.str();
     }
+  }
+  else {
+    edm::LogWarning("CTPPSProtonProducer") << "tracks already exists, not using LHCInfoCombined";
   }
 
   // save output

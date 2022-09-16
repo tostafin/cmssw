@@ -1,3 +1,5 @@
+print("in file ALCARECOPPSCalMaxTracks_cff.py")
+
 import FWCore.ParameterSet.Config as cms
 
 # 1. HLT filter
@@ -88,7 +90,8 @@ ctppsLocalTrackLiteProducerAlCaRecoProducer = _ctppsLocalTrackLiteProducer.clone
 )
 
 from RecoPPS.ProtonReconstruction.ctppsProtons_cff import ctppsProtons as _ctppsProtons
-ctppsProtonsAlCaRecoProducer = _ctppsProtons.clone(tagLocalTrackLite = 'ctppsLocalTrackLiteProducerAlCaRecoProducer')
+ctppsProtonsAlCaRecoProducer = _ctppsProtons.clone(tagLocalTrackLite = 'ctppsLocalTrackLiteProducerAlCaRecoProducer',
+verbosity = cms.untracked.uint32(2))
 
 # 5. RECO - final task assembly
 #------------------------------------------------------

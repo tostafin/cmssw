@@ -1,9 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
 # load era modifier to run on 2018 data
-from Configuration.Eras.Modifier_ctpps_2018_cff import ctpps_2018
+# from Configuration.Eras.Modifier_ctpps_2018_cff import ctpps_2018
+from Configuration.Eras.Modifier_ctpps_2022_cff import ctpps_2022
 
-process = cms.Process( 'TEST',ctpps_2018)
+process = cms.Process( 'TEST',ctpps_2022)
 
 # LHCInfo plotter
 process.load("Validation.CTPPS.ctppsLHCInfoPlotter_cfi")

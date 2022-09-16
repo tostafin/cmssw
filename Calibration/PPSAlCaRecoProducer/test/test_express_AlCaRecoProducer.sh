@@ -2,11 +2,14 @@
 function die { echo $1: status $2; exit $2; }
 
 customise_commands="process.GlobalTag.toGet = cms.VPSet()\
+\nprocess.GlobalTag.toGet.append(cms.PSet(record = cms.string(\"LHCInfoPerLSRcd\"),tag =  cms.string(\"LHCInfoPerLS_end_2\"), connect = cms.string(\"sqlite_file:/eos/home-j/jchyczyn/new/CMSSW_12_5_0_pre3/src/CondTools/RunInfo/python/lhcinfo_pop_test.db\")))\
+\nprocess.GlobalTag.toGet.append(cms.PSet(record = cms.string(\"LHCInfoPerFillRcd\"),tag =  cms.string(\"LHCInfoPerFill_end_2\"), connect = cms.string(\"sqlite_file:/eos/home-j/jchyczyn/new/CMSSW_12_5_0_pre3/src/CondTools/RunInfo/python/lhcinfo_pop_test.db\")))\
+\nprocess.GlobalTag.toGet.append(cms.PSet(record = cms.string(\"LHCInfoRcd\"),tag =  cms.string(\"LHCInfo_end_2\"), connect = cms.string(\"sqlite_file:/eos/home-j/jchyczyn/new/CMSSW_12_5_0_pre3/src/CondTools/RunInfo/python/lhcinfo_pop_test.db\")))\
 \nprocess.GlobalTag.toGet.append(cms.PSet(record = cms.string(\"AlCaRecoTriggerBitsRcd\"),tag =  cms.string(\"AlCaRecoHLTpaths_PPS2022_express_v1\"), connect = cms.string(\"frontier://FrontierProd/CMS_CONDITIONS\")))\
-\nprocess.GlobalTag.toGet.append(cms.PSet(record = cms.string(\"PPSTimingCalibrationLUTRcd\"),tag =  cms.string(\"PPSDiamondTimingCalibrationLUT_test\"), connect = cms.string(\"frontier://FrontierProd/CMS_CONDITIONS\")))\
-\nprocess.ALCARECOPPSCalMaxTracksFilter.TriggerResultsTag = cms.InputTag(\"TriggerResults\",\"\",\"HLTX\")"
+\nprocess.GlobalTag.toGet.append(cms.PSet(record = cms.string(\"PPSTimingCalibrationLUTRcd\"),tag =  cms.string(\"PPSDiamondTimingCalibrationLUT_test\"), connect = cms.string(\"frontier://FrontierProd/CMS_CONDITIONS\")))"
+# \nprocess.ALCARECOPPSCalMaxTracksFilter.TriggerResultsTag = cms.InputTag(\"TriggerResults\",\"\",\"HLT\")"
 
-INPUTFILE="/store/group/alca_global/pps_alcareco_producer_tests/outputALCAPPS_single.root"
+INPUTFILE="/store/data/Run2022C/ZeroBias/RAW/v1/000/356/615/00000/a4076bff-3bec-459e-bd44-b66538bf5c2b.root"
 COMMMAND=`xrdfs cms-xrd-global.cern.ch locate $INPUTFILE`
 STATUS=$?
 echo "xrdfs command status = "$STATUS
@@ -15,7 +18,7 @@ if [ $STATUS -eq 0 ]; then
     (cmsDriver.py testExpressPPSAlCaRecoProducer -s ALCAPRODUCER:PPSCalMaxTracks,ENDJOB \
     --process ALCARECO \
     --scenario pp \
-    --era ctpps_2018 \
+    --era run3_HB \
     --conditions auto:run3_data_express \
     --data  \
     --datatier ALCARECO \

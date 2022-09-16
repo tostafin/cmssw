@@ -65,6 +65,8 @@ public:
 
   void setEnergy(float const& energy);
 
+  void print(std::stringstream& ss) const;
+
 private:
   float crossingAngleX_;
   float crossingAngleY_;
@@ -72,5 +74,7 @@ private:
   float betaStarY_;
   float energy_;
 };
+
+std::ostream& operator<<(std::ostream& os, LHCInfoCombined beamInfo);
 
 #endif  // CondFormats_RunInfo_LHCInfoCombined_H

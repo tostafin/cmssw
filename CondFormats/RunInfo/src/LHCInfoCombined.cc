@@ -62,3 +62,18 @@ void LHCInfoCombined::setBetaStarX(float const& betaStarX) { betaStarX_ = betaSt
 void LHCInfoCombined::setBetaStarY(float const& betaStarY) { betaStarY_ = betaStarY; }
 
 void LHCInfoCombined::setEnergy(float const& energy) { energy_ = energy; }
+
+void LHCInfoCombined::print(std::stringstream& ss) const {
+  ss << "Crossing angle x (urad): " << this->crossingAngleX() << std::endl
+     << "Crossing angle y (urad): " << this->crossingAngleY() << std::endl
+     << "Beta star x (m): " << this->betaStarX() << std::endl
+     << "Beta star y (m): " << this->betaStarY() << std::endl
+     << "Energy (GeV): " << this->energy() << std::endl;
+}
+
+std::ostream& operator<<(std::ostream& os, LHCInfoCombined beamInfo) {
+  std::stringstream ss;
+  beamInfo.print(ss);
+  os << ss.str();
+  return os;
+}

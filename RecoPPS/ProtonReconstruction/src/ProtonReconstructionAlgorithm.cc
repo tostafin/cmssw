@@ -392,6 +392,7 @@ reco::ForwardProton ProtonReconstructionAlgorithm::reconstructFromMultiRP(const 
   const double cos_th_sq = 1. - th_x * th_x - th_y * th_y;
   const double cos_th = (cos_th_sq > 0.) ? sqrt(cos_th_sq) : 1.;
   const double p = energy * (1. - xi);
+  edm::LogWarning("ProtonRecoAlgo") << "Energy: " << energy << " hexfloat: " << std::hexfloat << energy;
   const FP::Vector momentum(-p * th_x,  // the signs reflect change LHC --> CMS convention
                             +p * th_y,
                             sign_z * p * cos_th);
@@ -442,6 +443,7 @@ reco::ForwardProton ProtonReconstructionAlgorithm::reconstructFromSingleRP(const
   const double cos_th_sq = 1. - th_y * th_y;
   const double cos_th = (cos_th_sq > 0.) ? sqrt(cos_th_sq) : 1.;
   const double p = energy * (1. - xi);
+  edm::LogWarning("ProtonRecoAlgo") << "Energy: " << energy << " hexfloat: " << std::hexfloat << energy;
   const FP::Vector momentum(0., p * th_y, sign_z * p * cos_th);
 
   FP::CovarianceMatrix cm;

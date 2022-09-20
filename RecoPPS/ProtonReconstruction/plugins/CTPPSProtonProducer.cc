@@ -100,7 +100,7 @@ CTPPSProtonProducer::CTPPSProtonProducer(const edm::ParameterSet &iConfig)
       lhcInfoLabel_(iConfig.getParameter<std::string>("lhcInfoLabel")),
       opticsLabel_(iConfig.getParameter<std::string>("opticsLabel")),
       ppsAssociationCutsLabel_(iConfig.getParameter<std::string>("ppsAssociationCutsLabel")),
-      verbosity_(iConfig.getUntrackedParameter<unsigned int>("verbosity", 0)),
+      verbosity_(iConfig.getUntrackedParameter<unsigned int>("verbosity", 2)),
       doSingleRPReconstruction_(iConfig.getParameter<bool>("doSingleRPReconstruction")),
       doMultiRPReconstruction_(iConfig.getParameter<bool>("doMultiRPReconstruction")),
       singleRPReconstructionLabel_(iConfig.getParameter<std::string>("singleRPReconstructionLabel")),
@@ -208,6 +208,8 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
     LHCInfoCombined lhcInfoCombined(iSetup, lhcInfoPerLSToken_, lhcInfoPerFillToken_, lhcInfoToken_);
 
     edm::LogWarning("CTPPSProtonProducer") << "LHCInfoCombined: \n" << lhcInfoCombined;
+    edm::LogWarning("CTPPSProtonProducer") << "LogWarning test";
+    
 
     edm::ESHandle<LHCInterpolatedOpticalFunctionsSetCollection> hOpticalFunctions =
         iSetup.getHandle(opticalFunctionsToken_);
@@ -219,7 +221,7 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
     // re-initialise algorithm upon crossing-angle change
     if (opticsWatcher_.check(iSetup)) {
       if (hOpticalFunctions->empty()) {
-        edm::LogInfo("CTPPSProtonProducer") << "No optical functions available, reconstruction disabled.";
+        edm::LogWarning("CTPPSProtonProducer") << "No optical functions available, reconstruction disabled.";
         algorithm_.release();
         opticsValid_ = false;
       } else {
@@ -230,6 +232,7 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
 
     // do reconstruction only if optics is valid
     if (opticsValid_) {
+      edm::LogWarning("CTPPSProtonProducer") << "optics valid";
       // prepare log
       std::ostringstream ssLog;
       if (verbosity_)
@@ -286,6 +289,9 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
                                                                              lhcInfoCombined.energy(), ssLog);
           }
         }
+        else {
+          edm::LogWarning("CTPPSProtonProducer") << "Not executing reconstructFromSingleRP";
+        }
 
         // check that exactly two tracking RPs are involved
         //    - 1 is insufficient for multi-RP reconstruction
@@ -296,6 +302,7 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
 
         // do multi-RP reco if chosen
         if (doMultiRPReconstruction_ && rpIds.size() == 2) {
+          
           // find matching track pairs from different tracking RPs, ordered: i=near, j=far RP
           std::vector<std::pair<unsigned int, unsigned int>> idx_pairs;
           std::map<unsigned int, unsigned int> idx_pair_multiplicity;
@@ -454,6 +461,9 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
             pOutMultiRP->emplace_back(proton);
           }
         }
+        else {
+          edm::LogWarning("CTPPSProtonProducer") << "Not executing reconstructFromMultiRP";
+        }
 
         // save single-RP results (un-indexed)
         for (const auto &p : singleRPResultsIndexed)
@@ -462,8 +472,12 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
 
       // dump log
       if (verbosity_)
-        edm::LogInfo("CTPPSProtonProducer") << ssLog.str();
+        edm::LogWarning("CTPPSProtonProducer") << ssLog.str();
     }
+    else {
+      edm::LogWarning("CTPPSProtonProducer") << "optics invalid";
+    }
+
   }
   else {
     edm::LogWarning("CTPPSProtonProducer") << "tracks already exists, not using LHCInfoCombined";

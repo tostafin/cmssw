@@ -58,16 +58,16 @@ WriteCTPPSPixelDAQMapping::WriteCTPPSPixelDAQMapping(const edm::ParameterSet &ps
       tokenMapping_(esConsumes<CTPPSPixelDAQMapping, CTPPSPixelDAQMappingRcd>(edm::ESInputTag("", label_))) {}
 
 void WriteCTPPSPixelDAQMapping::analyze(const edm::Event &, edm::EventSetup const &es) {
-  // print mapping
-  /*printf("* DAQ mapping\n");
-  for (const auto &p : mapping->ROCMapping)
-    cout << "    " << p.first << " -> " << p.second << endl;
-  */
 
   // Write DAQ Mapping to sqlite file:
 
   const auto &mapping = es.getData(tokenMapping_);
 
+  // print mapping
+  printf("* DAQ mapping\n");
+  for (const auto &p : mapping.ROCMapping)
+    cout << "    " << p.first << " -> " << p.second << endl;
+  
   edm::Service<cond::service::PoolDBOutputService> poolDbService;
   if (poolDbService.isAvailable()) {
     poolDbService->writeOneIOV(mapping, daqmappingiov_, record_);

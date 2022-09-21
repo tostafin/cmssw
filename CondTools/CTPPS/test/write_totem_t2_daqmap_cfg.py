@@ -28,9 +28,9 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
     timetype = cms.untracked.string('runnumber'),
     toPut = cms.VPSet(
     cms.PSet(
-        record = cms.string('TotemT2DAQMappingRcd'),
+        record = cms.string('TotemReadoutRcd'),
         tag = cms.string('T2DAQMapping'),
-        label = cms.string('T2')
+        label = cms.string('TotemT2')
     )
   )
 )
@@ -40,8 +40,8 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
 process.writeTotemT2DAQMapping = cms.EDAnalyzer("WriteTotemT2DAQMapping",
     cms.PSet(
         daqmappingiov = cms.uint64(1),
-        record = cms.string("TotemT2DAQMappingRcd"),
-        label = cms.string("T2")
+        record = cms.string("TotemReadoutRcd"),
+        label = cms.string("TotemT2")
     )
 )
 

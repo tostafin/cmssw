@@ -25,6 +25,8 @@
 #include "CondFormats/PPSObjects/interface/TotemDAQMapping.h"
 // #include "CondFormats/PPSObjects/interface/TotemAnalysisMask.h"
 #include "FWCore/Utilities/interface/ESInputTag.h"
+#include "CondFormats/DataRecord/interface/TotemReadoutRcd.h"
+#include "CondFormats/PPSObjects/interface/TotemDAQMapping.h"
 
 #include <cstdint>
 
@@ -40,7 +42,7 @@ private:
   std::string record_;
   std::string label_;
 
-  edm::ESGetToken<TotemDAQMapping, TotemT2DAQMappingRcd> tokenMapping_;
+  edm::ESGetToken<TotemDAQMapping, TotemReadoutRcd> tokenMapping_;
 };
 
 using namespace std;
@@ -52,20 +54,25 @@ WriteTotemT2DAQMapping::WriteTotemT2DAQMapping(const edm::ParameterSet &ps)
     : daqmappingiov_(ps.getParameter<unsigned long long>("daqmappingiov")),
       record_(ps.getParameter<string>("record")),
       label_(ps.getParameter<string>("label")),
-      tokenMapping_(esConsumes<TotemDAQMapping, TotemT2DAQMappingRcd>(edm::ESInputTag("", label_))) {}
+      tokenMapping_(esConsumes<TotemDAQMapping, TotemReadoutRcd>(edm::ESInputTag("", label_))) {}
 
 void WriteTotemT2DAQMapping::analyze(const edm::Event &, edm::EventSetup const &es) {
   // print mapping
-  /*printf("* DAQ mapping\n");
-  for (const auto &p : mapping->ROCMapping)
-    cout << "    " << p.first << " -> " << p.second << endl;
-  */
+  
 
   // Write DAQ Mapping to sqlite file:
 
   const auto &mapping = es.getData(tokenMapping_);
 
+  printf("* VFAT mapping\n");
+  for (const auto &p : mapping.VFATMapping)
+    cout << "    " << p.first << " -> " << p.second << endl;
+  printf("* Channel mapping\n");
+  for (const auto &p : mapping.totemTimingChannelMap)
+    cout << "    " << p.first << " plane " << p.second.plane << " channel " << p.second.channel << endl;
   edm::Service<cond::service::PoolDBOutputService> poolDbService;
+
+  cout << "is pool db service available: " << poolDbService.isAvailable() << endl;
   if (poolDbService.isAvailable()) {
     poolDbService->writeOneIOV(mapping, daqmappingiov_, record_);
   }

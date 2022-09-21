@@ -291,5 +291,6 @@
 #include "CondFormats/External/interface/L1GtLogicParser.h"
 #include "CondFormats/External/interface/Timestamp.h"
 #include "CondFormats/External/interface/HLTPrescaleTable.h"
+// #include "CondFormats/PPSObjects/interface/TotemDAQMapping.h"
 
 #endif

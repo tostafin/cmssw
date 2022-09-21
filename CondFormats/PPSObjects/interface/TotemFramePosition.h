@@ -128,9 +128,10 @@ public:
   /// returns true if all attributes have been set
   static bool checkXMLAttributeFlag(unsigned char flag) { return (flag == 0x1f); }
 
-  COND_SERIALIZABLE;
 protected:
   unsigned int rawPosition;
+
+  COND_SERIALIZABLE;
 };
 
 #endif

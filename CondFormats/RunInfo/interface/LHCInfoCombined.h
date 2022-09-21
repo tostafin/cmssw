@@ -42,37 +42,13 @@ public:
   void setFromPerLS(const LHCInfoPerLS& infoPerLS);
   void setFromPerFill(const LHCInfoPerFill& infoPerFill);
 
-  
-  //getters
-  float const crossingAngleX() const;
-
-  float const crossingAngleY() const;
-
-  float const betaStarX() const;
-
-  float const betaStarY() const;
-
-  float const energy() const;
-
-  //setters
-  void setCrossingAngleX(float const& angleX);
-
-  void setCrossingAngleY(float const& angleY);
-
-  void setBetaStarX(float const& betaStarX);
-
-  void setBetaStarY(float const& betaStarY);
-
-  void setEnergy(float const& energy);
+  float crossingAngleX;
+  float crossingAngleY;
+  float betaStarX;
+  float betaStarY;
+  float energy;
 
   void print(std::stringstream& ss) const;
-
-private:
-  float crossingAngleX_;
-  float crossingAngleY_;
-  float betaStarX_;
-  float betaStarY_;
-  float energy_;
 };
 
 std::ostream& operator<<(std::ostream& os, LHCInfoCombined beamInfo);

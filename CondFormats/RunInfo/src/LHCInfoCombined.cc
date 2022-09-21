@@ -25,50 +25,28 @@ LHCInfoCombined::LHCInfoCombined(const edm::EventSetup &iSetup,
 }
 
 void LHCInfoCombined::setFromLHCInfo(const LHCInfo& lhcInfo) {
-  setCrossingAngleX(lhcInfo.crossingAngle());
-  setCrossingAngleY(0);
-  setBetaStarX(lhcInfo.betaStar());
-  setBetaStarY(lhcInfo.betaStar());
-  setEnergy(lhcInfo.energy());
+  crossingAngleX = lhcInfo.crossingAngle();
+  crossingAngleY = 0;
+  betaStarX = lhcInfo.betaStar();
+  betaStarY = lhcInfo.betaStar();
+  energy = lhcInfo.energy();
 }
 void LHCInfoCombined::setFromPerLS(const LHCInfoPerLS& infoPerLS) {
-  setCrossingAngleX(infoPerLS.crossingAngleX());
-  setCrossingAngleY(infoPerLS.crossingAngleY());
-  setBetaStarX(infoPerLS.betaStarX());
-  setBetaStarY(infoPerLS.betaStarY());
+  crossingAngleX = infoPerLS.crossingAngleX();
+  crossingAngleY = infoPerLS.crossingAngleY();
+  betaStarX = infoPerLS.betaStarX();
+  betaStarY = infoPerLS.betaStarY();
 }
 void LHCInfoCombined::setFromPerFill(const LHCInfoPerFill& infoPerFill) {
-  setEnergy(infoPerFill.energy());
+  energy = infoPerFill.energy();
 }
 
-//getters
-float const LHCInfoCombined::crossingAngleX() const { return crossingAngleX_; }
-
-float const LHCInfoCombined::crossingAngleY() const { return crossingAngleY_; }
-
-float const LHCInfoCombined::betaStarX() const { return betaStarX_; }
-
-float const LHCInfoCombined::betaStarY() const { return betaStarY_; }
-
-float const LHCInfoCombined::energy() const { return energy_; }
-
-//setters
-void LHCInfoCombined::setCrossingAngleX(float const& angleX) { crossingAngleX_ = angleX; }
-
-void LHCInfoCombined::setCrossingAngleY(float const& angleY) { crossingAngleY_ = angleY; }
-
-void LHCInfoCombined::setBetaStarX(float const& betaStarX) { betaStarX_ = betaStarX; }
-
-void LHCInfoCombined::setBetaStarY(float const& betaStarY) { betaStarY_ = betaStarY; }
-
-void LHCInfoCombined::setEnergy(float const& energy) { energy_ = energy; }
-
 void LHCInfoCombined::print(std::stringstream& ss) const {
-  ss << "Crossing angle x (urad): " << this->crossingAngleX() << std::endl
-     << "Crossing angle y (urad): " << this->crossingAngleY() << std::endl
-     << "Beta star x (m): " << this->betaStarX() << std::endl
-     << "Beta star y (m): " << this->betaStarY() << std::endl
-     << "Energy (GeV): " << this->energy() << std::endl;
+  ss << "Crossing angle x (urad): " << crossingAngleX << std::endl
+     << "Crossing angle y (urad): " << crossingAngleY << std::endl
+     << "Beta star x (m): " << betaStarX << std::endl
+     << "Beta star y (m): " << betaStarY << std::endl
+     << "Energy (GeV): " << energy << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& os, LHCInfoCombined beamInfo) {

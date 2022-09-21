@@ -286,7 +286,7 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
               ssLog << std::endl << "* reconstruction from track " << idx << std::endl;
 
             singleRPResultsIndexed[idx] = algorithm_.reconstructFromSingleRP(CTPPSLocalTrackLiteRef(hTracks, idx),
-                                                                             lhcInfoCombined.energy(), ssLog);
+                                                                             lhcInfoCombined.energy, ssLog);
           }
         }
         else {
@@ -325,14 +325,14 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
 
               bool matching = true;
 
-              if (!ac.isSatisfied(ac.qX, tr_i.x(), tr_i.y(), lhcInfoCombined.crossingAngleX(), tr_i.x() - tr_j.x()))
+              if (!ac.isSatisfied(ac.qX, tr_i.x(), tr_i.y(), lhcInfoCombined.crossingAngleX, tr_i.x() - tr_j.x()))
                 matching = false;
-              else if (!ac.isSatisfied(ac.qY, tr_i.x(), tr_i.y(), lhcInfoCombined.crossingAngleX(), tr_i.y() - tr_j.y()))
+              else if (!ac.isSatisfied(ac.qY, tr_i.x(), tr_i.y(), lhcInfoCombined.crossingAngleX, tr_i.y() - tr_j.y()))
                 matching = false;
-              else if (!ac.isSatisfied(ac.qXi, tr_i.x(), tr_i.y(), lhcInfoCombined.crossingAngleX(), pr_i.xi() - pr_j.xi()))
+              else if (!ac.isSatisfied(ac.qXi, tr_i.x(), tr_i.y(), lhcInfoCombined.crossingAngleX, pr_i.xi() - pr_j.xi()))
                 matching = false;
               else if (!ac.isSatisfied(
-                           ac.qThetaY, tr_i.x(), tr_i.y(), lhcInfoCombined.crossingAngleX(), pr_i.thetaY() - pr_j.thetaY()))
+                           ac.qThetaY, tr_i.x(), tr_i.y(), lhcInfoCombined.crossingAngleX, pr_i.thetaY() - pr_j.thetaY()))
                 matching = false;
 
               if (!matching)
@@ -451,7 +451,7 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
 
             // process tracking-RP data
             reco::ForwardProton proton = algorithm_.reconstructFromMultiRP(sel_track_for_kin_reco,
-                                                                           lhcInfoCombined.energy(), ssLog);
+                                                                           lhcInfoCombined.energy, ssLog);
 
             // save combined output
             proton.setContributingLocalTracks(sel_tracks);

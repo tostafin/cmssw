@@ -1,14 +1,14 @@
 #config
 runNumber=357440
 maxEvents=450000
-experimentName=WORKER_ON_SHIFTED_FILE_by_chrysFile_7
+experimentName=WORKER_ON_SHIFTED_FILE_by_chrysFile_9
 resultsFolderName=test_run_${runNumber}_maxEv${maxEvents}_${experimentName}
 # sqlFileName=sqlite_file:/afs/cern.ch/user/m/mobrzut/public/timing_sqlcalib/ppsDiamondTiming_calibration${runNumber}.sqlite
 
 # worker setup
 workerFile=temp/ExampleConfig_cfg_1_2_without_shift_multisource.py
 shiftExperimentPrefix=JUST_SHIFT_357440_maxEv90000
-rootInput=file:${PWD}/${shiftExperimentPrefix}__diamondDQM_chrys/try3/AOD.root
+rootInput=file:/eos/project/c/ctpps/subsystems/Automation/hptdc-timing-offline/AOD.root
 workerPrefix=${resultsFolderName}/worker_timeshift_${runNumber}_maxEv_${maxEvents}
 
 # harvester setup

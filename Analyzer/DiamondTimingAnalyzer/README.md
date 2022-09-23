@@ -1,3 +1,21 @@
+## Project setup 
+Instruction on how to setup and run efficiency suite in CMSSW_12_4_0 environment:
+
+1. Preprare CMSSW_12_4_0 environment with: `cmsrel CMSSW_12_4_0`
+2. Go to newly created directory: `cd CMSSW_12_4_0`
+3. Setup cms environmental variables(repeat every time you log in): `cmsenv`
+4. Merge with the main branch containing efficiency suite: `git cms-merge-checkout CTPPS:MO/timing/migration_to_CMSSW_12_4_6_clean_branch` #(TODO change it to the main )
+5. Compile the solution `scram b -j10`
+6. Switch directory to the one containing the source code: `cd src/Analyzer/DiamondTimingAnalyzer`
+
+## Run rolling calibrations: 
+
+
+## More Details:
+### Applying time shift 
+### Finding Test File
+
+
 ## Project Structure
 ### Config.json
 Config.json describes the structure of detectors. 

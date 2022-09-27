@@ -17,8 +17,8 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 options.register ('rootFiles',
-				  '', 
-                  VarParsing.multiplicity.singleton, #TODO: it was designed to be a list revert change before merging
+				  [],
+				  VarParsing.multiplicity.list, #TODO: it was designed to be a list revert change before merging
 				  VarParsing.varType.string,
 				  "root files produced by DQMWorker")
 

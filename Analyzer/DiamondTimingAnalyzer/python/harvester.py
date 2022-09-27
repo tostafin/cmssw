@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 from RecoPPS.Local.ctppsDiamondLocalReconstruction_cff import *
+from Geometry.VeryForwardGeometry.geometryRPFromDB_cfi import *
 
 process = cms.Process("TIMINGSTUDY")
 options = VarParsing ('analysis')
@@ -13,10 +14,16 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 options.register ('rootFiles',
-				  [],
-				  VarParsing.multiplicity.list,
+				  '', 
+                  VarParsing.multiplicity.singleton, #TODO: it was designed to be a list revert change before merging
 				  VarParsing.varType.string,
 				  "root files produced by DQMWorker")
+
+# options.register ('outputDirectoryRoot',
+# 				  'OutputHarvester', 
+#                   VarParsing.multiplicity.singleton,
+# 				  VarParsing.varType.string,
+# 				  "root output dircetory")
 
 # options.register ('calibInput',
 # 				  '',
@@ -35,12 +42,6 @@ options.register ('calibInput',
 				  VarParsing.multiplicity.singleton,
 				  VarParsing.varType.string,
 				  "Input file")
-
-options.register ('geometryFile',
-				  'Geometry.VeryForwardGeometry.geometryRPFromDD_2018_cfi',
-				  VarParsing.multiplicity.singleton,
-				  VarParsing.varType.string,
-				  "Geometry input file")
 
 options.register ('calibFiles',
 				  [],
@@ -65,6 +66,21 @@ options.register ('rmsMax',
 				  VarParsing.multiplicity.singleton,
 				  VarParsing.varType.float,
 				  "max rms of t distribution")
+
+options.register('sqlFileName', 
+                    '',
+				  VarParsing.multiplicity.singleton,
+                  VarParsing.varType.string,
+                  'sqlFileNameForCalib'
+)
+
+options.register('useDB', 
+                    '',
+				  VarParsing.multiplicity.singleton,
+                  VarParsing.varType.string,
+                  'use data base for calibraiton'
+)
+		
 				  		  
 options.parseArguments()
 				  
@@ -82,41 +98,109 @@ process.source = cms.Source("DQMRootSource",
 
 from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '106X_dataRun2_v26', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v9', '')
 
-if options.calibInput == '':
-    process.GlobalTag.toGet = cms.VPSet(
-        cms.PSet(record = cms.string('PPSTimingCalibrationRcd'),
-                    tag = cms.string('PPSDiamondTimingCalibration_v1'),
-                connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS")
+### SET TIME SHIFT SOURCE BEGIN
+if options.useDB=='True':
+    use_db=True
+elif options.useDB=='False':
+    use_db=False
+elif options.useDB!='':
+    assert 'UseDB paramter is not valid. It should be True or False (case sensitive)'
+else: 
+    use_db=True
+
+
+# if((options.sqlFileName != '') ^  (options.calibInput  != '') ^ (options.useDB !='')):
+    # assert 'Please specify exactly one source of time shift paramiters. One from set {calib.json, SQLLite File or globalDB}'
+
+use_sqlite_file = options.sqlFileName != ''
+if (use_sqlite_file):
+        print('Using SQL file')                                        
+        process.load('CondCore.CondDB.CondDB_cfi')
+        process.CondDB.connect = options.sqlFileName # SQLite input TODO: migrate to using tag
+        process.PoolDBESSource = cms.ESSource('PoolDBESSource',
+                process.CondDB,
+                DumpStats = cms.untracked.bool(True),
+                toGet = cms.VPSet(
+                    cms.PSet(
+                        record = cms.string('PPSTimingCalibrationRcd'),
+                        tag = cms.string('DiamondTimingCalibration'),
+                                label = cms.untracked.string('PPSTestCalibration'), 
+                    )
                 )
+)
+elif options.calibInput != '':
+    print('Using CalibInput file ')
+    process.ppsTimingCalibrationESSource = cms.ESSource('PPSTimingCalibrationESSource',
+        calibrationFile = cms.string(options.calibInput),
+        subDetector = cms.uint32(2),
+        appendToDataLabel = cms.string('')
+    ) 
+else: #default use db
+    print('Using db') 
+    process.GlobalTag.toGet = cms.VPSet()
+    process.GlobalTag.toGet.append(
+    cms.PSet(record = cms.string("PPSTimingCalibrationRcd"),
+            tag =  cms.string("PPSDiamondTimingCalibration_Run3_recovered_v1"),
+            label = cms.untracked.string('PPSTestCalibration'),
+            connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS")
+        )
     )
-else:
-	process.ppsTimingCalibrationESSource = cms.ESSource('PPSTimingCalibrationESSource',
-		calibrationFile = cms.string(options.calibInput),
-		subDetector = cms.uint32(2),
-		appendToDataLabel = cms.string('')
-	)
+    #TODO: uncomment below when delete sqlite file dependency 
+    # process.GlobalTag.toGet = cms.VPSet(
+    #     cms.PSet(record = cms.string('PPSTimingCalibrationRcd'),
+    #                 tag = cms.string('PPSDiamondTimingCalibration_Run3_v1_hlt'), # working tag: PPSDiamondTimingCalibration_Run3_v1_hlt
+    #                 #TODO: old tag PPSDiamondTimingCalibration_v1  - to delete
+    #             connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS")
+    #             )
+    # )
+### SET TIME SHIFT SOURCE END
 
 # rechits production
 process.load("DQM.Integration.config.environment_cfi")
 process.load("DQMServices.Components.DQMEnvironment_cfi")
-process.load(options.geometryFile)
+process.load('Geometry.VeryForwardGeometry.geometryRPFromDB_cfi')
 
-process.diamondTimingHarvester = DQMEDHarvester("DiamondTimingHarvester",
+# PROCESS HARVESTER:
+if(options.calibInput != ''):
+	process.diamondTimingHarvester = DQMEDHarvester("DiamondTimingHarvester",
+	timingCalibrationTag=cms.string(":"),
+	calib_json_output = cms.string(options.calibOutput),
+	calibFiles = cms.vstring(options.calibFiles),
+	loopIndex = cms.int32(options.loopIndex),
+	meanMax = cms.double(options.meanMax),
+	rmsMax = cms.double(options.rmsMax)
+	)
+elif (use_sqlite_file):
+	process.diamondTimingHarvester = DQMEDHarvester("DiamondTimingHarvester",
+	timingCalibrationTag=cms.string("PoolDBESSource:PPSTestCalibration"),
    calib_json_output = cms.string(options.calibOutput),
-   calibInput = cms.string(options.calibInput),
    calibFiles = cms.vstring(options.calibFiles),
    loopIndex = cms.int32(options.loopIndex),
    meanMax = cms.double(options.meanMax),
    rmsMax = cms.double(options.rmsMax)
 )
+else: # defualt use db
+    process.diamondTimingHarvester = DQMEDHarvester("DiamondTimingHarvester",
+    timingCalibrationTag=cms.string("GlobalTag:PPSTestCalibration"),
+	calib_json_output = cms.string(options.calibOutput),
+	calibFiles = cms.vstring(options.calibFiles),
+	loopIndex = cms.int32(options.loopIndex),
+	meanMax = cms.double(options.meanMax),
+	rmsMax = cms.double(options.rmsMax)
+	)
+# else: 
+#     assert "need to provide timing calibration tag from json, slq file or db"
+
+# process.diamondTimingHarvester.timingCalibrationTag=cms.string("PoolDBESSource:PPSTestCalibration")
+
 
 #CONFIGURE DQM Saver
 process.dqmEnv.subSystemFolder = "CalibPPS"
 process.dqmSaver.convention = 'Offline'
-process.dqmSaver.workflow = "/Analyzer/DiamondTimingAnalyzer/CMSSW_11_1_8"
-#process.dqmSaver.dirName = './OutputFiles/'
+process.dqmSaver.workflow = "/AnalyzerWithShift9/DiamondTimingAnalyzer/CMSSW_12_4_6"
+# process.dqmSaver.dirName = './OutputFiles/'# f'./{options.outputDirectoryRoot}/'
 
 process.path = cms.Path(
    process.diamondTimingHarvester

@@ -138,7 +138,14 @@ public:
                 PPSTimingCalibrationPI::getStringFromChannelEnum(channel) + " vs. Runs",
             PPSTimingCalibrationPI::getStringFromParamEnum(param)) {}
 
-  float getFromPayload(PayloadType& payload) override { return payload.parameters(db, 1, plane, channel)[param]; }
+  float getFromPayload(PayloadType& payload) override {
+    
+      std::ofstream file;
+      file.open("pres.txt", std::ios::app);
+      file << payload;
+      file << "\n\n";
+      file.close();
+     return payload.parameters(db, 1, plane, channel)[param]; }
 };
 
 /************************************************
@@ -200,7 +207,7 @@ public:
         x[i] = i;
       }
 
-      TGraph* graph = new TGraph(n, x, y);
+      TGraph* graph = new TGraph(n, x, y); //sprzatanie pamieci!!
       graph->SetTitle(("PPSTimingCalibration " + PPSTimingCalibrationPI::getStringFromDbEnum(db) + " " +
                        PPSTimingCalibrationPI::getStringFromPlaneEnum(plane) + " " +
                        PPSTimingCalibrationPI::getStringFromParamEnum(param) + " per channel; channel; parameter")

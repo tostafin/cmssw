@@ -13,6 +13,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/Common/interface/TriggerNames.h"
 
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "DQMServices/Core/interface/DQMStore.h"
@@ -25,6 +26,7 @@
 #include "DataFormats/CTPPSDigi/interface/CTPPSPixelDataError.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSPixelCluster.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSPixelLocalTrack.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
 
 #include <string>
 
@@ -47,6 +49,8 @@ private:
   edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelDataError>> tokenError;
   edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelCluster>> tokenCluster;
   edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelLocalTrack>> tokenTrack;
+  edm::EDGetTokenT<edm::TriggerResults> tokenTrigResults;
+  std::string randomTriggerName; 
 
   static constexpr int NArms = 2;
   static constexpr int NStationMAX = 3;  // in an arm
@@ -106,6 +110,7 @@ private:
   MonitorElement *h2xyROCHits[RPotsTotalNumber * NplaneMAX][NROCsMAX];
   MonitorElement *hROCadc[RPotsTotalNumber * NplaneMAX][NROCsMAX];
   MonitorElement *hRPotActivBXall[RPotsTotalNumber];
+  MonitorElement *h2HitsVsBXRandoms[RPotsTotalNumber];
   int HitsMultROC[RPotsTotalNumber * NplaneMAX][NROCsMAX];
   int HitsMultPlane[RPotsTotalNumber][NplaneMAX];
 
@@ -169,11 +174,13 @@ using namespace edm;
 
 CTPPSPixelDQMSource::CTPPSPixelDQMSource(const edm::ParameterSet &ps)
     : verbosity(ps.getUntrackedParameter<unsigned int>("verbosity", 0)),
+      randomTriggerName(ps.getUntrackedParameter<std::string>("randomTriggerName","")),
       rpStatusWord(ps.getUntrackedParameter<unsigned int>("RPStatusWord", 0x8008)) {
   tokenDigi = consumes<DetSetVector<CTPPSPixelDigi>>(ps.getUntrackedParameter<edm::InputTag>("tagRPixDigi"));
   tokenError = consumes<DetSetVector<CTPPSPixelDataError>>(ps.getUntrackedParameter<edm::InputTag>("tagRPixError"));
   tokenCluster = consumes<DetSetVector<CTPPSPixelCluster>>(ps.getUntrackedParameter<edm::InputTag>("tagRPixCluster"));
   tokenTrack = consumes<DetSetVector<CTPPSPixelLocalTrack>>(ps.getUntrackedParameter<edm::InputTag>("tagRPixLTrack"));
+  tokenTrigResults = consumes<edm::TriggerResults>(ps.getUntrackedParameter<edm::InputTag>("tagTrigResults"));
   offlinePlots = ps.getUntrackedParameter<bool>("offlinePlots", true);
   onlinePlots = ps.getUntrackedParameter<bool>("onlinePlots", true);
 
@@ -428,6 +435,9 @@ void CTPPSPixelDQMSource::bookHistograms(DQMStore::IBooker &ibooker, edm::Run co
           }
         }
 
+        // Hits per plane per bx
+        h2HitsVsBXRandoms[indexP] = ibooker.book2D("Hits per plane per BX - random triggers", rpTitle + ";Event.BX;Plane", 4002, -1.5, 4000. + 0.5,6,0,6);
+
         if (onlinePlots) {
           string st3 = ";PlaneIndex(=pixelPot*PlaneMAX + plane)";
 
@@ -571,6 +581,10 @@ void CTPPSPixelDQMSource::analyze(edm::Event const &event, edm::EventSetup const
   Handle<DetSetVector<CTPPSPixelLocalTrack>> pixTrack;
   event.getByToken(tokenTrack, pixTrack);
 
+  Handle<edm::TriggerResults> hltResults;
+  event.getByToken(tokenTrigResults,hltResults);
+
+
   if (onlinePlots) {
     hBX->Fill(event.bunchCrossing());
     hBXshort->Fill(event.bunchCrossing());
@@ -688,6 +702,7 @@ void CTPPSPixelDQMSource::analyze(edm::Event const &event, edm::EventSetup const
       int rpInd = getRPindex(arm, station, rpot);
       RPactivity[rpInd] = 1;
       ++RPdigiSize[rpInd];
+
 
       if (StationStatus[station] && RPstatus[station][rpot]) {
         if (onlinePlots) {
@@ -836,6 +851,16 @@ void CTPPSPixelDQMSource::analyze(edm::Event const &event, edm::EventSetup const
           if (np >= 5)
             hRPotActivBX[index]->Fill(event.bunchCrossing());
           hRPotActivBXall[index]->Fill(event.bunchCrossing(), float(RPdigiSize[index]));
+        }
+        
+        // Select only events from the desired random trigger and fill the histogram
+        const edm::TriggerNames & trigNames = event.triggerNames(*hltResults);
+        for (int p = 0; p < NplaneMAX; p++){
+          for(unsigned int i=0; i<trigNames.size();i++)          {
+	          std::string triggerName = trigNames.triggerName(i);
+            if((hltResults->accept(i)>0)&&(triggerName == randomTriggerName))
+              h2HitsVsBXRandoms[index]->Fill(event.bunchCrossing(),p,HitsMultPlane[index][p]);
+          }
         }
 
         int planesFiredAtROC[NROCsMAX];  // how many planes registered hits on ROC r

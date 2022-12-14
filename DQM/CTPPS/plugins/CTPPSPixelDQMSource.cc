@@ -50,7 +50,7 @@ private:
   edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelCluster>> tokenCluster;
   edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelLocalTrack>> tokenTrack;
   edm::EDGetTokenT<edm::TriggerResults> tokenTrigResults;
-  std::string randomTriggerName; 
+  std::string randomHLTPath; 
 
   static constexpr int NArms = 2;
   static constexpr int NStationMAX = 3;  // in an arm
@@ -174,7 +174,7 @@ using namespace edm;
 
 CTPPSPixelDQMSource::CTPPSPixelDQMSource(const edm::ParameterSet &ps)
     : verbosity(ps.getUntrackedParameter<unsigned int>("verbosity", 0)),
-      randomTriggerName(ps.getUntrackedParameter<std::string>("randomTriggerName","")),
+      randomHLTPath(ps.getUntrackedParameter<std::string>("randomHLTPath","")),
       rpStatusWord(ps.getUntrackedParameter<unsigned int>("RPStatusWord", 0x8008)) {
   tokenDigi = consumes<DetSetVector<CTPPSPixelDigi>>(ps.getUntrackedParameter<edm::InputTag>("tagRPixDigi"));
   tokenError = consumes<DetSetVector<CTPPSPixelDataError>>(ps.getUntrackedParameter<edm::InputTag>("tagRPixError"));
@@ -858,7 +858,7 @@ void CTPPSPixelDQMSource::analyze(edm::Event const &event, edm::EventSetup const
         for (int p = 0; p < NplaneMAX; p++){
           for(unsigned int i=0; i<trigNames.size();i++)          {
 	          std::string triggerName = trigNames.triggerName(i);
-            if((hltResults->accept(i)>0)&&(triggerName == randomTriggerName))
+            if((hltResults->accept(i)>0)&&(triggerName == randomHLTPath))
               h2HitsVsBXRandoms[index]->Fill(event.bunchCrossing(),p,HitsMultPlane[index][p]);
           }
         }

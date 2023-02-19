@@ -46,7 +46,7 @@ private:
   boost::posix_time::ptime m_endTime;
   // sampling interval in seconds
   unsigned int m_samplingInterval;
-  bool m_endFill = true;
+  bool m_endFillMode = true;
   std::string m_name;
   //for reading from relational database source
   std::string m_connectionString, m_ecalConnectionString;

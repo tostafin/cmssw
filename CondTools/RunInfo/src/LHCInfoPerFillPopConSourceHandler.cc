@@ -72,7 +72,7 @@ LHCInfoPerFillPopConSourceHandler::LHCInfoPerFillPopConSourceHandler(edm::Parame
       m_startTime(),
       m_endTime(),
       m_samplingInterval((unsigned int)pset.getUntrackedParameter<unsigned int>("samplingInterval", 300)),
-      m_endFill(pset.getUntrackedParameter<bool>("endFill", true)),
+      m_endFillMode(pset.getUntrackedParameter<bool>("endFill", true)),
       m_name(pset.getUntrackedParameter<std::string>("name", "LHCInfoPerFillPopConSourceHandler")),
       m_connectionString(pset.getUntrackedParameter<std::string>("connectionString", "")),
       m_ecalConnectionString(pset.getUntrackedParameter<std::string>("ecalConnectionString", "")),
@@ -183,15 +183,18 @@ size_t LHCInfoPerFillPopConSourceHandler::getLumiData(const cond::OMSService& om
     edm::LogInfo(m_name) << "Found " << queryResult.size() << " lumisections with STABLE BEAM during the fill "
                          << fillId;
 
-    if (m_endFill) {
-      auto firstRow = queryResult.front();
-      addPayloadToBuffer(firstRow);
+    if(!queryResult.empty())
+    {
+      if (m_endFillMode) {
+        auto firstRow = queryResult.front();
+        addPayloadToBuffer(firstRow);
+        nLumi++;
+      }
+
+      auto lastRow = queryResult.back();
+      addPayloadToBuffer(lastRow);
       nLumi++;
     }
-
-    auto lastRow = queryResult.back();
-    addPayloadToBuffer(lastRow);
-    nLumi++;
   }
   return 0;
 }
@@ -519,6 +522,10 @@ bool LHCInfoPerFillPopConSourceHandler::getEcalData(cond::persistency::Session& 
     }
   }
   std::map<cond::Time_t, cond::Time_t> iovMap;
+  if(m_tmpBuffer.empty())
+  {
+    return ret;
+  }
   cond::Time_t lowerLumi = m_tmpBuffer.front().first;
   while (ECALDataCursor.next()) {
     if (m_debug) {
@@ -656,7 +663,7 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
 
   boost::posix_time::ptime executionTime = boost::posix_time::second_clock::local_time();
   cond::Time_t targetSince = 0;
-  cond::Time_t endIov = cond::time::from_boost(executionTime);
+  cond::Time_t executionTimeIov = cond::time::from_boost(executionTime);
   if (!m_startTime.is_not_a_date_time()) {
     targetSince = cond::time::from_boost(m_startTime);
   }
@@ -689,9 +696,9 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
 
   // bool iovAdded = false;
   while (true) {
-    if (targetSince >= endIov) {
+    if (targetSince >= executionTimeIov) {
       edm::LogInfo(m_name) << "Sampling ended at the time "
-                           << boost::posix_time::to_simple_string(cond::time::to_boost(endIov));
+                           << boost::posix_time::to_simple_string(cond::time::to_boost(executionTimeIov));
       break;
     }
     bool updateEcal = false;
@@ -712,7 +719,7 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
     }
 
     query->filterLT("start_time", m_endTime);
-    if (m_endFill)
+    if (m_endFillMode)
       query->filterNotNull("end_time");
     bool foundFill = query->execute();
     if (foundFill)
@@ -731,7 +738,7 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
     if (endFillTime == 0ULL) {
       edm::LogInfo(m_name) << "Found ongoing fill " << lhcFill << " created at " << cond::time::to_boost(startFillTime);
       endSampleTime = executionTime;
-      targetSince = endIov;
+      targetSince = executionTimeIov;
     } else {
       edm::LogInfo(m_name) << "Found fill " << lhcFill << " created at " << cond::time::to_boost(startFillTime)
                            << " ending at " << cond::time::to_boost(endFillTime);
@@ -741,15 +748,17 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
 
     getDipData(oms, startSampleTime, endSampleTime);
     getLumiData(oms, lhcFill, startSampleTime, endSampleTime);
-    boost::posix_time::ptime flumiStart = cond::time::to_boost(m_tmpBuffer.front().first);
-    boost::posix_time::ptime flumiStop = cond::time::to_boost(m_tmpBuffer.back().first);
-    edm::LogInfo(m_name) << "First lumi starts at " << flumiStart << " last lumi starts at " << flumiStop;
-    session.transaction().start(true);
-    getCTTPSData(session, startSampleTime, endSampleTime);
-    session.transaction().commit();
-    session2.transaction().start(true);
-    getEcalData(session2, startSampleTime, endSampleTime, updateEcal);
-    session2.transaction().commit();
+    if (!m_tmpBuffer.empty()) {
+      boost::posix_time::ptime flumiStart = cond::time::to_boost(m_tmpBuffer.front().first);
+      boost::posix_time::ptime flumiStop = cond::time::to_boost(m_tmpBuffer.back().first);
+      edm::LogInfo(m_name) << "First lumi starts at " << flumiStart << " last lumi starts at " << flumiStop;
+      session.transaction().start(true);
+      getCTTPSData(session, startSampleTime, endSampleTime);
+      session.transaction().commit();
+      session2.transaction().start(true);
+      getEcalData(session2, startSampleTime, endSampleTime, updateEcal);
+      session2.transaction().commit();
+    }
     //
     size_t niovs = LHCInfoPerFillImpl::transferPayloads(m_tmpBuffer, m_iovs, m_prevPayload);
     edm::LogInfo(m_name) << "Added " << niovs << " iovs within the Fill time";

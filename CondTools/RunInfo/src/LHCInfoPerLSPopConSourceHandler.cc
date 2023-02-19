@@ -25,7 +25,7 @@ LHCInfoPerLSPopConSourceHandler::LHCInfoPerLSPopConSourceHandler(edm::ParameterS
       m_startTime(),
       m_endTime(),
       m_samplingInterval((unsigned int)pset.getUntrackedParameter<unsigned int>("samplingInterval", 300)),
-      m_endFill(pset.getUntrackedParameter<bool>("endFill", true)),
+      m_endFillMode(pset.getUntrackedParameter<bool>("endFill", true)),
       m_name(pset.getUntrackedParameter<std::string>("name", "LHCInfoPerLSPopConSourceHandler")),
       m_connectionString(pset.getUntrackedParameter<std::string>("connectionString", "")),
       m_dipSchema(pset.getUntrackedParameter<std::string>("DIPSchema", "")),
@@ -121,14 +121,16 @@ size_t LHCInfoPerLSPopConSourceHandler::getLumiData(const cond::OMSService& oms,
   size_t nlumi = 0;
   if (query->execute()) {
     auto queryResult = query->result();
-    if (m_endFill) {
+    if (m_endFillMode) {
       nlumi = bufferAllLS(queryResult);
-    } else {
-      nlumi = bufferFirstStableBeamLS(queryResult);
-      if (!nlumi && !queryResult.empty()) {
-        auto firstRow = *queryResult.begin();
-        addPayloadToBuffer(firstRow);
-        nlumi++;
+    } else if (!queryResult.empty()) {
+      auto newestPayload = queryResult.back();
+      if (newestPayload.get<std::string>("beams_stable") == "true") {
+        addPayloadToBuffer(newestPayload);
+        nlumi = 1;
+        edm::LogInfo(m_name) << "Buffered most recent lumisection:"
+                             << " LS: " << newestPayload.get<std::string>("lumisection_number") 
+                             << " run: " << newestPayload.get<std::string>("run_number");
       }
     }
     edm::LogInfo(m_name) << "Found " << queryResult.size() << " lumisections during the fill " << fillId;
@@ -387,7 +389,7 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
 
   boost::posix_time::ptime executionTime = boost::posix_time::second_clock::local_time();
   cond::Time_t targetSince = 0;
-  cond::Time_t endIov = cond::time::from_boost(executionTime);
+  cond::Time_t executionTimeIov = cond::time::from_boost(executionTime);
   if (!m_startTime.is_not_a_date_time()) {
     targetSince = cond::time::from_boost(m_startTime);
   }
@@ -443,11 +445,10 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
     }
   }
 
-  // bool iovAdded = false;
   while (true) {
-    if (targetSince >= endIov) {
+    if (targetSince >= executionTimeIov) {
       edm::LogInfo(m_name) << "Sampling ended at the time "
-                           << boost::posix_time::to_simple_string(cond::time::to_boost(endIov));
+                           << boost::posix_time::to_simple_string(cond::time::to_boost(executionTimeIov));
       break;
     }
     boost::posix_time::ptime targetTime = cond::time::to_boost(targetSince);
@@ -458,7 +459,7 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
     oms.connect(m_omsBaseUrl);
     auto query = oms.query("fills");
 
-    if (!m_endFill and m_prevPayload->fillNumber() and m_prevEndFillTime == 0ULL) {
+    if (!m_endFillMode and m_prevPayload->fillNumber() and m_prevEndFillTime == 0ULL) {
       // execute the query for the current fill
       edm::LogInfo(m_name) << "Searching started fill #" << m_prevPayload->fillNumber();
       query->filterEQ("fill_number", m_prevPayload->fillNumber());
@@ -480,26 +481,25 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
       }
 
       query->filterLT("start_time", m_endTime);
-      if (m_endFill)
+      if (m_endFillMode)
         query->filterNotNull("end_time");
       bool foundFill = query->execute();
       if (foundFill)
         foundFill = makeFillPayload(m_fillPayload, query->result());
       if (!foundFill) {
         edm::LogInfo(m_name) << "No fill found - END of job.";
-        // if (iovAdded)
-        //   addEmptyPayload(targetSince);
         break;
       }
       startSampleTime = cond::time::to_boost(m_startFillTime);
     }
 
     unsigned short lhcFill = m_fillPayload->fillNumber();
-    if (m_endFillTime == 0ULL) {
+    bool ongoingFill = m_endFillTime == 0ULL;
+    if (ongoingFill) {
       edm::LogInfo(m_name) << "Found ongoing fill " << lhcFill << " created at "
                            << cond::time::to_boost(m_startFillTime);
       endSampleTime = executionTime;
-      targetSince = endIov;
+      targetSince = executionTimeIov;
     } else {
       edm::LogInfo(m_name) << "Found fill " << lhcFill << " created at " << cond::time::to_boost(m_startFillTime)
                            << " ending at " << cond::time::to_boost(m_endFillTime);
@@ -507,15 +507,19 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
       targetSince = m_endFillTime;
     }
 
-    getLumiData(oms, lhcFill, startSampleTime, endSampleTime);
-    boost::posix_time::ptime flumiStart = cond::time::to_boost(m_tmpBuffer.front().first);
-    boost::posix_time::ptime flumiStop = cond::time::to_boost(m_tmpBuffer.back().first);
-    edm::LogInfo(m_name) << "First lumi starts at " << flumiStart << " last lumi starts at " << flumiStop;
-    session.transaction().start(true);
-    getCTTPSData(session, startSampleTime, endSampleTime);
-    session.transaction().commit();
+    if (m_endFillMode || ongoingFill) {
+      getLumiData(oms, lhcFill, startSampleTime, endSampleTime);
+      
+      if(!m_tmpBuffer.empty()){
+        boost::posix_time::ptime flumiStart = cond::time::to_boost(m_tmpBuffer.front().first);
+        boost::posix_time::ptime flumiStop = cond::time::to_boost(m_tmpBuffer.back().first);
+        edm::LogInfo(m_name) << "First buffered lumi starts at " << flumiStart << " last lumi starts at " << flumiStop;
+        session.transaction().start(true);
+        getCTTPSData(session, startSampleTime, endSampleTime);
+        session.transaction().commit();
+      }
+    }
 
-    //
     size_t niovs = LHCInfoPerLSImpl::transferPayloads(m_tmpBuffer, m_iovs, m_prevPayload);
     edm::LogInfo(m_name) << "Added " << niovs << " iovs within the Fill time";
     if (niovs) {
@@ -523,8 +527,7 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
       m_prevStartFillTime = m_startFillTime;
     }
     m_tmpBuffer.clear();
-    // iovAdded = true;
-    if (m_prevPayload->fillNumber() and m_endFillTime != 0ULL)
+    if (m_prevPayload->fillNumber() and !ongoingFill)
       addEmptyPayload(m_endFillTime);
   }
 }

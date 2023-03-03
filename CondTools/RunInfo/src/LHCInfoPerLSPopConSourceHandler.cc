@@ -129,7 +129,7 @@ size_t LHCInfoPerLSPopConSourceHandler::getLumiData(const cond::OMSService& oms,
         addPayloadToBuffer(newestPayload);
         nlumi = 1;
         edm::LogInfo(m_name) << "Buffered most recent lumisection:"
-                             << " LS: " << newestPayload.get<std::string>("lumisection_number") 
+                             << " LS: " << newestPayload.get<std::string>("lumisection_number")
                              << " run: " << newestPayload.get<std::string>("run_number");
       }
     }
@@ -509,8 +509,8 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
 
     if (m_endFillMode || ongoingFill) {
       getLumiData(oms, lhcFill, startSampleTime, endSampleTime);
-      
-      if(!m_tmpBuffer.empty()){
+
+      if (!m_tmpBuffer.empty()) {
         boost::posix_time::ptime flumiStart = cond::time::to_boost(m_tmpBuffer.front().first);
         boost::posix_time::ptime flumiStop = cond::time::to_boost(m_tmpBuffer.back().first);
         edm::LogInfo(m_name) << "First buffered lumi starts at " << flumiStart << " last lumi starts at " << flumiStop;

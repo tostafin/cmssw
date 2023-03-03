@@ -183,8 +183,7 @@ size_t LHCInfoPerFillPopConSourceHandler::getLumiData(const cond::OMSService& om
     edm::LogInfo(m_name) << "Found " << queryResult.size() << " lumisections with STABLE BEAM during the fill "
                          << fillId;
 
-    if(!queryResult.empty())
-    {
+    if (!queryResult.empty()) {
       if (m_endFillMode) {
         auto firstRow = queryResult.front();
         addPayloadToBuffer(firstRow);
@@ -522,8 +521,7 @@ bool LHCInfoPerFillPopConSourceHandler::getEcalData(cond::persistency::Session& 
     }
   }
   std::map<cond::Time_t, cond::Time_t> iovMap;
-  if(m_tmpBuffer.empty())
-  {
+  if (m_tmpBuffer.empty()) {
     return ret;
   }
   cond::Time_t lowerLumi = m_tmpBuffer.front().first;

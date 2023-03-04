@@ -1,24 +1,24 @@
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "CondCore/CondDB/interface/ConnectionPool.h"
 #include "CondFormats/Common/interface/TimeConversions.h"
 #include "CondTools/RunInfo/interface/LHCInfoPerLSPopConSourceHandler.h"
 #include "CondTools/RunInfo/interface/OMSAccess.h"
-#include "RelationalAccess/ISessionProxy.h"
-#include "RelationalAccess/ISchema.h"
-#include "RelationalAccess/IQuery.h"
-#include "RelationalAccess/ICursor.h"
-#include "CoralBase/AttributeList.h"
 #include "CoralBase/Attribute.h"
+#include "CoralBase/AttributeList.h"
 #include "CoralBase/AttributeSpecification.h"
 #include "CoralBase/TimeStamp.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "RelationalAccess/ICursor.h"
+#include "RelationalAccess/IQuery.h"
+#include "RelationalAccess/ISchema.h"
+#include "RelationalAccess/ISessionProxy.h"
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <sstream>
 #include <utility>
 #include <vector>
-#include <cmath>
-#include <sstream>
 
 LHCInfoPerLSPopConSourceHandler::LHCInfoPerLSPopConSourceHandler(edm::ParameterSet const& pset)
     : m_debug(pset.getUntrackedParameter<bool>("debug", false)),
@@ -47,9 +47,9 @@ LHCInfoPerLSPopConSourceHandler::LHCInfoPerLSPopConSourceHandler(edm::ParameterS
 }
 //L1: try with different m_dipSchema
 //L2: try with different m_name
-LHCInfoPerLSPopConSourceHandler::~LHCInfoPerLSPopConSourceHandler() {}
+LHCInfoPerLSPopConSourceHandler::~LHCInfoPerLSPopConSourceHandler() = default;
 
-namespace LHCInfoPerLSImpl {
+namespace theLHCInfoPerLSImpl {
 
   struct IOVComp {
     bool operator()(const cond::Time_t& x, const std::pair<cond::Time_t, std::shared_ptr<LHCInfoPerLS>>& y) {
@@ -66,7 +66,7 @@ namespace LHCInfoPerLSImpl {
     return (p != container.begin()) ? p - 1 : container.end();
   }
 
-}  // namespace LHCInfoPerLSImpl
+}  // namespace theLHCInfoPerLSImpl
 
 bool LHCInfoPerLSPopConSourceHandler::makeFillPayload(std::unique_ptr<LHCInfoPerLS>& targetPayload,
                                                       const cond::OMSServiceResult& queryResult) {
@@ -140,7 +140,7 @@ size_t LHCInfoPerLSPopConSourceHandler::getLumiData(const cond::OMSService& oms,
   return nlumi;
 }
 
-namespace LHCInfoPerLSImpl {
+namespace theLHCInfoPerLSImpl {
   struct LumiSectionFilter {
     LumiSectionFilter(const std::vector<std::pair<cond::Time_t, std::shared_ptr<LHCInfoPerLS>>>& samples)
         : currLow(samples.begin()), currUp(samples.begin()), end(samples.end()) {
@@ -195,7 +195,7 @@ namespace LHCInfoPerLSImpl {
     std::vector<std::pair<cond::Time_t, std::shared_ptr<LHCInfoPerLS>>>::const_iterator end;
     cond::Time_t currentDipTime = 0;
   };
-}  // namespace LHCInfoPerLSImpl
+}  // namespace theLHCInfoPerLSImpl
 
 bool LHCInfoPerLSPopConSourceHandler::getCTTPSData(cond::persistency::Session& session,
                                                    const boost::posix_time::ptime& beginFillTime,
@@ -244,7 +244,7 @@ bool LHCInfoPerLSPopConSourceHandler::getCTTPSData(cond::persistency::Session& s
   float crossingAngleY = 0., betaStarY = 0.;
 
   bool ret = false;
-  LHCInfoPerLSImpl::LumiSectionFilter filter(m_tmpBuffer);
+  theLHCInfoPerLSImpl::LumiSectionFilter filter(m_tmpBuffer);
   while (CTPPSDataCursor.next()) {
     if (m_debug) {
       std::ostringstream CTPPS;
@@ -317,7 +317,7 @@ void LHCInfoPerLSPopConSourceHandler::addEmptyPayload(cond::Time_t iov) {
   }
 }
 
-namespace LHCInfoPerLSImpl {
+namespace theLHCInfoPerLSImpl {
   bool comparePayloads(const LHCInfoPerLS& rhs, const LHCInfoPerLS& lhs) {
     if (rhs.fillNumber() != lhs.fillNumber())
       return false;
@@ -362,7 +362,7 @@ namespace LHCInfoPerLSImpl {
     return niovs;
   }
 
-}  // namespace LHCInfoPerLSImpl
+}  // namespace theLHCInfoPerLSImpl
 
 void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
   //if a new tag is created, transfer fake fill from 1 to the first fill for the first time
@@ -520,7 +520,7 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
       }
     }
 
-    size_t niovs = LHCInfoPerLSImpl::transferPayloads(m_tmpBuffer, m_iovs, m_prevPayload);
+    size_t niovs = theLHCInfoPerLSImpl::transferPayloads(m_tmpBuffer, m_iovs, m_prevPayload);
     edm::LogInfo(m_name) << "Added " << niovs << " iovs within the Fill time";
     if (niovs) {
       m_prevEndFillTime = m_endFillTime;

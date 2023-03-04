@@ -1,12 +1,12 @@
-#ifndef LHCInfoPerFillPOPCONSOURCEHANDLER_H
-#define LHCInfoPerFillPOPCONSOURCEHANDLER_H
+#ifndef CondTools_RunInfo_LHCInfoPerFillPopConSourceHandler_h
+#define CondTools_RunInfo_LHCInfoPerFillPopConSourceHandler_h
 
 #include <string>
 
 #include "CondCore/PopCon/interface/PopConSourceHandler.h"
 #include "CondFormats/RunInfo/interface/LHCInfoPerFill.h"
-#include "FWCore/ParameterSet/interface/ParameterSetfwd.h"
 #include "CondTools/RunInfo/interface/OMSAccess.h"
+#include "FWCore/ParameterSet/interface/ParameterSetfwd.h"
 
 namespace cond {
   class OMSService;

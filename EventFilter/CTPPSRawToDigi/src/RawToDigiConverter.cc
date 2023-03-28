@@ -437,7 +437,8 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
 	   }
     }
     else{
-	    LogDebug("Totem")<<"Bad record, is missing/IDmismatch/footprintError/CRCerror/ECprogressBad/BCprogressBad: "<<record.status.isMissing()<<"/"<<record.status.isIDMismatch()<<"/"<<record.status.isFootprintError()<<"/"<<record.status.isCRCError()<<"/"<<record.status.isECProgressError()<<"/"<<record.status.isBCProgressError()<<"/"<<endl;
+	    if (verbosity>0)
+	     LogWarning("Totem")<<"Bad record, is missing/IDmismatch/footprintError/CRCerror/ECprogressBad/BCprogressBad: "<<record.status.isMissing()<<"/"<<record.status.isIDMismatch()<<"/"<<record.status.isFootprintError()<<"/"<<record.status.isCRCError()<<"/"<<record.status.isECProgressError()<<"/"<<record.status.isBCProgressError()<<"/"<<endl;
     }
 
     // save status

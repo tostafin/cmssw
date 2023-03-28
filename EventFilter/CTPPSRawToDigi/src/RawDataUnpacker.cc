@@ -201,7 +201,9 @@ int RawDataUnpacker::processOptoRxFrameParallel(const word *buf,
   // size in 16bit words, without header, footer and orbit counter block
   unsigned int nWords = (frameSize - 2) * 4 - 2;
 
-  // process all VFAT data
+      LogDebug("Totem") << "RawDataUnpacker::processOptoRxFrameParallel() head " << head << ", nWords " << nWords << endl;
+
+      // process all VFAT data
   for (unsigned int offset = 0; offset < nWords;) {
     unsigned int wordsProcessed = processVFATDataParallel(payload + offset, nWords, optoRxId, fc);
     offset += wordsProcessed;

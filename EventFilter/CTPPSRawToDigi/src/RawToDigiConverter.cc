@@ -436,6 +436,9 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
 	  foundF++;
 	   }
     }
+    else{
+	    LogDebug("Totem")<<"Bad record, is missing/IDmismatch/footprintError/CRCerror/ECprogressBad/BCprogressBad: "<<record.status.isMissing()<<"/"<<record.status.isIDMismatch()<<"/"<<record.status.isFootprintError()<<"/"<<record.status.isCRCError()<<"/"<<record.status.isECProgressError()<<"/"<<record.status.isBCProgressError()<<"/"<<endl;
+    }
 
     // save status
     DetSet<TotemVFATStatus> &statusDetSet = status.find_or_insert(detId);

@@ -7,7 +7,7 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.cerr.threshold = "DEBUG"
 # enable LogDebug messages only for specific modules
-process.MessageLogger.debugModules = ["*"]
+process.MessageLogger.debugModules = ["Totem"]
 
 process.load('Configuration.EventContent.EventContent_cff')
 #process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
@@ -20,8 +20,8 @@ process.source = cms.Source("NewEventStreamFileReader",
     fileNames = cms.untracked.vstring(
 #        '/store/t0streamer/Data/Physics/000/286/591/run286591_ls0521_streamPhysics_StorageManager.dat',
 #        'file:../../../../run364538_ls0001_streamA_StorageManager.dat',
-        'file:../../../../t2v2p1/run364983_ls0001_streamA_StorageManager.dat',
-        'file:../../../../t2v2p1/run364983_ls0002_streamA_StorageManager.dat',
+        'file:/eos/cms/store/t0streamer/Minidaq/A/000/364/983/run364983_ls0001_streamA_StorageManager.dat',
+        'file:/eos/cms/store/t0streamer/Minidaq/A/000/364/983/run364983_ls0002_streamA_StorageManager.dat',
 #        '/store/t0streamer/Minidaq/A/000/303/982/run303982_ls0001_streamA_StorageManager.dat',
     )
 )
@@ -51,7 +51,7 @@ process.load('Geometry.ForwardGeometry.totemGeometryESModule_cfi')
 process.load('RecoPPS.Local.totemT2RecHits_cfi')
 
 process.output = cms.OutputModule("PoolOutputModule",
-        fileName = cms.untracked.string("file:output-miniDaq2303-T2testFile1-Sun19Mar-sampic-printT2RawToDigiStats3-T2mapFrom0To15,not1to15to0-VFATHeaderoffsetPlus3-5ev.root"),
+        fileName = cms.untracked.string("file:output-miniDaq2303-T2testFile1-Sun19Mar-sampic-printDebug5-T2mapConseqTilesSameFibre-noIDtest-5ev.root"),
     outputCommands = cms.untracked.vstring(
         'drop *',
         'keep *_totemT2*_*_*',

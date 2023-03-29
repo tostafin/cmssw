@@ -406,6 +406,7 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
   int allF=0;
   int goodF=0;
   int foundF=0;
+  LogDebug("Totem")<<"Print debug message, 0="<<goodF;
   // second loop over data
   for (auto &p : records) {
     Record &record = p.second;

@@ -418,7 +418,7 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
       // update Event Counter in status
       record.status.setEC(record.frame->getEC() & 0xFF);
       goodF++;
-      LogWarning("Totem") << "RawToDigiConverter: VFAT frame number "<<allF<<" is OK , mapping HW_ID (decimal) is: "<<(record.info->hwID)<<endl;
+      LogWarning("Totem") << "RawToDigiConverter: VFAT frame number "<<allF<<" is OK , mapping HW_ID (decimal) is: "<<(record.info->hwID)<<", T2DetId arm/plane/channel = "<<(detId)<<endl;
       LogWarning("Totem") <<"HW_id CH0 (dec), LE CH0, TE CH0, geo CH0, marker CH0, HW_id CH1 (dec), LE CH1, TE CH1, geo CH1, marker CH1 = ";
       for (size_t y=0;y<2;y++)
 	LogWarning("Totem")<<((unsigned int) totem::nt2::vfat::channelId(*record.frame,y)) << "/"<<((unsigned int) totem::nt2::vfat::leadingEdgeTime(*record.frame, y))<<"/"<<((unsigned int) totem::nt2::vfat::trailingEdgeTime(*record.frame, y))<<"/"<<((unsigned int) totem::nt2::vfat::geoId(*record.frame,y))<<"/"<<((unsigned int) totem::nt2::vfat::channelMarker(*record.frame,y))<<"/";

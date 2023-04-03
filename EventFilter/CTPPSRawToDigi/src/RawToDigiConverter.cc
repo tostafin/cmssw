@@ -446,6 +446,17 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
     DetSet<TotemVFATStatus> &statusDetSet = status.find_or_insert(detId);
     statusDetSet.push_back(record.status);
   }
+
+  {
+	  int a=0;
+          LogWarning("Totem")<<"T2 Digis:"<<digi.size()<<std::endl;
+          edmNew::DetSetVector<TotemT2Digi>::const_iterator t2t=digi.begin();
+          for (;t2t!=digi.end();t2t++) {
+                  a++;
+                  LogWarning("Totem")<<"Loop over DetSet<T2Digi> number "<<a<<" size/detId:"<<t2t->size()<<"/"<<t2t->detId()<<std::endl;
+	  }
+  }
+
       LogWarning("Totem") << "RawToDigiConverter: VFAT frames per event, total/good/matched the xml mapping (T2Digi created): "<<allF<<"/"<<goodF<<"/"<<foundF<<endl;
 }
 

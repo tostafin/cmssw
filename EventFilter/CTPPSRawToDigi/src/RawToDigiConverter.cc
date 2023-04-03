@@ -426,7 +426,7 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
       
       for (size_t frame_id = 0; frame_id < totem::nt2::vfat::num_channels_per_payload; ++frame_id)
         if (const auto hw_id = totem::nt2::vfat::channelId(*record.frame, frame_id);
-            hw_id == record.info->hwID) { // only unpack the payload associated to this hardware ID
+            (hw_id == record.info->hwID) || (hw_id == -1+ record.info->hwID)) { // only unpack the payload associated to this hardware ID
           // create the digi
           edmNew::DetSetVector<TotemT2Digi>::FastFiller(digi, detId)
               .emplace_back(totem::nt2::vfat::geoId(*record.frame, frame_id),

@@ -39,6 +39,21 @@ options.register( 'messageLevel'
                 , VarParsing.VarParsing.varType.int
                 , "Message level; default to 0"
                   )
+options.register( 'startTime'
+                , '2021-09-10 03:10:18.000'
+                , VarParsing.VarParsing.multiplicity.singleton
+                , VarParsing.VarParsing.varType.string
+                , """Date and time of the start of processing:
+                     processes only fills starting at startTime or later"""
+                  )
+options.register( 'endTime'
+                , ''
+                , VarParsing.VarParsing.multiplicity.singleton
+                , VarParsing.VarParsing.varType.string
+                , """Date and time of the start of processing:
+                     processes only fills starting before endTime;
+                     default to empty string which sets no restriction"""
+                  )
 options.parseArguments()
 
 CondDBConnection = CondDB.clone( connect = cms.string( options.destinationConnection ) )
@@ -70,8 +85,8 @@ process.Test1 = cms.EDAnalyzer("LHCInfoPerLSPopConAnalyzer",
                                record = cms.string('LHCInfoPerLSRcd'),
                                name = cms.untracked.string('LHCInfo'),
                                Source = cms.PSet(fill = cms.untracked.uint32(6417),
-                                   startTime = cms.untracked.string('2021-09-10 03:10:18.000'),
-                                   endTime = cms.untracked.string(''),
+                                   startTime = cms.untracked.string(options.startTime),
+                                   endTime = cms.untracked.string(options.endTime),
                                    samplingInterval = cms.untracked.uint32( 600 ),
                                    endFill = cms.untracked.bool(False),
                                    name = cms.untracked.string("LHCInfoPerLSPopConSourceHandler"),
@@ -79,7 +94,6 @@ process.Test1 = cms.EDAnalyzer("LHCInfoPerLSPopConAnalyzer",
                                    DIPSchema = cms.untracked.string("CMS_BEAM_COND"),
                                    omsBaseUrl = cms.untracked.string("http://vocms0184.cern.ch/agg/api/v1"),
                                    authenticationPath = cms.untracked.string(""),
-                                   #authenticationPath =  cms.untracked.string("."),
                                    debug=cms.untracked.bool(False)
                                                  ),
                                loggingOn = cms.untracked.bool(True),

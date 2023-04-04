@@ -36,7 +36,6 @@ LHCInfoPerLSPopConSourceHandler::LHCInfoPerLSPopConSourceHandler(edm::ParameterS
       m_fillPayload(),
       m_prevPayload(),
       m_tmpBuffer() {
-  edm::LogInfo(m_name) << "startTime existsAs<std::string> " << pset.existsAs<std::string>("startTime");
   if (pset.existsAs<std::string>("startTime", false)) {
     m_startTime = boost::posix_time::time_from_string(pset.getUntrackedParameter<std::string>("startTime"));
   }

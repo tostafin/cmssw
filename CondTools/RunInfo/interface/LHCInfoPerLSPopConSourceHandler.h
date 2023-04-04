@@ -14,14 +14,14 @@ namespace cond {
 }
 
 namespace edm {
-   class ConfigurationDescriptions;
+  class ConfigurationDescriptions;
 }
 
 class LHCInfoPerLSPopConSourceHandler : public popcon::PopConSourceHandler<LHCInfoPerLS> {
 public:
   LHCInfoPerLSPopConSourceHandler(const edm::ParameterSet& pset);
   ~LHCInfoPerLSPopConSourceHandler() override;
-  static void fillDescriptions(edm::ConfigurationDescriptions & descriptions);
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   void getNewObjects() override;
   std::string id() const override;
 

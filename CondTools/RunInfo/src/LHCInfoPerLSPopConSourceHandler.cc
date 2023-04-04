@@ -52,7 +52,7 @@ LHCInfoPerLSPopConSourceHandler::LHCInfoPerLSPopConSourceHandler(edm::ParameterS
 //L2: try with different m_name
 LHCInfoPerLSPopConSourceHandler::~LHCInfoPerLSPopConSourceHandler() = default;
 
-void LHCInfoPerLSPopConSourceHandler::fillDescriptions(edm::ConfigurationDescriptions & descriptions) {
+void LHCInfoPerLSPopConSourceHandler::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.addUntracked<bool>("debug", false);
   desc.addUntracked<unsigned int>("samplingInterval", 300);
@@ -334,8 +334,8 @@ void LHCInfoPerLSPopConSourceHandler::addEmptyPayload(cond::Time_t iov) {
     m_prevPayload = newPayload;
     m_prevEndFillTime = 0;
     m_prevStartFillTime = 0;
-    edm::LogInfo(m_name) << "Added empty payload with IOV" << iov << " ( " 
-                      << boost::posix_time::to_iso_extended_string(cond::time::to_boost(iov)) << " )";
+    edm::LogInfo(m_name) << "Added empty payload with IOV" << iov << " ( "
+                         << boost::posix_time::to_iso_extended_string(cond::time::to_boost(iov)) << " )";
   }
 }
 
@@ -440,7 +440,7 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
     m_prevPayload = session3.fetchPayload<LHCInfoPerLS>(tagInfo().lastInterval.payloadId);
     session3.transaction().commit();
 
-    // find startFillTime and endFillTime of the most recent fill already saved in the tag 
+    // find startFillTime and endFillTime of the most recent fill already saved in the tag
     if (m_prevPayload->fillNumber() != 0) {
       cond::OMSService oms;
       oms.connect(m_omsBaseUrl);

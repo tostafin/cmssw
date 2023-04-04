@@ -88,7 +88,7 @@ LHCInfoPerFillPopConSourceHandler::LHCInfoPerFillPopConSourceHandler(edm::Parame
     m_startTime = boost::posix_time::time_from_string(pset.getUntrackedParameter<std::string>("startTime"));
   }
   boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
-  m_endTime = now; 
+  m_endTime = now;
   if (pset.existsAs<std::string>("endTime", false) && !pset.getUntrackedParameter<std::string>("endTime").empty()) {
     m_endTime = boost::posix_time::time_from_string(pset.getUntrackedParameter<std::string>("endTime"));
     if (m_endTime > now)
@@ -99,7 +99,7 @@ LHCInfoPerFillPopConSourceHandler::LHCInfoPerFillPopConSourceHandler(edm::Parame
 //L2: try with different m_name
 LHCInfoPerFillPopConSourceHandler::~LHCInfoPerFillPopConSourceHandler() = default;
 
-void LHCInfoPerFillPopConSourceHandler::fillDescriptions(edm::ConfigurationDescriptions & descriptions) {
+void LHCInfoPerFillPopConSourceHandler::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.addUntracked<bool>("debug", false);
   desc.addUntracked<unsigned int>("samplingInterval", 300);
@@ -606,7 +606,7 @@ void LHCInfoPerFillPopConSourceHandler::addEmptyPayload(cond::Time_t iov) {
     auto newPayload = std::make_shared<LHCInfoPerFill>();
     m_iovs.insert(std::make_pair(iov, newPayload));
     m_prevPayload = newPayload;
-    edm::LogInfo(m_name) << "Added empty payload with IOV " << iov << " ( " 
+    edm::LogInfo(m_name) << "Added empty payload with IOV " << iov << " ( "
                          << boost::posix_time::to_iso_extended_string(cond::time::to_boost(iov)) << " )";
   }
 }
@@ -779,7 +779,7 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
       getEcalData(session2, startSampleTime, endSampleTime, updateEcal);
       session2.transaction().commit();
     }
-    
+
     size_t niovs = theLHCInfoPerFillImpl::transferPayloads(m_tmpBuffer, m_iovs, m_prevPayload);
     edm::LogInfo(m_name) << "Added " << niovs << " iovs within the Fill time";
     m_tmpBuffer.clear();

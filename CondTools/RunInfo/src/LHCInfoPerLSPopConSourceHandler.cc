@@ -334,6 +334,8 @@ void LHCInfoPerLSPopConSourceHandler::addEmptyPayload(cond::Time_t iov) {
     m_prevPayload = newPayload;
     m_prevEndFillTime = 0;
     m_prevStartFillTime = 0;
+    edm::LogInfo(m_name) << "Added empty payload with IOV" << iov << " ( " 
+                      << boost::posix_time::to_iso_extended_string(cond::time::to_boost(iov)) << " )";
   }
 }
 
@@ -437,6 +439,8 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
     session3.transaction().start(true);
     m_prevPayload = session3.fetchPayload<LHCInfoPerLS>(tagInfo().lastInterval.payloadId);
     session3.transaction().commit();
+
+    // find startFillTime and endFillTime of the most recent fill already saved in the tag 
     if (m_prevPayload->fillNumber() != 0) {
       cond::OMSService oms;
       oms.connect(m_omsBaseUrl);
@@ -480,7 +484,7 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
     auto query = oms.query("fills");
 
     if (!m_endFillMode and m_prevPayload->fillNumber() and m_prevEndFillTime == 0ULL) {
-      // execute the query for the current fill
+      // execute the query for the current (ongoing) fill
       edm::LogInfo(m_name) << "Searching started fill #" << m_prevPayload->fillNumber();
       query->filterEQ("fill_number", m_prevPayload->fillNumber());
       bool foundFill = query->execute();

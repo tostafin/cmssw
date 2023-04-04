@@ -39,6 +39,21 @@ options.register( 'messageLevel'
                 , VarParsing.VarParsing.varType.int
                 , "Message level; default to 0"
                   )
+options.register( 'startTime'
+                , '2021-09-10 03:10:18.000'
+                , VarParsing.VarParsing.multiplicity.singleton
+                , VarParsing.VarParsing.varType.string
+                , """Date and time of the start of processing:
+                     processes only fills starting at startTime or later"""
+                  )
+options.register( 'endTime'
+                , ''
+                , VarParsing.VarParsing.multiplicity.singleton
+                , VarParsing.VarParsing.varType.string
+                , """Date and time of the start of processing:
+                     processes only fills starting before endTime;
+                     default to empty string which sets no restriction"""
+                  )
 options.parseArguments()
 
 CondDBConnection = CondDB.clone( connect = cms.string( options.destinationConnection ) )
@@ -70,8 +85,8 @@ process.Test1 = cms.EDAnalyzer("LHCInfoPerFillPopConAnalyzer",
                                record = cms.string('LHCInfoPerFillRcd'),
                                name = cms.untracked.string('LHCInfo'),
                                Source = cms.PSet(fill = cms.untracked.uint32(6417),
-                                   startTime = cms.untracked.string('2021-09-10 03:10:18.000'),
-                                   endTime = cms.untracked.string(''),
+                                   startTime = cms.untracked.string(options.startTime),
+                                   endTime = cms.untracked.string(options.endTime),
                                    samplingInterval = cms.untracked.uint32( 600 ),
                                    endFill = cms.untracked.bool(True),
                                    name = cms.untracked.string("LHCInfoPerFillPopConSourceHandler"),

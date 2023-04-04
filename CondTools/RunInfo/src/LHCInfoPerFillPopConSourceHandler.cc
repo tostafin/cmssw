@@ -606,6 +606,8 @@ void LHCInfoPerFillPopConSourceHandler::addEmptyPayload(cond::Time_t iov) {
     auto newPayload = std::make_shared<LHCInfoPerFill>();
     m_iovs.insert(std::make_pair(iov, newPayload));
     m_prevPayload = newPayload;
+    edm::LogInfo(m_name) << "Added empty payload with IOV " << iov << " ( " 
+                         << boost::posix_time::to_iso_extended_string(cond::time::to_boost(iov)) << " )";
   }
 }
 
@@ -777,7 +779,7 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
       getEcalData(session2, startSampleTime, endSampleTime, updateEcal);
       session2.transaction().commit();
     }
-    //
+    
     size_t niovs = theLHCInfoPerFillImpl::transferPayloads(m_tmpBuffer, m_iovs, m_prevPayload);
     edm::LogInfo(m_name) << "Added " << niovs << " iovs within the Fill time";
     m_tmpBuffer.clear();

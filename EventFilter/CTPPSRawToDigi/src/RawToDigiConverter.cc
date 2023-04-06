@@ -413,6 +413,7 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
     allF++;
     // calculate ids
     TotemT2DetId detId(record.info->symbolicID.symbolicID);
+    TotemT2DetId detId0(record.info->symbolicID.symbolicID - 1); //hardcoded detId for CH0
 
     if (record.status.isOK()) {
       // update Event Counter in status
@@ -426,9 +427,9 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
       
       for (size_t frame_id = 0; frame_id < totem::nt2::vfat::num_channels_per_payload; ++frame_id)
         if (const auto hw_id = totem::nt2::vfat::channelId(*record.frame, frame_id);
-            (hw_id == record.info->hwID) || (hw_id  == (record.info->hwID >0 ? record.info->hwID -1 : record.info->hwID) )) { // only unpack the payload associated to this hardware ID
+            (hw_id == record.info->hwID) || ((!frame_id)&&(record.info->hwID>0)&&(hw_id  == (record.info->hwID -1))))  { // only unpack the payload associated to this hardware ID, but hardcode the match for first channel, as yet overwritten by 2nd in xml parser
           // create the digi
-          edmNew::DetSetVector<TotemT2Digi>::FastFiller(digi, detId)
+          edmNew::DetSetVector<TotemT2Digi>::FastFiller(digi, (frame_id ? detId : detId0))
               .emplace_back(totem::nt2::vfat::geoId(*record.frame, frame_id),
                             hw_id,
                             totem::nt2::vfat::channelMarker(*record.frame, frame_id),
@@ -453,7 +454,11 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
           edmNew::DetSetVector<TotemT2Digi>::const_iterator t2t=digi.begin();
           for (;t2t!=digi.end();t2t++) {
                   a++;
-                  LogWarning("Totem")<<"Loop over DetSet<T2Digi> number "<<a<<" size/detId:"<<t2t->size()<<"/"<<t2t->detId()<<std::endl;
+		  TotemT2DetId td=(TotemT2DetId) t2t->detId();
+                  LogWarning("Totem")<<"Loop over DetSet<T2Digi> number "<<a<<" size/detId:"<<t2t->size()<<"/"<<td<<std::endl;
+		  edmNew::DetSet<TotemT2Digi>::const_iterator data=t2t->begin();
+		  if (!t2t->empty())
+			  LogWarning("Totem")<<"Number: "<<a<<" DetId arm/plane/channel:"<<td.arm()<<"/"<<td.plane()<<"/"<<td.channel()<<" Digi data, LE/TE:"<<((int) data->leadingEdge())<<"/"<<( (int) data->trailingEdge())<<endl;
 	  }
   }
 

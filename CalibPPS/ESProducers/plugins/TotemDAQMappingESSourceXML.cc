@@ -96,6 +96,9 @@ private:
   //subdetector id for sampic
   unsigned int sampicSubDetId;
 
+  //Unpack multiple channels per payload for T2
+  bool packedPayload;
+
   /// the mapping files
   std::vector<std::string> mappingFileNames;
 
@@ -270,6 +273,7 @@ TotemDAQMappingESSourceXML::TotemDAQMappingESSourceXML(const edm::ParameterSet &
     : verbosity(conf.getUntrackedParameter<unsigned int>("verbosity", 0)),
       subSystemName(conf.getUntrackedParameter<string>("subSystem")),
       sampicSubDetId(conf.getParameter<unsigned int>("sampicSubDetId")),
+	packedPayload(conf.getUntrackedParameter<bool>("multipleChannelsPerPayload", false)),
       currentBlock(0),
       currentBlockValid(false) {
   for (const auto &it : conf.getParameter<vector<ParameterSet>>("configuration")) {
@@ -871,7 +875,7 @@ void TotemDAQMappingESSourceXML::ParseTreeTotemT2(ParseType pType,
           sscanf(cms::xerces::toString(a->getNodeValue()).c_str(), "%x", &hw_id);
           hw_id_set = true;
         }
-        if (!strcmp(cms::xerces::toString(a->getNodeName()).c_str(), "pay")) {
+        if (packedPayload&&(!strcmp(cms::xerces::toString(a->getNodeName()).c_str(), "pay"))) {
           sscanf(cms::xerces::toString(a->getNodeValue()).c_str(), "%u", &channel_in_payload);
           payload_set = true;
         }
@@ -884,7 +888,7 @@ void TotemDAQMappingESSourceXML::ParseTreeTotemT2(ParseType pType,
       if (!hw_id_set)
         throw cms::Exception("TotemDAQMappingESSourceXML::ParseTreeTotemT2")
             << "hwId not given for element `" << cms::xerces::toString(child->getNodeName()) << "'";
-      if (!payload_set)
+      if (packedPayload&&(!payload_set))
         throw cms::Exception("TotemDAQMappingESSourceXML::ParseTreeTotemT2")
             << "Payload position in fibre not given for element `" << cms::xerces::toString(child->getNodeName()) << "'";
 

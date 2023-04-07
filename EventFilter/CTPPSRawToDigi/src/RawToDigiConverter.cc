@@ -413,7 +413,7 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
     allF++;
     // calculate ids
     TotemT2DetId detId(record.info->symbolicID.symbolicID);
-    TotemT2DetId detId0(record.info->symbolicID.symbolicID - 1); //hardcoded detId for CH0
+    TotemT2DetId detId0(record.info->symbolicID.symbolicID > 0 ? record.info->symbolicID.symbolicID - 1 : 0); //hardcoded detId for CH0
 
     if (record.status.isOK()) {
       // update Event Counter in status

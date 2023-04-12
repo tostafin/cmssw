@@ -204,6 +204,9 @@ private:
   /// extracts VFAT's DAQ channel from XML attributes
   TotemFramePosition ChipFramePosition(xercesc::DOMNode *chipnode);
 
+  /// extracts VFAT's DAQ channel from XML attributes for packed T2 payload
+  TotemT2FramePosition ChipT2FramePosition(xercesc::DOMNode *chipnode);
+
   void GetChannels(xercesc::DOMNode *n, std::set<unsigned char> &channels);
 
   bool RPNode(NodeType type) {
@@ -893,13 +896,13 @@ void TotemDAQMappingESSourceXML::ParseTreeTotemT2(ParseType pType,
             << "Payload position in fibre not given for element `" << cms::xerces::toString(child->getNodeName()) << "'";
 
       // store mapping data
-      const TotemFramePosition &framepos = ChipFramePosition(child);
+      const TotemT2FramePosition &framepos = ChipT2FramePosition(child);
       TotemVFATInfo vfatInfo;
       vfatInfo.hwID = hw_id;
       unsigned int arm = parentID / 10, plane = parentID % 10;
       vfatInfo.symbolicID.symbolicID = TotemT2DetId(arm, plane, id);
 
-      mapping->insert(framepos, vfatInfo);
+      mapping->insert( (TotemFramePosition) framepos, vfatInfo);
 
       continue;
     }
@@ -933,6 +936,30 @@ TotemFramePosition TotemDAQMappingESSourceXML::ChipFramePosition(xercesc::DOMNod
   return fp;
 }
 
+//----------------------------------------------------------------------------------------------------
+
+TotemT2FramePosition TotemDAQMappingESSourceXML::ChipT2FramePosition(xercesc::DOMNode *chipnode) {
+  TotemT2FramePosition fp;
+  unsigned char attributeFlag = 0;
+
+  DOMNamedNodeMap *attr = chipnode->getAttributes();
+  for (unsigned int j = 0; j < attr->getLength(); j++) {
+    DOMNode *a = attr->item(j);
+    if (fp.setXMLAttribute(
+            cms::xerces::toString(a->getNodeName()), cms::xerces::toString(a->getNodeValue()), attributeFlag) > 1) {
+      throw cms::Exception("TotemDAQMappingESSourceXML")
+          << "Unrecognized T2 tag `" << cms::xerces::toString(a->getNodeName()) << "' or incompatible value `"
+          << cms::xerces::toString(a->getNodeValue()) << "'.";
+    }
+  }
+
+  if (!fp.checkXMLAttributeFlag(attributeFlag)) {
+    throw cms::Exception("TotemDAQMappingESSourceXML")
+        << "Wrong/incomplete T2 DAQ channel specification (attributeFlag = " << attributeFlag << ").";
+  }
+
+  return fp;
+}
 //----------------------------------------------------------------------------------------------------
 
 TotemDAQMappingESSourceXML::NodeType TotemDAQMappingESSourceXML::GetNodeType(xercesc::DOMNode *n) {

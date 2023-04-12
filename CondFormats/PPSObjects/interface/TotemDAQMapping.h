@@ -11,6 +11,7 @@
 #define CondFormats_PPSObjects_TotemDAQMapping
 
 #include "CondFormats/PPSObjects/interface/TotemFramePosition.h"
+#include "CondFormats/PPSObjects/interface/TotemT2FramePosition.h"
 
 #include "CondFormats/PPSObjects/interface/TotemSymbId.h"
 

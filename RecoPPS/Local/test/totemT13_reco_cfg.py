@@ -44,6 +44,7 @@ process.totemT2Digis.RawUnpacking.verbosity = cms.untracked.uint32(1)
 process.totemT2Digis.RawToDigi.verbosity = cms.untracked.uint32(3)
 process.totemT2Digis.RawToDigi.printUnknownFrameSummary = cms.untracked.uint32(3)
 process.totemT2Digis.RawToDigi.printErrorSummary = cms.untracked.uint32(3)
+process.totemT2Digis.multipleChannelsPerPayload = cms.untracked.bool(True)
 
 # rechits production
 process.load('Geometry.ForwardCommonData.totemT22021V2XML_cfi')
@@ -51,7 +52,7 @@ process.load('Geometry.ForwardGeometry.totemGeometryESModule_cfi')
 process.load('RecoPPS.Local.totemT2RecHits_cfi')
 
 process.output = cms.OutputModule("PoolOutputModule",
-        fileName = cms.untracked.string("file:output-miniDaq2303-T2testFile1-Sun19Mar-sampic-sampicNotParallelProcessing-T2DigiPrint4-hwIDHardCodeCH0Minus1AlsoDetId--5ev.root"),
+        fileName = cms.untracked.string("file:output-miniDaq2303-T2testFile1-Sun19Mar-sampic-sampicNotParallelProcessing-multiPayXMLTrue-DaqMappingAddT2FramePositionClass--5ev.root"),
     outputCommands = cms.untracked.vstring(
         'drop *',
         'keep *_totemT2*_*_*',

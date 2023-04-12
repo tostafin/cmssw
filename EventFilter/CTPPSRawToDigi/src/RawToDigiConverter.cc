@@ -413,7 +413,7 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
     allF++;
     // calculate ids
     TotemT2DetId detId(record.info->symbolicID.symbolicID);
-    TotemT2DetId detId0(record.info->symbolicID.symbolicID > 0 ? record.info->symbolicID.symbolicID - 1 : 0); //hardcoded detId for CH0
+//    TotemT2DetId detId0(record.info->symbolicID.symbolicID > 0 ? record.info->symbolicID.symbolicID - 1 : 0); //hardcoded detId for CH0
 
     if (record.status.isOK()) {
       // update Event Counter in status
@@ -427,9 +427,11 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
       
       for (size_t frame_id = 0; frame_id < totem::nt2::vfat::num_channels_per_payload; ++frame_id)
         if (const auto hw_id = totem::nt2::vfat::channelId(*record.frame, frame_id);
-            (hw_id == record.info->hwID) || ((!frame_id)&&(record.info->hwID>0)&&(hw_id  == (record.info->hwID -1))))  { // only unpack the payload associated to this hardware ID, but hardcode the match for first channel, as yet overwritten by 2nd in xml parser
+            (hw_id == record.info->hwID)) {
+	       //	|| ((!frame_id)&&(record.info->hwID>0)&&(hw_id  == (record.info->hwID -1))))  { 
+	       //	// only unpack the payload associated to this hardware ID, but hardcode the match for first channel, as yet overwritten by 2nd in xml parser
           // create the digi
-          edmNew::DetSetVector<TotemT2Digi>::FastFiller(digi, (frame_id ? detId : detId0))
+          edmNew::DetSetVector<TotemT2Digi>::FastFiller(digi,  detId )
               .emplace_back(totem::nt2::vfat::geoId(*record.frame, frame_id),
                             hw_id,
                             totem::nt2::vfat::channelMarker(*record.frame, frame_id),

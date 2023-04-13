@@ -897,12 +897,22 @@ void TotemDAQMappingESSourceXML::ParseTreeTotemT2(ParseType pType,
 
       // store mapping data
       const TotemT2FramePosition &framepos = ChipT2FramePosition(child);
+      TotemT2FramePosition fp2=framepos;
+      TotemFramePosition fp1=TotemFramePosition(fp2.getRawPosition());
       TotemVFATInfo vfatInfo;
       vfatInfo.hwID = hw_id;
       unsigned int arm = parentID / 10, plane = parentID % 10;
       vfatInfo.symbolicID.symbolicID = TotemT2DetId(arm, plane, id);
+      if (verbosity>0) {
+	      edm::LogWarning("Totem")<<"Print T2 frame pos:"<<framepos<<" hw_id / T2 DetID"<<hw_id<<"/"<<TotemT2DetId(arm,plane,id)<<std::endl;
+//	      TotemT2FramePosition fp2=framepos;
+	      fp2.printXML();
+//	      TotemFramePosition fp1=TotemFramePosition(fp2.getRawPosition());
+	      fp1.printXML();
+      }
 
-      mapping->insert( (TotemFramePosition) framepos, vfatInfo);
+      mapping->insert( fp1, vfatInfo);
+//      mapping->insert( (TotemFramePosition) framepos, vfatInfo);
 
       continue;
     }

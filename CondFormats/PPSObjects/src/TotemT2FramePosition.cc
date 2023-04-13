@@ -22,7 +22,7 @@ std::ostream &operator<<(std::ostream &s, const TotemT2FramePosition &fp) {
 //----------------------------------------------------------------------------------------------------
 
 void TotemT2FramePosition::printXML() {
-  cout << "\" FEDId=\"" << getFEDId() << "\" GOHId=\"" << getGOHId() << "\" IdxInFiber=\"" << getIdxInFiber() << "\" pay=\""
+  cout << "\" FEDId=\"" << getFEDId() << "\" GOHId=\"" << getGOHId() << "\" IdxInFiber=\"" << getIdxInFiber() << "\" pay=\"" << getPayload()
 	  <<"\"";
 }
 

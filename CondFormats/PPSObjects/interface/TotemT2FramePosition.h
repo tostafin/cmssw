@@ -53,7 +53,7 @@ public:
   /// recomended getters and setters
 
   unsigned short getFEDId() const { return (rawPosition >> offsetFEDId) & maskFEDId; }
-  unsigned short getPayload() const { return ((rawPosition >> offsetPayload) & maskPayload) - 1; }
+  unsigned short getPayload() const { return (((rawPosition >> offsetPayload) & maskPayload) - 1); }
 
   void setFEDId(unsigned short v) {
     v &= maskFEDId;
@@ -61,9 +61,9 @@ public:
     rawPosition |= (v << offsetFEDId);
   }
   void setPayload(unsigned short v) {
-    v =(v+1)& maskPayload;
+    unsigned short av =(v+1)& maskPayload;
     rawPosition &= 0xFFFFFFFF - (maskPayload << offsetPayload);
-    rawPosition |= (v << offsetPayload);
+    rawPosition |= (av << offsetPayload);
   }
 
   unsigned short getGOHId() const { return (rawPosition >> offsetGOHId) & maskGOHId; }

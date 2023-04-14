@@ -39,6 +39,10 @@ namespace totem::nt2::vfat {
   inline uint8_t geoId(const VFATFrame& frame, size_t ch_id) {
     return frame.getData()[header_offset + 0 + num_words_per_channel * ch_id] & 0xff;
   }
+  /// retrieve the HW identifier for this channel, in firmware >2.1
+  inline uint16_t newChannelId(const VFATFrame& frame, size_t ch_id) {
+    return frame.getData()[header_offset + 0 + num_words_per_channel * ch_id] & 0xffff;
+  }
   /// retrieve this channel identifier
   inline uint8_t channelId(const VFATFrame& frame, size_t ch_id) {
     return (frame.getData()[header_offset + 0 + num_words_per_channel * ch_id] >> 8) & 0xff;

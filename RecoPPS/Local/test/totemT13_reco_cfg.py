@@ -40,6 +40,7 @@ process.maxEvents = cms.untracked.PSet(
 process.load('CalibPPS.ESProducers.totemT2DAQMapping_cff')
 process.load('EventFilter.CTPPSRawToDigi.totemT2Digis_cfi')
 process.totemT2Digis.rawDataTag = cms.InputTag("rawDataCollector")
+process.totemDAQMappingESSourceXML.verbosity = cms.untracked.uint32(1)
 process.totemT2Digis.RawUnpacking.verbosity = cms.untracked.uint32(1)
 process.totemT2Digis.RawToDigi.verbosity = cms.untracked.uint32(3)
 process.totemT2Digis.RawToDigi.printUnknownFrameSummary = cms.untracked.uint32(3)
@@ -52,7 +53,7 @@ process.load('Geometry.ForwardGeometry.totemGeometryESModule_cfi')
 process.load('RecoPPS.Local.totemT2RecHits_cfi')
 
 process.output = cms.OutputModule("PoolOutputModule",
-        fileName = cms.untracked.string("file:output-miniDaq2303-T2testFile1-Sun19Mar-sampic-sampicNotParallelProcessing-multiPayXMLTrue-DaqMappingAddT2FramePositionClass--5ev.root"),
+        fileName = cms.untracked.string("file:output-miniDaq2303-T2testFile1-Sun19Mar-sampic-sampicNotParallelProcessing-dressedT2FramePosOnly-simpleVFATCollAddT2FP-multiPayXMLTrue-RawUnpackerAddT2FramePositionClass-print12--5ev.root"),
     outputCommands = cms.untracked.vstring(
         'drop *',
         'keep *_totemT2*_*_*',

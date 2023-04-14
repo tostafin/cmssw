@@ -67,6 +67,8 @@ void RawToDigiConverter::runCommon(const VFATFrameCollection &input,
 
     // skip data frames not listed in the DAQ mapping
     auto records_it = records.find(fr.Position());
+      if (verbosity>0) 
+      	LogWarning("Totem")<<"RunCommon: frame position:"<<fr.Position()<<endl;
     if (records_it == records.end()) {
       unknownSummary[fr.Position()]++;
       if (verbosity>0) {

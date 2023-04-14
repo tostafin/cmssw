@@ -35,6 +35,20 @@ void TotemDAQMapping::insert(const TotemFramePosition &fp, const TotemVFATInfo &
 }
 
 //----------------------------------------------------------------------------------------------------
+void TotemDAQMapping::insert(const TotemT2FramePosition &fp2, const TotemVFATInfo &vi) {
+  TotemFramePosition fp1(fp2.getRawPosition());
+  auto it = VFATMapping.find(fp1);
+  if (it != VFATMapping.end()) {
+    cerr << "WARNING in DAQMapping::insert > Overwriting T2 entry at " << fp2 << ". Previous: " << endl
+         << "    " << VFATMapping[fp1] << "," << endl
+         << "  new: " << endl
+         << "    " << vi << ". " << endl;
+  }
+
+  VFATMapping[fp1] = vi;
+}
+
+//----------------------------------------------------------------------------------------------------
 
 const TotemDAQMapping::TotemTimingPlaneChannelPair TotemDAQMapping::getTimingChannel(const uint8_t hwId) const {
   TotemTimingPlaneChannelPair pair;

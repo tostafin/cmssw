@@ -427,11 +427,13 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
 	LogWarning("Totem")<<((unsigned int) totem::nt2::vfat::channelId(*record.frame,y)) << "/"<<((unsigned int) totem::nt2::vfat::leadingEdgeTime(*record.frame, y))<<"/"<<((unsigned int) totem::nt2::vfat::trailingEdgeTime(*record.frame, y))<<"/"<<((unsigned int) totem::nt2::vfat::geoId(*record.frame,y))<<"/"<<((unsigned int) totem::nt2::vfat::channelMarker(*record.frame,y))<<"/";
       LogWarning("Totem")<<endl;
       
-      for (size_t frame_id = 0; frame_id < totem::nt2::vfat::num_channels_per_payload; ++frame_id)
+      for (size_t frame_id = 0; frame_id < totem::nt2::vfat::num_channels_per_payload; ++frame_id) {
         if (const auto hw_id = totem::nt2::vfat::channelId(*record.frame, frame_id);
             (hw_id == record.info->hwID)) {
 	       //	|| ((!frame_id)&&(record.info->hwID>0)&&(hw_id  == (record.info->hwID -1))))  { 
 	       //	// only unpack the payload associated to this hardware ID, but hardcode the match for first channel, as yet overwritten by 2nd in xml parser
+          if (verbosity>0)
+	     LogWarning("Totem")<<"HW_ID comparison match (CH#/Channel HwID/Mapping HwID): "<<((int) frame_id)<<"/"<<((unsigned int) hw_id)<<"/"<<(record.info->hwID)<<endl;
           // create the digi
           edmNew::DetSetVector<TotemT2Digi>::FastFiller(digi,  detId )
               .emplace_back(totem::nt2::vfat::geoId(*record.frame, frame_id),
@@ -441,6 +443,10 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
                             totem::nt2::vfat::trailingEdgeTime(*record.frame, frame_id));
 	  foundF++;
 	   }
+	else
+          if (verbosity>0)
+	     LogWarning("Totem")<<"HW_ID comparison fail (CH#/Channel HwID/Mapping HwID): "<<((int) frame_id)<<"/"<<((unsigned int) hw_id)<<"/"<<(record.info->hwID)<<endl;
+	}
     }
     else{
 	    if (verbosity>0)

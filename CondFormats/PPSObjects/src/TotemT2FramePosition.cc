@@ -40,7 +40,7 @@ unsigned char TotemT2FramePosition::setXMLAttribute(const std::string &attribute
   }
 
   if (attribute == "pay") {
-    setPayload(v+1);
+    setPayload(v);
     flag |= 0x20; //T2 payload
     return 0;
   }

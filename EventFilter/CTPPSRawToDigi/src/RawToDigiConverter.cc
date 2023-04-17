@@ -73,16 +73,14 @@ void RawToDigiConverter::runCommon(const VFATFrameCollection &input,
       unknownSummary[fr.Position()]++;
       if (verbosity>0) {
       	LogWarning("Totem")<<"Printing unknown VFAT frame"<<endl;
-	fr.Data()->Print(false);
-	fr.Data()->Print(true);
+	fr.Data()->PrintT2();
       }
       continue;
     }
 
      if (verbosity>0) {
         LogWarning("Totem")<<"Printing mapped, known VFAT frame"<<endl;
-        fr.Data()->Print(false);
-        fr.Data()->Print(true);
+        fr.Data()->PrintT2();
       }
 
 

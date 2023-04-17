@@ -15,7 +15,11 @@
 void TotemT2RecHitProducerAlgorithm::build(const TotemGeometry& geom,
                                            const edmNew::DetSetVector<TotemT2Digi>& input,
                                            edmNew::DetSetVector<TotemT2RecHit>& output) {
+  const int verbosity=1;
+  int nDigis=0;
+  int nDetSets=0;
   for (const auto& vec : input) {
+    nDigis++;
     const TotemT2DetId detid(vec.detId());
     const int sector = detid.arm(), plane = detid.plane(), channel = detid.channel();
 
@@ -41,12 +45,15 @@ void TotemT2RecHitProducerAlgorithm::build(const TotemGeometry& geom,
             ch_t_twc = 0.;
         }
       }
+      nDetSets++;
 
       // retrieve the geometry element associated to this DetID
       const auto& tile = geom.tile(detid);
 
       // store to the output collection
       filler.emplace_back(tile.centre(), t_lead * ts_to_ns_ - ch_t_offset - ch_t_twc, ch_t_precis, tot);
+      if (verbosity>0)
+       edm::LogWarning("Totem")<<"T2 RecHits produced (T2Digis: #DetSetVector/#DetSet): ("<<nDigis<<"/"<<nDetSets<<"), "<<"T2 tile centre: "<<tile.centre()<<std::endl;
     }
   }
 }

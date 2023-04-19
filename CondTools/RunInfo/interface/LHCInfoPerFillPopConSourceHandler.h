@@ -12,16 +12,10 @@ namespace cond {
   class OMSService;
 }
 
-namespace edm {
-  class ConfigurationDescriptions;
-}
-
 class LHCInfoPerFillPopConSourceHandler : public popcon::PopConSourceHandler<LHCInfoPerFill> {
 public:
   LHCInfoPerFillPopConSourceHandler(const edm::ParameterSet& pset);
   ~LHCInfoPerFillPopConSourceHandler() override;
-  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-
   void getNewObjects() override;
   std::string id() const override;
 

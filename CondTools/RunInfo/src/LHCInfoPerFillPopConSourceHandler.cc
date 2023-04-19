@@ -7,9 +7,7 @@
 #include "CoralBase/AttributeSpecification.h"
 #include "CoralBase/TimeStamp.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "RelationalAccess/ICursor.h"
 #include "RelationalAccess/IQuery.h"
 #include "RelationalAccess/ISchema.h"
@@ -70,26 +68,26 @@ namespace cond {
 }  // namespace cond
 
 LHCInfoPerFillPopConSourceHandler::LHCInfoPerFillPopConSourceHandler(edm::ParameterSet const& pset)
-    : m_debug(pset.getUntrackedParameter<bool>("debug")),
+    : m_debug(pset.getUntrackedParameter<bool>("debug", false)),
       m_startTime(),
       m_endTime(),
-      m_samplingInterval((unsigned int)pset.getUntrackedParameter<unsigned int>("samplingInterval")),
-      m_endFillMode(pset.getUntrackedParameter<bool>("endFill")),
-      m_name(pset.getUntrackedParameter<std::string>("name")),
-      m_connectionString(pset.getUntrackedParameter<std::string>("connectionString")),
-      m_ecalConnectionString(pset.getUntrackedParameter<std::string>("ecalConnectionString")),
-      m_dipSchema(pset.getUntrackedParameter<std::string>("DIPSchema")),
-      m_authpath(pset.getUntrackedParameter<std::string>("authenticationPath")),
-      m_omsBaseUrl(pset.getUntrackedParameter<std::string>("omsBaseUrl")),
+      m_samplingInterval((unsigned int)pset.getUntrackedParameter<unsigned int>("samplingInterval", 300)),
+      m_endFillMode(pset.getUntrackedParameter<bool>("endFill", true)),
+      m_name(pset.getUntrackedParameter<std::string>("name", "LHCInfoPerFillPopConSourceHandler")),
+      m_connectionString(pset.getUntrackedParameter<std::string>("connectionString", "")),
+      m_ecalConnectionString(pset.getUntrackedParameter<std::string>("ecalConnectionString", "")),
+      m_dipSchema(pset.getUntrackedParameter<std::string>("DIPSchema", "")),
+      m_authpath(pset.getUntrackedParameter<std::string>("authenticationPath", "")),
+      m_omsBaseUrl(pset.getUntrackedParameter<std::string>("omsBaseUrl", "")),
       m_fillPayload(),
       m_prevPayload(),
       m_tmpBuffer() {
-  if (pset.existsAs<std::string>("startTime", false)) {
+  if (!pset.getUntrackedParameter<std::string>("startTime").empty()) {
     m_startTime = boost::posix_time::time_from_string(pset.getUntrackedParameter<std::string>("startTime"));
   }
   boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
   m_endTime = now;
-  if (pset.existsAs<std::string>("endTime", false) && !pset.getUntrackedParameter<std::string>("endTime").empty()) {
+  if (!pset.getUntrackedParameter<std::string>("endTime").empty()) {
     m_endTime = boost::posix_time::time_from_string(pset.getUntrackedParameter<std::string>("endTime"));
     if (m_endTime > now)
       m_endTime = now;
@@ -98,24 +96,6 @@ LHCInfoPerFillPopConSourceHandler::LHCInfoPerFillPopConSourceHandler(edm::Parame
 //L1: try with different m_dipSchema
 //L2: try with different m_name
 LHCInfoPerFillPopConSourceHandler::~LHCInfoPerFillPopConSourceHandler() = default;
-
-void LHCInfoPerFillPopConSourceHandler::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  edm::ParameterSetDescription desc;
-  desc.addUntracked<bool>("debug", false);
-  desc.addUntracked<unsigned int>("samplingInterval", 300);
-  desc.addUntracked<bool>("endFill", true);
-  desc.addUntracked<std::string>("name", "LHCInfoPerFillPopConSourceHandler");
-  desc.addUntracked<std::string>("connectionString", "");
-  desc.addUntracked<std::string>("ecalConnectionString", "");
-  desc.addUntracked<std::string>("DIPSchema", "");
-  desc.addUntracked<std::string>("authenticationPath", "");
-  desc.addUntracked<std::string>("omsBaseUrl", "");
-
-  desc.addOptionalUntracked<std::string>("startTime");
-  desc.addOptionalUntracked<std::string>("endTime");
-
-  descriptions.add("LHCInfoPerFillPopConSourceHandler", desc);
-}
 
 namespace theLHCInfoPerFillImpl {
 

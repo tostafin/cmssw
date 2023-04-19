@@ -896,7 +896,8 @@ void TotemDAQMappingESSourceXML::ParseTreeTotemT2(ParseType pType,
             << "Payload position in fibre not given for element `" << cms::xerces::toString(child->getNodeName()) << "'";
 
       // store mapping data
-      const TotemT2FramePosition &framepos = ChipT2FramePosition(child);
+      const TotemT2FramePosition &framepos = (packedPayload ? ChipT2FramePosition(child) : TotemT2FramePosition() );
+      const TotemFramePosition &frameposSingle = (packedPayload ? TotemFramePosition() : ChipFramePosition(child) );
       TotemVFATInfo vfatInfo;
       vfatInfo.hwID = hw_id;
       unsigned int arm = parentID / 10, plane = parentID % 10;
@@ -905,7 +906,7 @@ void TotemDAQMappingESSourceXML::ParseTreeTotemT2(ParseType pType,
 	      edm::LogWarning("Totem")<<"Print T2 frame pos:"<<framepos<<" hw_id / T2 DetID"<<hw_id<<"/"<<TotemT2DetId(arm,plane,id)<<std::endl;
       }
 
-      mapping->insert(framepos, vfatInfo);
+      mapping->insert((packedPayload ? framepos : frameposSingle), vfatInfo);
 
       continue;
     }

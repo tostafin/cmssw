@@ -419,18 +419,19 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
       // update Event Counter in status
       record.status.setEC(record.frame->getEC() & 0xFF);
       goodF++;
-      LogWarning("Totem") << "RawToDigiConverter: VFAT frame number "<<allF<<" is OK , mapping HW_ID (decimal) is: "<<(record.info->hwID)<<", T2DetId arm/plane/channel = "<<(detId)<<endl;
-      LogWarning("Totem") <<"HW_id CH0 (dec), LE CH0, TE CH0, geo CH0, marker CH0, HW_id CH1 (dec), LE CH1, TE CH1, geo CH1, marker CH1 = ";
-      for (size_t y=0;y<2;y++)
-	LogWarning("Totem")<<((unsigned int) totem::nt2::vfat::channelId(*record.frame,y)) << "/"<<((unsigned int) totem::nt2::vfat::leadingEdgeTime(*record.frame, y))<<"/"<<((unsigned int) totem::nt2::vfat::trailingEdgeTime(*record.frame, y))<<"/"<<((unsigned int) totem::nt2::vfat::geoId(*record.frame,y))<<"/"<<((unsigned int) totem::nt2::vfat::channelMarker(*record.frame,y))<<"/";
-      LogWarning("Totem")<<endl;
-      
+      if (verbosity>2) {
+        LogWarning("Totem") << "RawToDigiConverter: VFAT frame number "<<allF<<" is OK , mapping HW_ID (decimal) is: "<<(record.info->hwID)<<", T2DetId arm/plane/channel = "<<(detId)<<endl;
+        LogWarning("Totem") <<"HW_id CH0 (dec), LE CH0, TE CH0, geo CH0, marker CH0, HW_id CH1 (dec), LE CH1, TE CH1, geo CH1, marker CH1 = ";
+        for (size_t y=0;y<2;y++)
+	  LogWarning("Totem")<<((unsigned int) totem::nt2::vfat::channelId(*record.frame,y)) << "/"<<((unsigned int) totem::nt2::vfat::leadingEdgeTime(*record.frame, y))<<"/"<<((unsigned int) totem::nt2::vfat::trailingEdgeTime(*record.frame, y))<<"/"<<((unsigned int) totem::nt2::vfat::geoId(*record.frame,y))<<"/"<<((unsigned int) totem::nt2::vfat::channelMarker(*record.frame,y))<<"/";
+//      LogWarning("Totem")<<endl;
+      }
       for (size_t frame_id = 0; frame_id < totem::nt2::vfat::num_channels_per_payload; ++frame_id) {
         if (const auto hw_id = totem::nt2::vfat::channelId(*record.frame, frame_id);
             (hw_id == record.info->hwID)) {
 	       //	|| ((!frame_id)&&(record.info->hwID>0)&&(hw_id  == (record.info->hwID -1))))  { 
 	       //	// only unpack the payload associated to this hardware ID, but hardcode the match for first channel, as yet overwritten by 2nd in xml parser
-          if (verbosity>0)
+          if (verbosity>2)
 	     LogWarning("Totem")<<"HW_ID comparison match (CH#/Channel HwID/Mapping HwID): "<<((int) frame_id)<<"/"<<((unsigned int) hw_id)<<"/"<<(record.info->hwID)<<endl;
           // create the digi
           edmNew::DetSetVector<TotemT2Digi>::FastFiller(digi,  detId )
@@ -442,12 +443,12 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
 	  foundF++;
 	   }
 	else
-          if (verbosity>0)
+          if (verbosity>2)
 	     LogWarning("Totem")<<"HW_ID comparison fail (CH#/Channel HwID/Mapping HwID): "<<((int) frame_id)<<"/"<<((unsigned int) hw_id)<<"/"<<(record.info->hwID)<<endl;
 	}
     }
     else{
-	    if (verbosity>0)
+	    if (verbosity>1)
 	     LogWarning("Totem")<<"Bad record, is missing/IDmismatch/footprintError/CRCerror/ECprogressBad/BCprogressBad: "<<record.status.isMissing()<<"/"<<record.status.isIDMismatch()<<"/"<<record.status.isFootprintError()<<"/"<<record.status.isCRCError()<<"/"<<record.status.isECProgressError()<<"/"<<record.status.isBCProgressError()<<"/"<<endl;
     }
 
@@ -456,7 +457,7 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
     statusDetSet.push_back(record.status);
   }
 
-  {
+  if (verbosity>2) {
 	  int a=0;
           LogWarning("Totem")<<"T2 Digis:"<<digi.size()<<std::endl;
           edmNew::DetSetVector<TotemT2Digi>::const_iterator t2t=digi.begin();
@@ -470,7 +471,8 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
 	  }
   }
 
-      LogWarning("Totem") << "RawToDigiConverter: VFAT frames per event, total/good/matched the xml mapping (T2Digi created): "<<allF<<"/"<<goodF<<"/"<<foundF<<endl;
+     if (verbosity>1)
+	     LogWarning("Totem") << "RawToDigiConverter: VFAT frames per event, total/good/matched the xml mapping (T2Digi created): "<<allF<<"/"<<goodF<<"/"<<foundF<<endl;
 }
 
 void RawToDigiConverter::printSummaries() const {

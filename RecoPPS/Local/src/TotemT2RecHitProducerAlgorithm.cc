@@ -15,7 +15,7 @@
 void TotemT2RecHitProducerAlgorithm::build(const TotemGeometry& geom,
                                            const edmNew::DetSetVector<TotemT2Digi>& input,
                                            edmNew::DetSetVector<TotemT2RecHit>& output) {
-  const int verbosity=1;
+  const int verbosity=0;
   int nDigis=0;
   int nDetSets=0;
   for (const auto& vec : input) {
@@ -52,7 +52,7 @@ void TotemT2RecHitProducerAlgorithm::build(const TotemGeometry& geom,
 
       // store to the output collection
       filler.emplace_back(tile.centre(), t_lead * ts_to_ns_ - ch_t_offset - ch_t_twc, ch_t_precis, tot);
-      if (verbosity>0)
+      if (verbosity>2)
        edm::LogWarning("Totem")<<"T2 RecHits produced (T2Digis: #DetSetVector/#DetSet): ("<<nDigis<<"/"<<nDetSets<<"), "<<"T2 tile centre: "<<tile.centre()<<std::endl;
     }
   }

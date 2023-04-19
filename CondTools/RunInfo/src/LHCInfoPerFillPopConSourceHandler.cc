@@ -755,7 +755,8 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
     cond::Time_t startFillTime = m_fillPayload->createTime();
     cond::Time_t endFillTime = m_fillPayload->endTime();
     unsigned short lhcFill = m_fillPayload->fillNumber();
-    if (endFillTime == 0ULL) {
+    bool ongoingFill = endFillTime == 0ULL;
+    if (ongoingFill) {
       edm::LogInfo(m_name) << "Found ongoing fill " << lhcFill << " created at " << cond::time::to_boost(startFillTime);
       endSampleTime = executionTime;
       targetSince = executionTimeIov;
@@ -765,27 +766,28 @@ void LHCInfoPerFillPopConSourceHandler::getNewObjects() {
       endSampleTime = cond::time::to_boost(endFillTime);
       targetSince = endFillTime;
     }
-
-    getDipData(oms, startSampleTime, endSampleTime);
-    getLumiData(oms, lhcFill, startSampleTime, endSampleTime);
-    if (!m_tmpBuffer.empty()) {
-      boost::posix_time::ptime flumiStart = cond::time::to_boost(m_tmpBuffer.front().first);
-      boost::posix_time::ptime flumiStop = cond::time::to_boost(m_tmpBuffer.back().first);
-      edm::LogInfo(m_name) << "First lumi starts at " << flumiStart << " last lumi starts at " << flumiStop;
-      session.transaction().start(true);
-      getCTTPSData(session, startSampleTime, endSampleTime);
-      session.transaction().commit();
-      session2.transaction().start(true);
-      getEcalData(session2, startSampleTime, endSampleTime, updateEcal);
-      session2.transaction().commit();
+    if (m_endFillMode || ongoingFill) {
+      getDipData(oms, startSampleTime, endSampleTime);
+      getLumiData(oms, lhcFill, startSampleTime, endSampleTime);
+      if (!m_tmpBuffer.empty()) {
+        boost::posix_time::ptime flumiStart = cond::time::to_boost(m_tmpBuffer.front().first);
+        boost::posix_time::ptime flumiStop = cond::time::to_boost(m_tmpBuffer.back().first);
+        edm::LogInfo(m_name) << "First lumi starts at " << flumiStart << " last lumi starts at " << flumiStop;
+        session.transaction().start(true);
+        getCTTPSData(session, startSampleTime, endSampleTime);
+        session.transaction().commit();
+        session2.transaction().start(true);
+        getEcalData(session2, startSampleTime, endSampleTime, updateEcal);
+        session2.transaction().commit();
+      }
     }
 
     size_t niovs = theLHCInfoPerFillImpl::transferPayloads(m_tmpBuffer, m_iovs, m_prevPayload);
     edm::LogInfo(m_name) << "Added " << niovs << " iovs within the Fill time";
     m_tmpBuffer.clear();
     // iovAdded = true;
-    if (m_prevPayload->fillNumber() and m_fillPayload->endTime() != 0ULL)
-      addEmptyPayload(m_fillPayload->endTime());
+    if (m_prevPayload->fillNumber() and !ongoingFill)
+      addEmptyPayload(endFillTime);
   }
 }
 

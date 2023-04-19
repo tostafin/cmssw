@@ -49,8 +49,7 @@ cmsRun ${SCRIPTS_DIR}/LHCInfoPerFillPopConAnalyzerDuringFill.py \
     destinationConnection="sqlite_file:lhcinfo_pop_unit_test.db" \
     startTime="2022-10-24 01:00:00.000" endTime="2022-10-24 20:00:00.000" \
     tag=fill_during_test > fill_during_test.log || die "cmsRun LHCInfoPerFillPopConAnalyzerDuringFill.py" $?
-#TODO Is 5 really correct?
-assert_equal 5 `cat fill_during_test.log | grep -E '^Since ' | \
+assert_equal 1 `cat fill_during_test.log | grep -E '^Since ' | \
     wc -l` "LHCInfoPerFillPopConAnalyzerDuringFill written wrong number of payloads"
 assert_found_fills fill_during_test.log 8307 8309
 

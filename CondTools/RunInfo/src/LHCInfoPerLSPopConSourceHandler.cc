@@ -483,7 +483,7 @@ void LHCInfoPerLSPopConSourceHandler::getNewObjects() {
     auto query = oms.query("fills");
 
     if (!m_endFillMode and m_prevPayload->fillNumber() and m_prevEndFillTime == 0ULL) {
-      // execute the query for the current (ongoing) fill
+      // continue processing unfinished fill with some payloads already in the tag
       edm::LogInfo(m_name) << "Searching started fill #" << m_prevPayload->fillNumber();
       query->filterEQ("fill_number", m_prevPayload->fillNumber());
       bool foundFill = query->execute();

@@ -903,10 +903,13 @@ void TotemDAQMappingESSourceXML::ParseTreeTotemT2(ParseType pType,
       unsigned int arm = parentID / 10, plane = parentID % 10;
       vfatInfo.symbolicID.symbolicID = TotemT2DetId(arm, plane, id);
       if (verbosity>0) {
-	      edm::LogWarning("Totem")<<"Print T2 frame pos:"<<framepos<<" hw_id / T2 DetID"<<hw_id<<"/"<<TotemT2DetId(arm,plane,id)<<std::endl;
+	      edm::LogWarning("Totem")<<"Print T2 frame pos (payload):"<<framepos<<" ("<<(packedPayload ? "true" : "false")<<") hw_id / T2 DetID"<<hw_id<<"/"<<TotemT2DetId(arm,plane,id)<<std::endl;
       }
 
-      mapping->insert((packedPayload ? framepos : frameposSingle), vfatInfo);
+      if (packedPayload)
+       mapping->insert(framepos, vfatInfo);
+      else
+       mapping->insert(frameposSingle, vfatInfo);
 
       continue;
     }

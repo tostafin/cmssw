@@ -20,8 +20,10 @@ process.source = cms.Source("NewEventStreamFileReader",
     fileNames = cms.untracked.vstring(
 #        '/store/t0streamer/Data/Physics/000/286/591/run286591_ls0521_streamPhysics_StorageManager.dat',
 #        'file:../../../../run364538_ls0001_streamA_StorageManager.dat',
-        'file:/eos/cms/store/t0streamer/Minidaq/A/000/364/983/run364983_ls0001_streamA_StorageManager.dat',
-        'file:/eos/cms/store/t0streamer/Minidaq/A/000/364/983/run364983_ls0002_streamA_StorageManager.dat',
+        'file:../../../../../../CMSSW_13_1_0_pre1/t2v2p1/run364983_ls0001_streamA_StorageManager.dat',
+        'file:../../../../../../CMSSW_13_1_0_pre1/t2v2p1/run364983_ls0002_streamA_StorageManager.dat',
+#        '/store/t0streamer/Minidaq/A/000/364/983/run364983_ls0001_streamA_StorageManager.dat',
+#        '/store/t0streamer/Minidaq/A/000/364/983/run364983_ls0002_streamA_StorageManager.dat',
 #        '/store/t0streamer/Minidaq/A/000/303/982/run303982_ls0001_streamA_StorageManager.dat',
     )
 )
@@ -45,7 +47,7 @@ process.totemT2Digis.RawUnpacking.verbosity = cms.untracked.uint32(1)
 process.totemT2Digis.RawToDigi.verbosity = cms.untracked.uint32(3)
 process.totemT2Digis.RawToDigi.printUnknownFrameSummary = cms.untracked.uint32(3)
 process.totemT2Digis.RawToDigi.printErrorSummary = cms.untracked.uint32(3)
-process.totemT2Digis.multipleChannelsPerPayload = cms.untracked.bool(True)
+process.totemDAQMappingESSourceXML.multipleChannelsPerPayload = cms.untracked.bool(True)
 
 # rechits production
 process.load('Geometry.ForwardCommonData.totemT22021V2XML_cfi')
@@ -53,7 +55,7 @@ process.load('Geometry.ForwardGeometry.totemGeometryESModule_cfi')
 process.load('RecoPPS.Local.totemT2RecHits_cfi')
 
 process.output = cms.OutputModule("PoolOutputModule",
-        fileName = cms.untracked.string("file:output-miniDaq2303-T2testFile1-Sun19Mar-sampic-sampicNotParallelProcessing-dressedT2FramePosOnly-simpleVFATCollAddT2FP-multiPayXMLTrue-RawUnpackerAddT2FramePositionClass-print12--5ev.root"),
+        fileName = cms.untracked.string("file:output-miniDaq2303-T2testFile1-Sun19Mar-sampic-sampicNotParallelProcessing-printAll-try6c-5ev.root"),
     outputCommands = cms.untracked.vstring(
         'drop *',
         'keep *_totemT2*_*_*',

@@ -35,8 +35,8 @@ void TotemT2RecHitProducerAlgorithm::build(const TotemGeometry& geom,
     for (const auto& digi : vec) {
       const int t_lead = digi.leadingEdge(), t_trail = digi.trailingEdge();
 //      if (t_lead == 0 && t_trail == 0)  // skip invalid digis
-      if (!(digi.hasLE()||digi.hasTE()))  // skip invalid digis
-        continue;
+//      if (!(digi.hasLE()||digi.hasTE()))  // don't skip no-edge digis
+//        continue;
       double tot = 0.;
 //      if (t_lead != 0 && t_trail != 0) {
       if (digi.hasLE() && digi.hasTE()) {
@@ -57,8 +57,9 @@ void TotemT2RecHitProducerAlgorithm::build(const TotemGeometry& geom,
       filler.emplace_back(tile.centre(), t_lead * ts_to_ns_ , ch_t_precis, tot);
       if (verbosity>2)
        edm::LogWarning("Totem")<<"T2 RecHits produced (T2Digis: #DetSetVector/#DetSet): ("<<nDigis
-	       <<"/"<<nDetSets<<"), "<<"T2 tile centre: "<<tile.centre()<<" TE/LE/ToT/precision, in ns: "
-	       <<(t_trail*ts_to_ns_)<<"/"<<(t_lead*ts_to_ns_)<<"/"<<tot<<"/"<<ch_t_precis<<std::endl;
+	       <<"/"<<nDetSets<<"), "<<"T2 tile centre: "<<tile.centre()<<" TE/LE/ToT/precision, in ns (TE/LE ok): "
+	       <<(t_trail*ts_to_ns_)<<"/"<<(t_lead*ts_to_ns_)<<"/"<<tot<<"/"<<ch_t_precis
+	       <<" ("<<(digi.hasTE() ? "ok/" : "no/")<<(digi.hasLE() ? "ok)" : "no)")<<std::endl;
     }
   }
 }

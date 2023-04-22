@@ -6,7 +6,7 @@
 *
 ****************************************************************************/
 
-#include "FWCore/Utilities/interface/isFinite.h"
+//include "FWCore/Utilities/interface/isFinite.h"
 #include "RecoPPS/Local/interface/TotemT2RecHitProducerAlgorithm.h"
 
 #include "DataFormats/Common/interface/DetSetNew.h"

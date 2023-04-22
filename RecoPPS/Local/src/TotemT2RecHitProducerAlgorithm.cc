@@ -34,10 +34,12 @@ void TotemT2RecHitProducerAlgorithm::build(const TotemGeometry& geom,
 
     for (const auto& digi : vec) {
       const int t_lead = digi.leadingEdge(), t_trail = digi.trailingEdge();
-      if (t_lead == 0 && t_trail == 0)  // skip invalid digis
+//      if (t_lead == 0 && t_trail == 0)  // skip invalid digis
+      if (!(digi.hasLE()||digi.hasTE()))  // skip invalid digis
         continue;
-      double tot = -1.;
-      if (t_lead != 0 && t_trail != 0) {
+      double tot = 0.;
+//      if (t_lead != 0 && t_trail != 0) {
+      if (digi.hasLE() && digi.hasTE()) {
         tot = (t_trail - t_lead) * ts_to_ns_;  // in ns
  //       if (calib_fct_ && apply_calib_) {      // compute the time-walk correction
  //         ch_t_twc = calib_fct_->evaluate(std::vector<double>{tot}, ch_params);
@@ -54,7 +56,9 @@ void TotemT2RecHitProducerAlgorithm::build(const TotemGeometry& geom,
       // store to the output collection
       filler.emplace_back(tile.centre(), t_lead * ts_to_ns_ , ch_t_precis, tot);
       if (verbosity>2)
-       edm::LogWarning("Totem")<<"T2 RecHits produced (T2Digis: #DetSetVector/#DetSet): ("<<nDigis<<"/"<<nDetSets<<"), "<<"T2 tile centre: "<<tile.centre()<<std::endl;
+       edm::LogWarning("Totem")<<"T2 RecHits produced (T2Digis: #DetSetVector/#DetSet): ("<<nDigis
+	       <<"/"<<nDetSets<<"), "<<"T2 tile centre: "<<tile.centre()<<" TE/LE/ToT/precision, in ns: "
+	       <<(t_trail*ts_to_ns_)<<"/"<<(t_lead*ts_to_ns_)<<"/"<<tot<<"/"<<ch_t_precis<<std::endl;
     }
   }
 }

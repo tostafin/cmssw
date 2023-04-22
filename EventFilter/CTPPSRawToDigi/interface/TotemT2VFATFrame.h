@@ -41,7 +41,8 @@ namespace totem::nt2::vfat {
 //  }
   /// retrieve the HW identifier for this channel, in firmware >2.1
   inline uint16_t newChannelId(const VFATFrame& frame, size_t ch_id) {
-    return frame.getData()[header_offset + 0 + num_words_per_channel * ch_id] & 0xffff;
+    uint16_t tmp= frame.getData()[header_offset + 0 + num_words_per_channel * ch_id] & 0xffff;
+    return ((tmp<<8)|(tmp>>8));
   }
   /// retrieve this channel identifier
 //  inline uint8_t channelId(const VFATFrame& frame, size_t ch_id) {

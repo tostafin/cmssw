@@ -861,6 +861,8 @@ void TotemDAQMappingESSourceXML::ParseTreeTotemT2(ParseType pType,
       // parse tag attributes
       unsigned int hw_id = 0;
       bool hw_id_set = false;
+      unsigned int channel_in_payload = 0;
+      bool payload_set = false;
       DOMNamedNodeMap *attr = child->getAttributes();
 
       for (unsigned int j = 0; j < attr->getLength(); j++) {
@@ -868,6 +870,10 @@ void TotemDAQMappingESSourceXML::ParseTreeTotemT2(ParseType pType,
         if (!strcmp(cms::xerces::toString(a->getNodeName()).c_str(), "hwId")) {
           sscanf(cms::xerces::toString(a->getNodeValue()).c_str(), "%x", &hw_id);
           hw_id_set = true;
+        }
+        if (!strcmp(cms::xerces::toString(a->getNodeName()).c_str(), "pay")) {
+          sscanf(cms::xerces::toString(a->getNodeValue()).c_str(), "%u", &channel_in_payload);
+          payload_set = true;
         }
       }
 
@@ -878,6 +884,9 @@ void TotemDAQMappingESSourceXML::ParseTreeTotemT2(ParseType pType,
       if (!hw_id_set)
         throw cms::Exception("TotemDAQMappingESSourceXML::ParseTreeTotemT2")
             << "hwId not given for element `" << cms::xerces::toString(child->getNodeName()) << "'";
+      if (!payload_set)
+        throw cms::Exception("TotemDAQMappingESSourceXML::ParseTreeTotemT2")
+            << "Payload position in fibre not given for element `" << cms::xerces::toString(child->getNodeName()) << "'";
 
       // store mapping data
       const TotemFramePosition &framepos = ChipFramePosition(child);

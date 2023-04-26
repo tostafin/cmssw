@@ -408,8 +408,8 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
       record.status.setEC(record.frame->getEC() & 0xFF);
       goodT2++;
       if (verbosity>2) {
-        LogWarning("Totem") << "RawToDigiConverter: VFAT frame number "<<allT2<<" is OK , mapping HW_ID (decimal) is: "
-          <<(record.info->hwID)<<endl;
+        LogWarning("Totem") << "RawToDigiConverter: VFAT frame number " << allT2<<" is OK , mapping HW_ID (decimal) is: "
+          <<(record.info->hwID) << ", T2DetId arm/plane/channel = " << (detId) << endl;
         LogWarning("Totem") << "HW_id CH0 (dec), LE CH0, TE CH0, geo CH0, marker CH0, HW_id CH1 (dec), LE CH1,"
 		<< " TE CH1, geo CH1, marker CH1 = ";
         for (size_t y=0; y<2; y++) {
@@ -420,7 +420,7 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
            << ((unsigned int) totem::nt2::vfat::channelMarker(*record.frame,y))<<"/";
 	}
       }
-      for (size_t frame_id = 0; frame_id < totem::nt2::vfat::num_channels_per_payload; ++frame_id)
+      for (size_t frame_id = 0; frame_id < totem::nt2::vfat::num_channels_per_payload; ++frame_id) {
         if (const auto hw_id = totem::nt2::vfat::channelId(*record.frame, frame_id);
             hw_id == record.info->hwID) { // only unpack the payload associated to this hardware ID
           // create the digi
@@ -432,10 +432,17 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
                             totem::nt2::vfat::trailingEdgeTime(*record.frame, frame_id));
           foundT2++;
 	}
+        else {
+          if (verbosity>2)
+            LogWarning("Totem")<<"HW_ID comparison fail (CH#/Channel HwID/Mapping HwID): "<<((int) frame_id)
+              <<"/"<<((unsigned int) hw_id)<<"/"<<(record.info->hwID)<<endl;
+	}
+      }
     }
     else{
         if (verbosity>1)
-          LogWarning("Totem") << "Bad T2 record, is missing/IDmismatch/footprintError/CRCerror/ECprogressBad/BCprogressBad: "
+          LogWarning("Totem") << "Bad T2 record, is missing/IDmismatch/footprintError"
+           << "/CRCerror/ECprogressBad/BCprogressBad: "
            <<record.status.isMissing()<<"/"<<record.status.isIDMismatch()<<"/"
            <<record.status.isFootprintError()<<"/"<<record.status.isCRCError()<<"/"
            <<record.status.isECProgressError()<<"/"<<record.status.isBCProgressError()<<"/"<<endl;

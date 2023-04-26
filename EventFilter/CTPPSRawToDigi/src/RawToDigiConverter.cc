@@ -410,23 +410,21 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
       if (verbosity>2) {
         LogWarning("Totem") << "RawToDigiConverter: VFAT frame number " << allT2<<" is OK , mapping HW_ID (decimal) is: "
           <<(record.info->hwID) << ", T2DetId arm/plane/channel = " << (detId) << endl;
-        LogWarning("Totem") << "HW_id CH0 (dec), LE CH0, TE CH0, geo CH0, marker CH0, HW_id CH1 (dec), LE CH1,"
-		<< " TE CH1, geo CH1, marker CH1 = ";
+        LogWarning("Totem") << "HW_id_16b CH0 (dec), LE CH0, TE CH0, marker CH0, HW_id_16b CH1 (dec), LE CH1,"
+		<< " TE CH1, marker CH1 = ";
         for (size_t y=0; y<2; y++) {
-         LogWarning("Totem") << ((unsigned int) totem::nt2::vfat::channelId(*record.frame,y)) << "/"
+         LogWarning("Totem") << ((unsigned int) totem::nt2::vfat::newChannelId(*record.frame,y)) << "/"
            << ((unsigned int) totem::nt2::vfat::leadingEdgeTime(*record.frame, y))<<"/"
            << ((unsigned int) totem::nt2::vfat::trailingEdgeTime(*record.frame, y))<<"/"
-           << ((unsigned int) totem::nt2::vfat::geoId(*record.frame,y))<<"/"
            << ((unsigned int) totem::nt2::vfat::channelMarker(*record.frame,y))<<"/";
 	}
       }
       for (size_t frame_id = 0; frame_id < totem::nt2::vfat::num_channels_per_payload; ++frame_id) {
-        if (const auto hw_id = totem::nt2::vfat::channelId(*record.frame, frame_id);
+        if (const auto hw_id = totem::nt2::vfat::newChannelId(*record.frame, frame_id);
             hw_id == record.info->hwID) { // only unpack the payload associated to this hardware ID
           // create the digi
           edmNew::DetSetVector<TotemT2Digi>::FastFiller(digi, detId)
-              .emplace_back(totem::nt2::vfat::geoId(*record.frame, frame_id),
-                            hw_id,
+              .emplace_back(hw_id,
                             totem::nt2::vfat::channelMarker(*record.frame, frame_id),
                             totem::nt2::vfat::leadingEdgeTime(*record.frame, frame_id),
                             totem::nt2::vfat::trailingEdgeTime(*record.frame, frame_id));

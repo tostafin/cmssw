@@ -391,20 +391,26 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
   // common processing - frame validation
   runCommon(coll, mapping, records);
 
+  int allT2=0;
+  int goodT2=0;
+  int foundT2=0;
+
   // second loop over data
   for (auto &p : records) {
     Record &record = p.second;
 
+    allT2++;
     // calculate ids
     TotemT2DetId detId(record.info->symbolicID.symbolicID);
 
     if (record.status.isOK()) {
       // update Event Counter in status
       record.status.setEC(record.frame->getEC() & 0xFF);
+      goodT2++;
 
       for (size_t frame_id = 0; frame_id < totem::nt2::vfat::num_channels_per_payload; ++frame_id)
         if (const auto hw_id = totem::nt2::vfat::channelId(*record.frame, frame_id);
-            hw_id == record.info->hwID)  // only unpack the payload associated to this hardware ID
+            hw_id == record.info->hwID) { // only unpack the payload associated to this hardware ID
           // create the digi
           edmNew::DetSetVector<TotemT2Digi>::FastFiller(digi, detId)
               .emplace_back(totem::nt2::vfat::geoId(*record.frame, frame_id),
@@ -412,12 +418,17 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
                             totem::nt2::vfat::channelMarker(*record.frame, frame_id),
                             totem::nt2::vfat::leadingEdgeTime(*record.frame, frame_id),
                             totem::nt2::vfat::trailingEdgeTime(*record.frame, frame_id));
+          foundT2++;
+	}
     }
 
     // save status
     DetSet<TotemVFATStatus> &statusDetSet = status.find_or_insert(detId);
     statusDetSet.push_back(record.status);
   }
+  if (verbosity>1)
+	  LogWarning("Totem") << "RawToDigiConverter::runT2() all/good/mapped records: " << allT2
+            << "/" << goodT2 << "/" << foundT2 << endl;
 }
 
 void RawToDigiConverter::printSummaries() const {

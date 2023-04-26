@@ -23,10 +23,10 @@ void TotemT2RecHitProducerAlgorithm::build(const TotemGeometry& geom,
 
     for (const auto& digi : vec) {
       const int t_lead = digi.leadingEdge(), t_trail = digi.trailingEdge();
-      if (t_lead == 0 && t_trail == 0)  // skip invalid digis
-        continue;
-      double tot = -1.;
-      if (t_lead != 0 && t_trail != 0) {
+//      if (!(digi.hasLE()||digi.hasTE()))  // don't skip no-edge digis
+//        continue;
+      double tot = 0.;
+      if (digi.hasLE() && digi.hasTE()) {
         tot = (t_trail - t_lead) * ts_to_ns_;  // in ns
       }
       double ch_t_precis=ts_to_ns_/2.0; //without a calibration, assume LE/TE precision is +-0.5

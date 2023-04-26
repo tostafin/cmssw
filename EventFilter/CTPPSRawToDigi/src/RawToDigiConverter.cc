@@ -407,7 +407,19 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
       // update Event Counter in status
       record.status.setEC(record.frame->getEC() & 0xFF);
       goodT2++;
-
+      if (verbosity>2) {
+        LogWarning("Totem") << "RawToDigiConverter: VFAT frame number "<<allT2<<" is OK , mapping HW_ID (decimal) is: "
+          <<(record.info->hwID)<<endl;
+        LogWarning("Totem") << "HW_id CH0 (dec), LE CH0, TE CH0, geo CH0, marker CH0, HW_id CH1 (dec), LE CH1,"
+		<< " TE CH1, geo CH1, marker CH1 = ";
+        for (size_t y=0; y<2; y++) {
+         LogWarning("Totem") << ((unsigned int) totem::nt2::vfat::channelId(*record.frame,y)) << "/"
+           << ((unsigned int) totem::nt2::vfat::leadingEdgeTime(*record.frame, y))<<"/"
+           << ((unsigned int) totem::nt2::vfat::trailingEdgeTime(*record.frame, y))<<"/"
+           << ((unsigned int) totem::nt2::vfat::geoId(*record.frame,y))<<"/"
+           << ((unsigned int) totem::nt2::vfat::channelMarker(*record.frame,y))<<"/";
+	}
+      }
       for (size_t frame_id = 0; frame_id < totem::nt2::vfat::num_channels_per_payload; ++frame_id)
         if (const auto hw_id = totem::nt2::vfat::channelId(*record.frame, frame_id);
             hw_id == record.info->hwID) { // only unpack the payload associated to this hardware ID
@@ -427,8 +439,8 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
     statusDetSet.push_back(record.status);
   }
   if (verbosity>1)
-	  LogWarning("Totem") << "RawToDigiConverter::runT2() all/good/mapped records: " << allT2
-            << "/" << goodT2 << "/" << foundT2 << endl;
+    LogWarning("Totem") << "RawToDigiConverter:: VFAT frames per event, total/good/matched the xml mapping"
+     << " (T2Digi created): " << allT2 << "/" << goodT2 << "/" << foundT2 << endl;
 }
 
 void RawToDigiConverter::printSummaries() const {

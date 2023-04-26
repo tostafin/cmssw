@@ -74,10 +74,13 @@ int RawDataUnpacker::processOptoRxFrame(const word *buf,
                     << ", frameSize = " << frameSize << ", fov = " << fov;
 
   if ((optoRxId >= FEDNumbering::MINTotemRPTimingVerticalFEDID &&
-       optoRxId <= FEDNumbering::MAXTotemRPTimingVerticalFEDID) |
-      (optoRxId >= FEDNumbering::MINTotemT2FEDID && optoRxId <= FEDNumbering::MAXTotemT2FEDID)) {
+       optoRxId <= FEDNumbering::MAXTotemRPTimingVerticalFEDID)) {
     processOptoRxFrameSampic(buf, frameSize, fedInfo, fc);
     return 0;
+  }
+  if ((optoRxId >= FEDNumbering::MINTotemT2FEDID && optoRxId <= FEDNumbering::MAXTotemT2FEDID)) {
+   processOptoRxFrameSampic(buf, frameSize, fedInfo, fc);
+   return 0;
   }
 
   // parallel or serial transmission?

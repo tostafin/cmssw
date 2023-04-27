@@ -12,7 +12,6 @@
 class TotemT2Digi {
 public:
   TotemT2Digi() = default;
- // TotemT2Digi(unsigned char geo, unsigned char id, unsigned char marker, unsigned short le, unsigned short te);
   TotemT2Digi(unsigned short id, unsigned char marker, unsigned short le, unsigned short te);
 
   void setLeadingEdge(unsigned short le) { lead_edge_ = le; }

@@ -26,13 +26,7 @@
  **/
 class TotemT2FramePosition: public TotemFramePosition {
 public:
-//  static const unsigned int offsetIdxInFiber = 0, maskIdxInFiber = 0xF;
-//  static const unsigned int offsetGOHId = 4, maskGOHId = 0xF;
-//  static const unsigned int offsetFEDId = 8, maskFEDId = 0x3FF;
 
-//  static const unsigned int offsetOptoRxId = 8, maskOptoRxId = 0x3;
-//  static const unsigned int offsetTOTFEDId = 10, maskTOTFEDId = 0x1F;
-//  static const unsigned int offsetSubSystemId = 15, maskSubSystemId = 0x7;
   static const unsigned int offsetPayload = 18, maskPayload = 0x3;
 
   /// the preferred constructor

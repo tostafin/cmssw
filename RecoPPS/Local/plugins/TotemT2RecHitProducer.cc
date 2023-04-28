@@ -12,7 +12,6 @@
 #include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-//include "FWCore/Framework/interface/ESWatcher.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/StreamID.h"
@@ -28,8 +27,6 @@
 
 #include "Geometry/Records/interface/TotemGeometryRcd.h"
 #include "Geometry/CommonTopologies/interface/TrapezoidalStripTopology.h"
-//include "CondFormats/DataRecord/interface/PPSTimingCalibrationRcd.h"
-//include "CondFormats/DataRecord/interface/PPSTimingCalibrationLUTRcd.h"
 
 class TotemT2RecHitProducer : public edm::stream::EDProducer<> {
 public:
@@ -41,8 +38,6 @@ private:
   void produce(edm::Event&, const edm::EventSetup&) override;
 
   edm::EDGetTokenT<edmNew::DetSetVector<TotemT2Digi> > digiToken_;
-//  edm::ESGetToken<PPSTimingCalibration, PPSTimingCalibrationRcd> timingCalibrationToken_;
-//  edm::ESGetToken<PPSTimingCalibrationLUT, PPSTimingCalibrationLUTRcd> timingCalibrationLUTToken_;
   edm::ESGetToken<TotemGeometry, TotemGeometryRcd> geometryToken_;
   /// A watcher to detect timing calibration changes.
 //  edm::ESWatcher<PPSTimingCalibrationRcd> calibWatcher_;

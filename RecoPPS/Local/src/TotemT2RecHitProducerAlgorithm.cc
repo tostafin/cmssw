@@ -23,8 +23,7 @@ void TotemT2RecHitProducerAlgorithm::build(const TotemGeometry& geom,
 
     for (const auto& digi : vec) {
       const int t_lead = digi.leadingEdge(), t_trail = digi.trailingEdge();
-//      if (!(digi.hasLE()||digi.hasTE()))  // don't skip no-edge digis
-//        continue;
+      // don't skip no-edge digis
       double tot = 0.;
       if (digi.hasLE() && digi.hasTE()) {
         tot = (t_trail - t_lead) * ts_to_ns_;  // in ns

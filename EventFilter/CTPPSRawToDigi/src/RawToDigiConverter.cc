@@ -25,15 +25,15 @@ using namespace edm;
 
 RawToDigiConverter::RawToDigiConverter(const edm::ParameterSet &conf)
     : verbosity(conf.getUntrackedParameter<unsigned int>("verbosity", 0)),
-      printErrorSummary(conf.getUntrackedParameter<unsigned int>("printErrorSummary", 1)),
-      printUnknownFrameSummary(conf.getUntrackedParameter<unsigned int>("printUnknownFrameSummary", 1)),
+      printErrorSummary(conf.getUntrackedParameter<bool>("printErrorSummary", true)),
+      printUnknownFrameSummary(conf.getUntrackedParameter<bool>("printUnknownFrameSummary", true)),
 
       testFootprint(conf.getParameter<unsigned int>("testFootprint")),
       testCRC(conf.getParameter<unsigned int>("testCRC")),
       testID(conf.getParameter<unsigned int>("testID")),
       testECMostFrequent(conf.getParameter<unsigned int>("testECMostFrequent")),
       testBCMostFrequent(conf.getParameter<unsigned int>("testBCMostFrequent")),
-      olderTotemT2FileTest(conf.getParameter<bool>("useOlderT2TestFile", False)),
+      olderTotemT2FileTest(conf.getParameter<bool>("useOlderT2TestFile")),
 
       EC_min(conf.getUntrackedParameter<unsigned int>("EC_min", 10)),
       BC_min(conf.getUntrackedParameter<unsigned int>("BC_min", 10)),

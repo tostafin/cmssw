@@ -40,7 +40,7 @@ totemVFATRawToDigi = cms.EDProducer("TotemVFATRawToDigi",
     BC_fraction = cms.untracked.double(0.6),
 
     # if true, tread hwID field as two separate 8-bit fields instead of one 16-bit
-    useOlderT2TestFile = cms.bool(False)
+    useOlderT2TestFile = cms.bool(False),
 
     # if true, prints a per-VFAT error summary at the end of the job
     printErrorSummary = cms.untracked.bool(False),

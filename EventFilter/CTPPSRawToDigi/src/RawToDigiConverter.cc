@@ -33,13 +33,14 @@ RawToDigiConverter::RawToDigiConverter(const edm::ParameterSet &conf)
       testID(conf.getParameter<unsigned int>("testID")),
       testECMostFrequent(conf.getParameter<unsigned int>("testECMostFrequent")),
       testBCMostFrequent(conf.getParameter<unsigned int>("testBCMostFrequent")),
-      olderTotemT2FileTest(conf.getParameter<bool>("useOlderT2TestFile")),
 
       EC_min(conf.getUntrackedParameter<unsigned int>("EC_min", 10)),
       BC_min(conf.getUntrackedParameter<unsigned int>("BC_min", 10)),
 
       EC_fraction(conf.getUntrackedParameter<double>("EC_fraction", 0.6)),
-      BC_fraction(conf.getUntrackedParameter<double>("BC_fraction", 0.6)) {}
+      BC_fraction(conf.getUntrackedParameter<double>("BC_fraction", 0.6)),
+
+      olderTotemT2FileTest(conf.getParameter<bool>("useOlderT2TestFile")) {}
 
 void RawToDigiConverter::runCommon(const VFATFrameCollection &input,
                                    const TotemDAQMapping &mapping,

@@ -25,7 +25,6 @@ using namespace edm;
 
 RawToDigiConverter::RawToDigiConverter(const edm::ParameterSet &conf)
     : verbosity(conf.getUntrackedParameter<unsigned int>("verbosity", 0)),
-      olderTotemT2FileTest(conf.getUntrackedParameter<unsigned int>("useOlderT2TestFile", 0)),
       printErrorSummary(conf.getUntrackedParameter<unsigned int>("printErrorSummary", 1)),
       printUnknownFrameSummary(conf.getUntrackedParameter<unsigned int>("printUnknownFrameSummary", 1)),
 
@@ -34,6 +33,7 @@ RawToDigiConverter::RawToDigiConverter(const edm::ParameterSet &conf)
       testID(conf.getParameter<unsigned int>("testID")),
       testECMostFrequent(conf.getParameter<unsigned int>("testECMostFrequent")),
       testBCMostFrequent(conf.getParameter<unsigned int>("testBCMostFrequent")),
+      olderTotemT2FileTest(conf.getParameter<bool>("useOlderT2TestFile", False)),
 
       EC_min(conf.getUntrackedParameter<unsigned int>("EC_min", 10)),
       BC_min(conf.getUntrackedParameter<unsigned int>("BC_min", 10)),
@@ -396,7 +396,7 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
   int goodT2 = 0;
   int foundT2 = 0;
   const int T2shiftOld =
-      (olderTotemT2FileTest > 0 ? 8 : 0);  //Run on TOTEM T2 test file (ver 2.1) or final T2 data ver 2.2
+      (olderTotemT2FileTest ? 8 : 0);  //Run on TOTEM T2 test file (ver 2.1) or final T2 data ver 2.3
 
   // second loop over data
   for (auto &p : records) {

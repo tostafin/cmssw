@@ -8,5 +8,6 @@ totemT2Digis = totemVFATRawToDigi.clone(
         testID = cms.uint32(0), #Some ID mismatch in test sample
         testCRC = cms.uint32(0), # no need to test CRC for diamond frames
         testECMostFrequent = cms.uint32(0) # show error in the DQM and then DAQ is sending resync, no need to test in the unpacker
+        useOlderT2TestFile = cms.bool(False) # March '23 version with two 8-bit ID fields
     )
 )

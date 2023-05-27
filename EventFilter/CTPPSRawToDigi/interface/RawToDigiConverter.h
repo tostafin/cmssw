@@ -73,8 +73,8 @@ private:
 
   bool olderTotemT2FileTest;  //Test file with two 8-bit hwID fields
 
-  unsigned int printErrorSummary;
-  unsigned int printUnknownFrameSummary;
+  bool printErrorSummary;
+  bool printUnknownFrameSummary;
 
   enum TestFlag { tfNoTest, tfWarn, tfErr };
 

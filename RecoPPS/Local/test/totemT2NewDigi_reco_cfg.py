@@ -36,8 +36,8 @@ process.totemDAQMappingESSourceXML.verbosity = 1
 process.totemT2Digis.RawUnpacking.verbosity = 1
 process.totemT2Digis.RawToDigi.verbosity = 3
 process.totemT2Digis.RawToDigi.useOlderT2TestFile = True
-process.totemT2Digis.RawToDigi.printUnknownFrameSummary = 3
-process.totemT2Digis.RawToDigi.printErrorSummary = 3
+process.totemT2Digis.RawToDigi.printUnknownFrameSummary = True
+process.totemT2Digis.RawToDigi.printErrorSummary = True
 process.totemDAQMappingESSourceXML.multipleChannelsPerPayload = True
 
 # rechits production

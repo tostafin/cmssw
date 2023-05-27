@@ -51,8 +51,8 @@ process.totemDAQMappingESSourceXML_TotemT2.verbosity = 0
 process.totemT2Digis.RawUnpacking.verbosity = 0
 process.totemT2Digis.RawToDigi.verbosity = 0
 process.totemT2Digis.RawToDigi.useOlderT2TestFile = True
-process.totemT2Digis.RawToDigi.printUnknownFrameSummary = 0
-process.totemT2Digis.RawToDigi.printErrorSummary = 0
+process.totemT2Digis.RawToDigi.printUnknownFrameSummary = False
+process.totemT2Digis.RawToDigi.printErrorSummary = False
 process.totemDAQMappingESSourceXML_TotemT2.multipleChannelsPerPayload = True
 
 process.path = cms.Path(

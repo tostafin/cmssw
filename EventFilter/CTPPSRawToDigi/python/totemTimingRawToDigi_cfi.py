@@ -21,11 +21,11 @@ totemTimingRawToDigi = totemVFATRawToDigi.clone(
     testECMostFrequent = cms.uint32(0),   # compare frame's EC with the most frequent value in the event
     testBCMostFrequent = cms.uint32(0),   # compare frame's BC with the most frequent value in the event
     
-    # if non-zero, prints a per-VFAT error summary at the end of the job
-    printErrorSummary = cms.untracked.uint32(0),
+    # if true, prints a per-VFAT error summary at the end of the job
+    printErrorSummary = cms.untracked.bool(False),
     
-    # if non-zero, prints a summary of frames found in data, but not in the mapping
-    printUnknownFrameSummary = cms.untracked.uint32(0)
+    # if true, prints a summary of frames found in data, but not in the mapping
+    printUnknownFrameSummary = cms.untracked.bool(False)
   )
 )
 

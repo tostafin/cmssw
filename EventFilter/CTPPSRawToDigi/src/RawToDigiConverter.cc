@@ -25,8 +25,8 @@ using namespace edm;
 
 RawToDigiConverter::RawToDigiConverter(const edm::ParameterSet &conf)
     : verbosity(conf.getUntrackedParameter<unsigned int>("verbosity", 0)),
-      printErrorSummary(conf.getUntrackedParameter<unsigned int>("printErrorSummary", 1)),
-      printUnknownFrameSummary(conf.getUntrackedParameter<unsigned int>("printUnknownFrameSummary", 1)),
+      printErrorSummary(conf.getUntrackedParameter<bool>("printErrorSummary", True)),
+      printUnknownFrameSummary(conf.getUntrackedParameter<bool>("printUnknownFrameSummary", True)),
 
       testFootprint(conf.getParameter<unsigned int>("testFootprint")),
       testCRC(conf.getParameter<unsigned int>("testCRC")),

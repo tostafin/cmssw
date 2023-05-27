@@ -71,8 +71,6 @@ private:
 
   unsigned char verbosity;
 
-  bool olderTotemT2FileTest;  //Test file with two 8-bit hwID fields
-
   bool printErrorSummary;
   bool printUnknownFrameSummary;
 
@@ -92,6 +90,9 @@ private:
 
   /// the minimal required (relative) occupancy of the most frequent counter value to be accepted
   double EC_fraction, BC_fraction;
+
+  //Test file with two 8-bit hwID fields
+  bool olderTotemT2FileTest;
 
   /// error summaries
   std::map<TotemFramePosition, std::map<TotemVFATStatus, unsigned int> > errorSummary;

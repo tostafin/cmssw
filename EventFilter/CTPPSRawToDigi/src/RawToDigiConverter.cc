@@ -87,8 +87,13 @@ void RawToDigiConverter::runCommon(const VFATFrameCollection &input,
     record.status.setNumberOfClustersSpecified(record.frame->isNumberOfClustersPresent());
     record.status.setNumberOfClusters(record.frame->getNumberOfClusters());
 
+    // check for T2 payload bits
+    int rawT2=fr.Position().getRawPosition();
+    bool isT2Frame=(rawT2 >> 18);
+
     // check footprint
-    if (testFootprint != tfNoTest && !record.frame->checkFootprint()) {
+    if (((!isT2Frame) && testFootprint != tfNoTest && !record.frame->checkFootprint()) ||
+		    (isT2Frame && testFootprint != tfNoTest && !record.frame->checkFootprintT2())) {
       problemsPresent = true;
 
       if (verbosity > 0)

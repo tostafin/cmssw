@@ -85,6 +85,10 @@ public:
   /// Returns false if any of the groups (in BC, EC and ID words) is present but wrong.
   bool checkFootprint() const;
 
+  /// Checks the fixed bits in the frame, for the TOTEM T2 non-inverse word ordering.
+  /// Returns false if any of the groups (in BC, EC and ID words) is present but wrong.
+  bool checkFootprintT2() const;
+
   /// Checks the validity of frame (CRC and daqErrorFlags).
   /// Returns false if daqErrorFlags is non-zero.
   /// Returns false if the CRC is present and invalid.

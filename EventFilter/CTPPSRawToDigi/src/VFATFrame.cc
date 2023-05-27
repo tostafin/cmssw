@@ -59,6 +59,19 @@ bool VFATFrame::checkFootprint() const {
   return true;
 }
 
+bool VFATFrame::checkFootprintT2() const {
+  if (isIDPresent() && (data[2] & 0xF000) != 0xE000)
+    return false;
+
+  if (isECPresent() && (data[1] & 0xF000) != 0xC000)
+    return false;
+
+  if (isBCPresent() && (data[0] & 0xF000) != 0xA000)
+    return false;
+
+  return true;
+}
+
 bool VFATFrame::checkCRC() const {
   // check DAQ error flags
   if (daqErrorFlags != 0)

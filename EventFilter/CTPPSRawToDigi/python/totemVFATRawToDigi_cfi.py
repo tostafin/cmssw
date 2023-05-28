@@ -41,7 +41,7 @@ totemVFATRawToDigi = cms.EDProducer("TotemVFATRawToDigi",
 
     # True is only used for special test runs
     useOlderT2TestFile = cms.bool(False),
-    
+
     # prints a per-VFAT error summary at the end of the job
     printErrorSummary = cms.untracked.bool(False),
     

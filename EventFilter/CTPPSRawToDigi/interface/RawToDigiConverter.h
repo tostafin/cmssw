@@ -92,7 +92,7 @@ private:
   const double EC_fraction, BC_fraction;
 
   //Test file with two 8-bit hwID fields
-  bool olderTotemT2FileTest;
+  const bool olderTotemT2FileTest;
 
   /// error summaries
   std::map<TotemFramePosition, std::map<TotemVFATStatus, unsigned int> > errorSummary;

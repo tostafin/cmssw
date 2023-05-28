@@ -46,7 +46,8 @@ RawToDigiConverter::RawToDigiConverter(const edm::ParameterSet &conf)
       EC_fraction(conf.getUntrackedParameter<double>("EC_fraction", 0.6)),
       BC_fraction(conf.getUntrackedParameter<double>("BC_fraction", 0.6)),
 
-      olderTotemT2FileTest(conf.getParameter<bool>("useOlderT2TestFile")) {}
+      olderTotemT2FileTest(conf.existsAs<bool>("useOlderT2TestFile") ? conf.getParameter<bool>("useOlderT2TestFile")
+                                                                     : false) {}
 
 void RawToDigiConverter::runCommon(const VFATFrameCollection &input,
                                    const TotemDAQMapping &mapping,

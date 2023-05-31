@@ -91,9 +91,6 @@ private:
   /// the minimal required (relative) occupancy of the most frequent counter value to be accepted
   const double EC_fraction, BC_fraction;
 
-  //Test file with two 8-bit hwID fields
-  const bool olderTotemT2FileTest;
-
   /// error summaries
   std::map<TotemFramePosition, std::map<TotemVFATStatus, unsigned int> > errorSummary;
   std::map<TotemFramePosition, unsigned int> unknownSummary;

@@ -32,8 +32,6 @@ RawToDigiConverter::RawToDigiConverter(const edm::ParameterSet &conf)
                                    ? conf.getUntrackedParameter<bool>("printUnknownFrameSummary")
                                    : true),
 
-      olderTotemT2FileTest(
-          conf.existsAs<bool>("useOlderT2TestFile", true) ? conf.getParameter<bool>("useOlderT2TestFile") : false),
       testFootprint(conf.getParameter<unsigned int>("testFootprint")),
       testCRC(conf.getParameter<unsigned int>("testCRC")),
       testID(conf.getParameter<unsigned int>("testID")),

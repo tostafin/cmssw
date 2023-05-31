@@ -3,6 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from RecoPPS.Local.totemRPLocalReconstruction_cff import *
 from RecoPPS.Local.ctppsDiamondLocalReconstruction_cff import *
 from RecoPPS.Local.totemTimingLocalReconstruction_cff import *
+from RecoPPS.Local.totemT2RecHits_cfi import *
 from RecoPPS.Local.ctppsPixelLocalReconstruction_cff import *
 
 from RecoPPS.Local.ctppsLocalTrackLiteProducer_cff import ctppsLocalTrackLiteProducer

@@ -49,10 +49,14 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_HLT_v2', '')
 #Raw-to-digi
 process.load('EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff')
 
+# local RP reconstruction chain with standard settings
+process.load("RecoPPS.Configuration.recoCTPPS_cff")
+
 process.load('Geometry.ForwardCommonData.totemT22021V2XML_cfi')
 process.load('Geometry.ForwardGeometry.totemGeometryESModule_cfi')
-process.load('RecoPPS.Local.totemT2RecHits_cfi')
-process.load('DQM.CTPPS.totemT2DQMSource_cfi')
+
+# CTPPS DQM modules
+process.load("DQM.CTPPS.ctppsDQM_cff")
 process.totemDAQMappingESSourceXML_TotemT2.verbosity = 1
 process.totemT2Digis.RawUnpacking.verbosity = 1
 process.totemT2Digis.RawToDigi.verbosity = 3

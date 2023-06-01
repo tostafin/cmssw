@@ -443,7 +443,8 @@ void RawToDigiConverter::run(const VFATFrameCollection &coll,
               .emplace_back(hw_id,
                             totem::nt2::vfat::channelMarker(*record.frame, frame_id),
                             totem::nt2::vfat::leadingEdgeTime(*record.frame, frame_id),
-                            totem::nt2::vfat::trailingEdgeTime(*record.frame, frame_id));
+                            totem::nt2::vfat::trailingEdgeTime(*record.frame, frame_id),
+			    totem::nt2::vfat::statusMarker(*record.frame));
           foundT2++;
         } else {
           if (verbosity > 2)

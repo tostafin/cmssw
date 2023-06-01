@@ -44,7 +44,7 @@ private:
   void clearTriggerBitset();
   bool areChannelsTriggered(const TotemT2DetId&);
   void bookErrorFlagsHistogram(DQMStore::IBooker&);
-  void fillErrorFlagsHistogram(const TotemT2Digi&);
+  void fillErrorFlagsHistogram(const TotemT2Digi&, const TotemT2DetId&);
   void fillEdges(const TotemT2Digi&, const TotemT2DetId&);
   void fillToT(const TotemT2RecHit&, const TotemT2DetId&);
   void fillFlags(const TotemT2Digi&, const TotemT2DetId&);
@@ -56,7 +56,7 @@ private:
   std::unique_ptr<TotemT2Segmentation> segm_;
 
   static constexpr double T2_BIN_WIDTH_NS_ = 25. / 4;
-  MonitorElement* HPTDCErrorFlags_2D_ = nullptr;
+  MonitorElement* totemT2ErrorFlags_2D_ = nullptr;
 
   enum evFlag{t2TE=0, t2LE, t2MT, t2ML};
 
@@ -236,7 +236,7 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     for (const auto& digi : ds_digis) {
       segm_->fill(planePlots_[planeId].digisMultiplicity->getTH2D(), detid);
       fillTriggerBitset(detid);
-      fillErrorFlagsHistogram(digi);
+      fillErrorFlagsHistogram(digi, detid);
       fillEdges(digi, detid);
     }
   }
@@ -309,18 +309,21 @@ bool TotemT2DQMSource::areChannelsTriggered(const TotemT2DetId& detid) {
 }
 
 void TotemT2DQMSource::bookErrorFlagsHistogram(DQMStore::IBooker& ibooker) {
-  HPTDCErrorFlags_2D_ = ibooker.book2D("HPTDC Errors", " HPTDC Errors?", 8, -0.5, 7.5, 2, -0.5, 1.5);
-  for (unsigned short error_index = 1; error_index <= 8; ++error_index)
-    HPTDCErrorFlags_2D_->setBinLabel(error_index, "Flag " + std::to_string(error_index));
+  totemT2ErrorFlags_2D_ = ibooker.book2D("nt2 readout flags", " nt2 readout flags", 4, -0.5, 3.5, 2, -0.5, 1.5);
+  for (unsigned short error_index = 1; error_index <= 4; ++error_index)
+    totemT2ErrorFlags_2D_->setBinLabel(error_index, "Flag " + std::to_string(error_index));
 
   int tmpIndex = 0;
-  HPTDCErrorFlags_2D_->setBinLabel(++tmpIndex, "some id 0", /* axis */ 2);
-  HPTDCErrorFlags_2D_->setBinLabel(++tmpIndex, "some id 1", /* axis */ 2);
+  totemT2ErrorFlags_2D_->setBinLabel(++tmpIndex, "arm 4-5", /* axis */ 2);
+  totemT2ErrorFlags_2D_->setBinLabel(++tmpIndex, "arm 5-6", /* axis */ 2);
 }
 
-void TotemT2DQMSource::fillErrorFlagsHistogram(const TotemT2Digi& digi) {
-  // placeholder for error hitogram filling
-  (void)digi;
+void TotemT2DQMSource::fillErrorFlagsHistogram(const TotemT2Digi& digi, const TotemT2DetId& detid) {
+  // readout flags histogram filling
+  for (unsigned int i = 0; i < 4; i++) {
+    if (digi.getStatus() & (1 << i))
+      totemT2ErrorFlags_2D_->Fill(detid.armId(),i);
+  }
 }
 
 void TotemT2DQMSource::fillEdges(const TotemT2Digi& digi, const TotemT2DetId& detid) {

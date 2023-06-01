@@ -124,7 +124,7 @@ TotemT2DQMSource::SectorPlots::SectorPlots(
       "trailing edge", title + " trailing edge (DIGIs); trailing edge (ns)", 25 * windowsNum, 0, 25 * windowsNum);
 
   timeOverTreshold = ibooker.book1D(
-      "time over threshold", title + " time over threshold (rechit);time over threshold (ns)", 250, -25, 100);
+      "time over threshold", title + " time over threshold (rechit);time over threshold (ns)", 500, -50, 200);
 }
 
 TotemT2DQMSource::PlanePlots::PlanePlots(DQMStore::IBooker& ibooker,
@@ -166,7 +166,7 @@ TotemT2DQMSource::ChannelPlots::ChannelPlots(DQMStore::IBooker& ibooker, unsigne
       "trailing edge", title + " trailing edge (DIGIs); trailing edge (ns)", 25 * windowsNum, 0, 25 * windowsNum);
 
   timeOverTresholdCh = ibooker.book1D(
-      "time over threshold", title + " time over threshold (rechit);time over threshold (ns)", 250, -25, 100);
+      "time over threshold", title + " time over threshold (rechit);time over threshold (ns)", 500, -50, 200);
 }
 
 TotemT2DQMSource::TotemT2DQMSource(const edm::ParameterSet& iConfig)

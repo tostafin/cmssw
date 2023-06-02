@@ -98,7 +98,7 @@ bool VFATFrame::checkCRCT2() const {
   // compare CRC
   word crc_fin = 0xffff;
 
-  for (int i = 1; i <= 11; i++)
+  for (int i = 0; i < 11; i++)
     crc_fin = calculateCRC(crc_fin, data[i]);
 
   return (crc_fin == data[11]);

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
 from Configuration.Eras.Era_Run3_cff import Run3
+
+# needed to have ctppsDQMCalibrationSource properly working
 from Configuration.Eras.Modifier_ctpps_cff import ctpps
 
 process = cms.Process('RECODQM', Run3)

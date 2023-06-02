@@ -28,7 +28,6 @@ ctpps_2018.toReplaceWith(
     recoCTPPSTask,
     cms.Task(
         totemRPLocalReconstructionTask ,
-        totemT2LocalReconstructionTask ,
         ctppsDiamondLocalReconstructionTask ,
         totemTimingLocalReconstructionTask ,
         ctppsPixelLocalReconstructionTask ,

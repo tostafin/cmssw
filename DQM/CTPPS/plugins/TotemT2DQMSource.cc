@@ -322,10 +322,8 @@ void TotemT2DQMSource::bookErrorFlagsHistogram(DQMStore::IBooker& ibooker) {
 void TotemT2DQMSource::fillErrorFlagsHistogram(const TotemT2Digi& digi, const TotemT2DetId& detid) {
   // readout flags histogram filling
   for (unsigned int i = 0; i < 4; i++) {
-  //  edm::LogWarning("TotemT2DQMSource") << "Digi status flags / i / 1<<i / getStatus & (1<<i) / arm: "<<((unsigned int) digi.getStatus())
-	    << "/" << i << "/" << (1<<i) << "/" << ((unsigned int) (digi.getStatus() & (1 << i))) << ((double) detid.arm());
     if (digi.getStatus() & (1 << i))
-      totemT2ErrorFlags_2D_->Fill(detid.arm()+0.0, i+0.0);
+      totemT2ErrorFlags_2D_->Fill(i+0.0,detid.arm()+0.0);
   }
 }
 

@@ -106,7 +106,8 @@ void RawToDigiConverter::runCommon(const VFATFrameCollection &input,
     }
 
     // check CRC
-    if (testCRC != tfNoTest && !record.frame->checkCRC()) {
+    if (((!isT2Frame) && (testCRC != tfNoTest && !record.frame->checkCRC())) ||
+                    (isT2Frame && testCRC != tfNoTest && !record.frame->checkCRCT2())) {
       problemsPresent = true;
 
       if (verbosity > 0)

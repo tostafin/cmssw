@@ -28,17 +28,11 @@ process.dqmSaver.path = ""
 process.dqmSaver.tag = "CTPPS"
 
 # raw data source
-process.source = cms.Source("NewEventStreamFileReader",
-    fileNames = cms.untracked.vstring(
-#    '/store/t0streamer/Minidaq/A/000/368/023/run368023_ls0001_streamA_StorageManager.dat',
-    'file:/eos/cms/store/t0streamer/Minidaq/A/000/368/080/run368080_ls0001_streamA_StorageManager.dat',
-    'file:/eos/cms/store/t0streamer/Minidaq/A/000/368/080/run368080_ls0002_streamA_StorageManager.dat',
-#    '/store/t0streamer/Minidaq/A/000/368/081/run368081_ls0001_streamA_StorageManager.dat',
-#    '/store/t0streamer/Minidaq/A/000/368/081/run368081_ls0002_streamA_StorageManager.dat',
-#    '/store/t0streamer/Minidaq/A/000/368/082/run368082_ls0001_streamA_StorageManager.dat',
-#    '/store/t0streamer/Minidaq/A/000/368/082/run368082_ls0002_streamA_StorageManager.dat',
-#        '/store/group/dpg_ctpps/comm_ctpps/TotemT2/RecoTest/run364983_ls0001_streamA_StorageManager.dat',
-    )
+#alignment run without T2, TimingDiamond and TrackingStrip not affected by PR changes
+process.source = cms.Source("PoolSource",
+  fileNames = cms.untracked.vstring(
+    '/store/data/Run2023A/HLTPhysics/RAW/v1/000/366/192/00000/f277ee80-e88b-41e8-b1ba-6c18af119fbc.root'
+  )
 )
 
 
@@ -50,10 +44,10 @@ process.maxEvents = cms.untracked.PSet(
 process.load("EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff")
 
 # global tag - conditions for P5 cluster
-#process.load("DQM.Integration.config.FrontierCondition_GT_cfi")
+process.load("DQM.Integration.config.FrontierCondition_GT_cfi")
 
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_HLT_v2', '')
+#from Configuration.AlCa.GlobalTag import GlobalTag
+#process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_HLT_v2', '')
 
 # local T2 reconstruction chain with standard settings
 process.load("RecoPPS.Configuration.recoCTPPS_cff")

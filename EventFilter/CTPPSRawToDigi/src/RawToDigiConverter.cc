@@ -136,6 +136,8 @@ void RawToDigiConverter::runCommon(const VFATFrameCollection &input,
     if (verbosity > 0 && problemsPresent) {
       string message = (stopProcessing) ? "(and will be dropped)" : "(but will be used though)";
       if (verbosity > 2) {
+        if (isT2Frame && verbosity > 3)
+	  record.frame->PrintT2();
         ees << "  Frame at " << fr.Position() << " seems corrupted " << message << ":" << endl;
         ees << fes.rdbuf();
       } else

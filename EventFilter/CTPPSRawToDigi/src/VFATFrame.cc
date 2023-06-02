@@ -191,13 +191,19 @@ void VFATFrame::PrintT2(bool binary) const {
       printf("\n");
     }
   } else {
+    // print right CRC
+    word crc_fin = 0xffff;
+
+    for (int i = 0; i < 11; i++)
+      crc_fin = calculateCRC(crc_fin, data[i]);
+
     printf("CRC = %04x ",
            getCRCT2());
 
     if (checkCRCT2())
       printf("(  OK), footprint ");
     else
-      printf("(FAIL), footprint ");
+      printf("(FAIL, right = %04x), footprint ", crc_fin);
 
     if (checkFootprintT2())
       printf("  OK");

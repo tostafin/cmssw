@@ -37,9 +37,7 @@ namespace totem::nt2::vfat {
   }
 
   /// retrieve the header status flags
-  inline uint8_t statusMarker(const VFATFrame& frame) {
-    return (frame.getData()[header_offset - 1] >> 8)& 0xf;
-  }
+  inline uint8_t statusMarker(const VFATFrame& frame) { return (frame.getData()[header_offset - 1] >> 8) & 0xf; }
 
   /// retrieve the HW identifier for this channel, in firmware >2.1
   inline uint16_t newChannelId(const VFATFrame& frame, size_t ch_id) {

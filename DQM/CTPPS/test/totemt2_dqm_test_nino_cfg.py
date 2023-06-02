@@ -33,10 +33,10 @@ process.dqmSaver.tag = "CTPPS"
 process.source = cms.Source("NewEventStreamFileReader",
     fileNames = cms.untracked.vstring(
 #    '/store/t0streamer/Minidaq/A/000/368/023/run368023_ls0001_streamA_StorageManager.dat',
-    'file:/eos/cms/store/t0streamer/Minidaq/A/000/368/080/run368080_ls0001_streamA_StorageManager.dat',
-    'file:/eos/cms/store/t0streamer/Minidaq/A/000/368/080/run368080_ls0002_streamA_StorageManager.dat',
-#    '/store/t0streamer/Minidaq/A/000/368/081/run368081_ls0001_streamA_StorageManager.dat',
-#    '/store/t0streamer/Minidaq/A/000/368/081/run368081_ls0002_streamA_StorageManager.dat',
+#    'file:/eos/cms/store/t0streamer/Minidaq/A/000/368/080/run368080_ls0001_streamA_StorageManager.dat',
+#    'file:/eos/cms/store/t0streamer/Minidaq/A/000/368/080/run368080_ls0002_streamA_StorageManager.dat',
+    '/store/t0streamer/Minidaq/A/000/368/081/run368081_ls0001_streamA_StorageManager.dat',
+    '/store/t0streamer/Minidaq/A/000/368/081/run368081_ls0002_streamA_StorageManager.dat',
 #    '/store/t0streamer/Minidaq/A/000/368/082/run368082_ls0001_streamA_StorageManager.dat',
 #    '/store/t0streamer/Minidaq/A/000/368/082/run368082_ls0002_streamA_StorageManager.dat',
 #        '/store/group/dpg_ctpps/comm_ctpps/TotemT2/RecoTest/run364983_ls0001_streamA_StorageManager.dat',
@@ -60,6 +60,7 @@ process.load("DQM.CTPPS.ctppsDQM_cff")
 process.totemDAQMappingESSourceXML_TotemT2.verbosity = 1
 process.totemT2Digis.RawUnpacking.verbosity = 1
 process.totemT2Digis.RawToDigi.verbosity = 3
+process.totemT2Digis.RawToDigi.testCRC = 1
 process.totemT2Digis.RawToDigi.useOlderT2TestFile = False
 process.totemT2Digis.RawToDigi.printUnknownFrameSummary = True
 process.totemT2Digis.RawToDigi.printErrorSummary = True

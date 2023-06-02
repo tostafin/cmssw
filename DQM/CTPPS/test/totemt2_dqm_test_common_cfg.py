@@ -1,6 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process('RECODQM')
+from Configuration.Eras.Era_Run3_cff import Run3
+from Configuration.Eras.Modifier_ctpps_cff import ctpps
+
+process = cms.Process('RECODQM', Run3)
 
 # minimum of logs
 process.MessageLogger = cms.Service("MessageLogger",
@@ -45,6 +48,9 @@ process.maxEvents = cms.untracked.PSet(
 
 # raw-to-digi conversion
 process.load("EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff")
+
+# global tag - conditions for P5 cluster
+#process.load("DQM.Integration.config.FrontierCondition_GT_cfi")
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_HLT_v2', '')

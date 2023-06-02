@@ -4,7 +4,7 @@ from CalibPPS.ESProducers.totemDAQMappingESSourceXML_cfi import totemDAQMappingE
 
 totemDAQMappingESSourceXML = _xml.clone(
     subSystem = "TotemT2",
-    multipleChannelsPerPayload = cms.untracked.bool(False),
+    multipleChannelsPerPayload = cms.untracked.bool(True),
     configuration = cms.VPSet(
         #initial dummy diamond map copy
         cms.PSet(

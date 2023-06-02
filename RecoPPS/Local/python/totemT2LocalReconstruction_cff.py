@@ -4,8 +4,8 @@ import FWCore.ParameterSet.Config as cms
 from RecoPPS.Local.totemT2RecHits_cfi import *
 
 # not in database?
-process.load('Geometry.ForwardCommonData.totemT22021V2XML_cfi')
-process.load('Geometry.ForwardGeometry.totemGeometryESModule_cfi')
+from Geometry.ForwardCommonData.totemT22021V2XML_cfi import *
+from Geometry.ForwardGeometry.totemGeometryESModule_cfi import *
 
 totemT2LocalReconstructionTask = cms.Task(
     totemT2RecHits 

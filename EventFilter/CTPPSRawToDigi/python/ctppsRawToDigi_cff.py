@@ -148,6 +148,7 @@ from Configuration.Eras.Modifier_ctpps_2017_cff import ctpps_2017
 from Configuration.Eras.Modifier_ctpps_2018_cff import ctpps_2018
 (ctpps_2016 | ctpps_2017 | ctpps_2018).toModify(ctppsPixelDigis, isRun3 = False )
 (ctpps_2016 | ctpps_2017 | ctpps_2018).toModify(totemDAQMappingESSourceXML_TotemTiming, sampicSubDetId = 6)
+(ctpps_2016 | ctpps_2017 | ctpps_2018).toModify(totemDAQMappingESSourceXML_TotemT2, multipleChannelsPerPayload = False)
 
 # raw-to-digi task and sequence
 ctppsRawToDigiTask = cms.Task(

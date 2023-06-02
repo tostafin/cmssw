@@ -58,7 +58,7 @@ private:
   static constexpr double T2_BIN_WIDTH_NS_ = 25. / 4;
   MonitorElement* totemT2ErrorFlags_2D_ = nullptr;
 
-  enum evFlag{t2TE=0, t2LE, t2MT, t2ML};
+  enum evFlag { t2TE = 0, t2LE, t2MT, t2ML };
 
   const unsigned int nbinsx_, nbinsy_;
   const unsigned int windowsNum_;
@@ -136,7 +136,6 @@ TotemT2DQMSource::SectorPlots::SectorPlots(
 
   for (unsigned short flag_index = 1; flag_index <= 4; ++flag_index)
     eventFlags->setBinLabel(flag_index, "Flag " + std::to_string(flag_index));
-
 }
 
 TotemT2DQMSource::PlanePlots::PlanePlots(DQMStore::IBooker& ibooker,
@@ -323,7 +322,7 @@ void TotemT2DQMSource::fillErrorFlagsHistogram(const TotemT2Digi& digi, const To
   // readout flags histogram filling
   for (unsigned int i = 0; i < 4; i++) {
     if (digi.getStatus() & (1 << i))
-      totemT2ErrorFlags_2D_->Fill(i+0.0,detid.arm()+0.0);
+      totemT2ErrorFlags_2D_->Fill(i + 0.0, detid.arm() + 0.0);
   }
 }
 
@@ -345,27 +344,27 @@ void TotemT2DQMSource::fillFlags(const TotemT2Digi& digi, const TotemT2DetId& de
   const TotemT2DetId secId(detid.armId());
   const TotemT2DetId planeId(detid.planeId());
   if (digi.hasTE()) {
-    sectorPlots_[secId].eventFlags->Fill(t2TE+0.0);
-    planePlots_[planeId].eventFlagsPl->Fill(t2TE+0.0);
-    channelPlots_[detid].eventFlagsCh->Fill(t2TE+0.0);
+    sectorPlots_[secId].eventFlags->Fill(t2TE + 0.0);
+    planePlots_[planeId].eventFlagsPl->Fill(t2TE + 0.0);
+    channelPlots_[detid].eventFlagsCh->Fill(t2TE + 0.0);
   }
 
   if (digi.hasLE()) {
-    sectorPlots_[secId].eventFlags->Fill(t2LE+0.0);
-    planePlots_[planeId].eventFlagsPl->Fill(t2LE+0.0);
-    channelPlots_[detid].eventFlagsCh->Fill(t2LE+0.0);
+    sectorPlots_[secId].eventFlags->Fill(t2LE + 0.0);
+    planePlots_[planeId].eventFlagsPl->Fill(t2LE + 0.0);
+    channelPlots_[detid].eventFlagsCh->Fill(t2LE + 0.0);
   }
 
   if (digi.hasManyTE()) {
-    sectorPlots_[secId].eventFlags->Fill(t2MT+0.0);
-    planePlots_[planeId].eventFlagsPl->Fill(t2MT+0.0);
-    channelPlots_[detid].eventFlagsCh->Fill(t2MT+0.0);
+    sectorPlots_[secId].eventFlags->Fill(t2MT + 0.0);
+    planePlots_[planeId].eventFlagsPl->Fill(t2MT + 0.0);
+    channelPlots_[detid].eventFlagsCh->Fill(t2MT + 0.0);
   }
 
   if (digi.hasManyLE()) {
-    sectorPlots_[secId].eventFlags->Fill(t2ML+0.0);
-    planePlots_[planeId].eventFlagsPl->Fill(t2ML+0.0);
-    channelPlots_[detid].eventFlagsCh->Fill(t2ML+0.0);
+    sectorPlots_[secId].eventFlags->Fill(t2ML + 0.0);
+    planePlots_[planeId].eventFlagsPl->Fill(t2ML + 0.0);
+    channelPlots_[detid].eventFlagsCh->Fill(t2ML + 0.0);
   }
 }
 

@@ -90,6 +90,20 @@ bool VFATFrame::checkCRC() const {
   return (crc_fin == data[0]);
 }
 
+bool VFATFrame::checkCRCT2() const {
+  // return true if CRC not present
+  if (!isCRCPresent())
+    return true;
+
+  // compare CRC
+  word crc_fin = 0xffff;
+
+  for (int i = 1; i <= 11; i++)
+    crc_fin = calculateCRC(crc_fin, data[i]);
+
+  return (crc_fin == data[11]);
+}
+
 VFATFrame::word VFATFrame::calculateCRC(VFATFrame::word crc_in, VFATFrame::word dato) {
   word v = 0x0001;
   word mask = 0x0001;
@@ -177,6 +191,19 @@ void VFATFrame::PrintT2(bool binary) const {
       printf("\n");
     }
   } else {
+    printf("CRC = %04x ",
+           getCRCT2());
+
+    if (checkCRCT2())
+      printf("(  OK), footprint ");
+    else
+      printf("(FAIL), footprint ");
+
+    if (checkFootprintT2())
+      printf("  OK");
+    else
+      printf("FAIL");
+
     printf("Frame = %04x|%04x|%04x|", data[0], data[1], data[2]);
     for (int i = 3; i < 11; i++)
       printf("%04x", data[i]);

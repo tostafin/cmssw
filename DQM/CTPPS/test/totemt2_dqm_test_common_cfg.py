@@ -57,10 +57,6 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_HLT_v2', '')
 
 # local T2 reconstruction chain with standard settings
 process.load("RecoPPS.Configuration.recoCTPPS_cff")
-process.totemDAQMappingESSourceXML_TotemT2.multipleChannelsPerPayload = True
-
-process.load('Geometry.ForwardCommonData.totemT22021V2XML_cfi')
-process.load('Geometry.ForwardGeometry.totemGeometryESModule_cfi')
 
 # CTPPS DQM modules
 process.load("DQM.CTPPS.ctppsDQM_cff")

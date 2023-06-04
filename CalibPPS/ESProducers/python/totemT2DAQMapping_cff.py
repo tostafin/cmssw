@@ -4,7 +4,6 @@ from CalibPPS.ESProducers.totemDAQMappingESSourceXML_cfi import totemDAQMappingE
 
 totemDAQMappingESSourceXML = _xml.clone(
     subSystem = "TotemT2",
-    multipleChannelsPerPayload = cms.untracked.bool(True),
     configuration = cms.VPSet(
         #initial dummy diamond map copy, use only for Run 2 where T2 mapping is read with old schema
         cms.PSet(
@@ -26,4 +25,5 @@ totemDAQMappingESSourceXML = _xml.clone(
         )
     ),
     sampicSubDetId = cms.uint32(6),
+    multipleChannelsPerPayload = True,
 )

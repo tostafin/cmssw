@@ -226,7 +226,6 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   for (const auto& ds_digis : iEvent.get(digiToken_)) {
     if (!ds_digis.empty()) {
       const TotemT2DetId detid(ds_digis.detId());
-      const TotemT2DetId planeId(detid.planeId());
       for (const auto& digi : ds_digis) {
         fillTriggerBitset(detid);
         fillErrorFlagsHistogram(digi, detid);
@@ -237,7 +236,6 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     }
   }
   // fill rechits information
-  std::unordered_map<unsigned int, std::set<unsigned int>> planes;
 
   clearTriggerBitset();
 }

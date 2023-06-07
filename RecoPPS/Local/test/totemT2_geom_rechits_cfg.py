@@ -51,7 +51,7 @@ process.load("EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff")
 #process.load("DQM.Integration.config.FrontierCondition_GT_cfi")
 
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_HLT_v2', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_Prompt_Candidate_2023_06_06_21_34_08', '')
 
 # local RP reconstruction chain with standard settings
 process.load("RecoPPS.Configuration.recoCTPPS_cff")
@@ -65,7 +65,7 @@ process.path = cms.Path(
 )
 
 process.output = cms.OutputModule("PoolOutputModule",
-        fileName = cms.untracked.string("file:output-commonReco-368593-1000ev.root"),
+        fileName = cms.untracked.string("file:output-commonReco-368593-newPCGT-1000ev.root"),
     outputCommands = cms.untracked.vstring(
         'keep *',
     ),

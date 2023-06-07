@@ -29,17 +29,19 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 #process.dqmSaver.path = ""
 #process.dqmSaver.tag = "CTPPS"
 
+# raw data source, T2 + TrackingStrips either in run 368593 (correct) or 368594 (no)
+process.source = cms.Source("NewEventStreamFileReader",
+    fileNames = cms.untracked.vstring(
+        '/store/t0streamer/Minidaq/A/000/368/593/run368593_ls0001_streamA_StorageManager.dat',
+#        '/store/t0streamer/Minidaq/A/000/368/594/run368594_ls0001_streamA_StorageManager.dat',
+    )
+)
 # raw data source
 #alignment run without T2, TimingDiamond and TrackingStrip not affected by PR changes
-process.source = cms.Source("PoolSource",
-  fileNames = cms.untracked.vstring(
-    '/store/data/Run2023A/HLTPhysics/RAW/v1/000/366/192/00000/f277ee80-e88b-41e8-b1ba-6c18af119fbc.root'
-  )
-)
 
 
 process.maxEvents = cms.untracked.PSet(
-  input = cms.untracked.int32(80)
+  input = cms.untracked.int32(1000)
 )
 
 # raw-to-digi conversion
@@ -63,7 +65,7 @@ process.path = cms.Path(
 )
 
 process.output = cms.OutputModule("PoolOutputModule",
-        fileName = cms.untracked.string("file:output-commonReco-80ev.root"),
+        fileName = cms.untracked.string("file:output-commonReco-368593-1000ev.root"),
     outputCommands = cms.untracked.vstring(
         'keep *',
     ),

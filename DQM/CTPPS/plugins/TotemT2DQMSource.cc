@@ -252,6 +252,9 @@ void TotemT2DQMSource::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     // fill digis information
     std::unordered_map<unsigned int, std::set<unsigned int>> planes;
 
+    if (!iEvent.getHandle(digiToken_).isValid())
+      return;
+
     for (const auto& ds_digis : iEvent.get(digiToken_)) {
       if (!ds_digis.empty()) {
         const TotemT2DetId detid(ds_digis.detId());

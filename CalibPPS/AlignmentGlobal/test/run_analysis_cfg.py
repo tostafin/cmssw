@@ -163,7 +163,7 @@ if write_sqlite_results:
         toPut = cms.VPSet(cms.PSet(
             record = cms.string('RPRealAlignmentRecord'),
             tag = cms.string('MyTag'),
-            label = cms.string('MyLabel')
+            label = cms.string('')
         ))
     )
 

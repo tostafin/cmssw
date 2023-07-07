@@ -34,32 +34,10 @@ process.source = cms.Source("PoolSource",
 )
 
 from Configuration.AlCa.GlobalTag import GlobalTag
-from Configuration.AlCa.autoCond import autoCond
-process.GlobalTag = GlobalTag(process.GlobalTag, autoCond['run3_data_prompt'], '')
+process.GlobalTag = GlobalTag(process.GlobalTag, "130X_dataRun3_Prompt_Candidate_2023_07_07_14_52_37", '')
 
 # local RP reconstruction chain with standard settings
 process.load("RecoPPS.Configuration.recoCTPPS_cff")
-
-# alignment calibration from sqlite
-process.load('CondCore.CondDB.CondDB_cfi')
-process.CondDB.connect = 'sqlite_file:alignment_results.db'  # SQLite input
-process.PoolDBESSource = cms.ESSource('PoolDBESSource',
-    process.CondDB,
-    DumpStats=cms.untracked.bool(True),
-    toGet=cms.VPSet(
-        cms.PSet(
-            record=cms.string('RPRealAlignmentRecord'),
-            tag=cms.string('MyTag'),
-            label=cms.untracked.string('')
-        )
-    )
-)
-
-"""
-1) type="PoolDBESSource" label=""
-2) type="PoolDBESSource" label="GlobalTag"
-"""
-process.es_prefer = cms.ESPrefer("PoolDBESSource", "")
 
 # CTPPS DQM modules
 process.load("DQM.CTPPS.ctppsDQM_cff")

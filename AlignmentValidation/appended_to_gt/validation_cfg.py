@@ -40,26 +40,14 @@ process.GlobalTag = GlobalTag(process.GlobalTag, autoCond['run3_data_prompt'], '
 # local RP reconstruction chain with standard settings
 process.load("RecoPPS.Configuration.recoCTPPS_cff")
 
-# alignment calibration from sqlite
-process.load('CondCore.CondDB.CondDB_cfi')
-process.CondDB.connect = 'sqlite_file:alignment_results.db'  # SQLite input
-process.PoolDBESSource = cms.ESSource('PoolDBESSource',
-    process.CondDB,
-    DumpStats=cms.untracked.bool(True),
-    toGet=cms.VPSet(
-        cms.PSet(
-            record=cms.string('RPRealAlignmentRecord'),
-            tag=cms.string('MyTag'),
-            label=cms.untracked.string('')
-        )
+# alignment calibration from GT
+process.GlobalTag.toGet.append(
+    cms.PSet(record = cms.string("RPRealAlignmentRecord"),
+             tag =  cms.string("CTPPSRPAlignment_byPCL_v1_prompt"),
+             label = cms.untracked.string(''),
+             connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS")
     )
 )
-
-"""
-1) type="PoolDBESSource" label=""
-2) type="PoolDBESSource" label="GlobalTag"
-"""
-process.es_prefer = cms.ESPrefer("PoolDBESSource", "")
 
 # CTPPS DQM modules
 process.load("DQM.CTPPS.ctppsDQM_cff")

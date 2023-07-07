@@ -20,7 +20,6 @@
 
 #include "CondFormats/PPSObjects/interface/CTPPSRPAlignmentCorrectionData.h"
 #include "CondFormats/PPSObjects/interface/CTPPSRPAlignmentCorrectionsData.h"
-#include "CondFormats/DataRecord/interface/CTPPSRPAlignmentCorrectionsDataRcd.h"
 
 #include "CondFormats/PPSObjects/interface/PPSAlignmentConfiguration.h"
 #include "CondFormats/DataRecord/interface/PPSAlignmentConfigurationRcd.h"
@@ -342,7 +341,7 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker& iBooker,
     edm::Service<cond::service::PoolDBOutputService> poolDbService;
     if (poolDbService.isAvailable()) {
       poolDbService->writeOneIOV(
-          longIdFinalResults, poolDbService->currentTime(), "CTPPSRPAlignmentCorrectionsDataRcd");
+          longIdFinalResults, poolDbService->currentTime(), "RPRealAlignmentRecord");
     } else {
       edm::LogWarning("PPSAlignmentHarvester")
           << "Could not store the results in a DB object. PoolDBService not available.";

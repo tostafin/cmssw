@@ -106,17 +106,22 @@ CTPPSGeometryESModule::CTPPSGeometryESModule(const edm::ParameterSet& iConfig)
     auto c = setWhatProduced(this, &CTPPSGeometryESModule::produceIdealGDFromPreprocessedDB);
     dbToken_ = c.consumes<PDetGeomDesc>(edm::ESInputTag("", iConfig.getParameter<std::string>("dbTag")));
 
+    std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n";
+    std::cout << "buildMisalignedGeometry: " << buildMisalignedGeometry_ << "\n";
+
     auto c1 = setWhatProduced(this, &CTPPSGeometryESModule::produceRealGDFromPreprocessedDB);
     idealDBGDToken_ = c1.consumesFrom<DetGeomDesc, VeryForwardIdealGeometryRecord>(edm::ESInputTag());
-    realAlignmentToken_ = c1.consumesFrom<CTPPSRPAlignmentCorrectionsData, RPRealAlignmentRecord>(edm::ESInputTag());
+    realAlignmentToken_ = c1.consumesFrom<CTPPSRPAlignmentCorrectionsData, RPRealAlignmentRecord>(edm::ESInputTag("", "MyLabel"));
 
     if (buildMisalignedGeometry_) {
+      std::cout << "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n";
       auto c2 = setWhatProduced(this, &CTPPSGeometryESModule::produceMisalignedGDFromPreprocessedDB);
       idealDBGDToken2_ = c2.consumesFrom<DetGeomDesc, VeryForwardIdealGeometryRecord>(edm::ESInputTag());
       misAlignmentToken_ =
           c2.consumesFrom<CTPPSRPAlignmentCorrectionsData, RPMisalignedAlignmentRecord>(edm::ESInputTag());
     }
   } else if (!fromDD4hep_) {
+    std::cout << "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n";
     auto c = setWhatProduced(this, &CTPPSGeometryESModule::produceIdealGD);
     ddToken_ = c.consumes<DDCompactView>(edm::ESInputTag("", iConfig.getParameter<std::string>("compactViewTag")));
 
@@ -125,12 +130,14 @@ CTPPSGeometryESModule::CTPPSGeometryESModule(const edm::ParameterSet& iConfig)
     realAlignmentToken_ = c1.consumesFrom<CTPPSRPAlignmentCorrectionsData, RPRealAlignmentRecord>(edm::ESInputTag());
 
     if (buildMisalignedGeometry_) {
+      std::cout << "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\n";
       auto c2 = setWhatProduced(this, &CTPPSGeometryESModule::produceMisalignedGD);
       idealGDToken2_ = c2.consumesFrom<DetGeomDesc, IdealGeometryRecord>(edm::ESInputTag());
       misAlignmentToken_ =
           c2.consumesFrom<CTPPSRPAlignmentCorrectionsData, RPMisalignedAlignmentRecord>(edm::ESInputTag());
     }
   } else {
+    std::cout << "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE\n";
     auto c = setWhatProduced(this, &CTPPSGeometryESModule::produceIdealGD);
     dd4hepToken_ =
         c.consumes<cms::DDCompactView>(edm::ESInputTag("", iConfig.getParameter<std::string>("compactViewTag")));
@@ -140,6 +147,7 @@ CTPPSGeometryESModule::CTPPSGeometryESModule(const edm::ParameterSet& iConfig)
     realAlignmentToken_ = c1.consumesFrom<CTPPSRPAlignmentCorrectionsData, RPRealAlignmentRecord>(edm::ESInputTag());
 
     if (buildMisalignedGeometry_) {
+      std::cout << "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\n";
       auto c2 = setWhatProduced(this, &CTPPSGeometryESModule::produceMisalignedGD);
       idealGDToken2_ = c2.consumesFrom<DetGeomDesc, IdealGeometryRecord>(edm::ESInputTag());
       misAlignmentToken_ =
@@ -216,6 +224,17 @@ std::unique_ptr<DetGeomDesc> CTPPSGeometryESModule::produceGD(
       alignments = alignmentsHandle.product();
     }
   }
+
+  std::cout << "ALIGNMENTS=================================================\n";
+  if (alignments == nullptr) {
+    std::cout << "null alignment\n";
+  }
+  else {
+    for (auto const& [id, corr] : alignments->getRPMap()) {
+      std::cout << id << ", " << corr << "\n";
+    }
+  }
+  std::cout << "=====================================\n";
 
   if (verbosity_) {
     if (alignments) {

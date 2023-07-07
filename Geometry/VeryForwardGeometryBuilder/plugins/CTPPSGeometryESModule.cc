@@ -108,8 +108,7 @@ CTPPSGeometryESModule::CTPPSGeometryESModule(const edm::ParameterSet& iConfig)
 
     auto c1 = setWhatProduced(this, &CTPPSGeometryESModule::produceRealGDFromPreprocessedDB);
     idealDBGDToken_ = c1.consumesFrom<DetGeomDesc, VeryForwardIdealGeometryRecord>(edm::ESInputTag());
-    realAlignmentToken_ =
-        c1.consumesFrom<CTPPSRPAlignmentCorrectionsData, RPRealAlignmentRecord>(edm::ESInputTag("", ""));
+    realAlignmentToken_ = c1.consumesFrom<CTPPSRPAlignmentCorrectionsData, RPRealAlignmentRecord>(edm::ESInputTag());
 
     if (buildMisalignedGeometry_) {
       auto c2 = setWhatProduced(this, &CTPPSGeometryESModule::produceMisalignedGDFromPreprocessedDB);

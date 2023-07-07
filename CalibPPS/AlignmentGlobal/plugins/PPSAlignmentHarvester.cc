@@ -340,8 +340,7 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker& iBooker,
 
     edm::Service<cond::service::PoolDBOutputService> poolDbService;
     if (poolDbService.isAvailable()) {
-      poolDbService->writeOneIOV(
-          longIdFinalResults, poolDbService->currentTime(), "RPRealAlignmentRecord");
+      poolDbService->writeOneIOV(longIdFinalResults, poolDbService->currentTime(), "RPRealAlignmentRecord");
     } else {
       edm::LogWarning("PPSAlignmentHarvester")
           << "Could not store the results in a DB object. PoolDBService not available.";

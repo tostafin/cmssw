@@ -1,3 +1,5 @@
+print("in file ALCARECOPPSCalMaxTracks_cff.py")
+
 import FWCore.ParameterSet.Config as cms
 
 # 1. HLT filter
@@ -14,9 +16,12 @@ from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import ctppsDiamondRawToDigi 
 from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import totemTimingRawToDigi as _totemTimingRawToDigi
 from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import ctppsPixelDigis as _ctppsPixelDigis
 
-ctppsDiamondRawToDigiAlCaRecoProducer  = _ctppsDiamondRawToDigi.clone(rawDataTag = 'hltPPSCalibrationRaw')
-totemTimingRawToDigiAlCaRecoProducer = _totemTimingRawToDigi.clone(rawDataTag = 'hltPPSCalibrationRaw')
-ctppsPixelDigisAlCaRecoProducer = _ctppsPixelDigis.clone(inputLabel = 'hltPPSCalibrationRaw')
+# ctppsDiamondRawToDigiAlCaRecoProducer  = _ctppsDiamondRawToDigi.clone(rawDataTag = 'hltPPSCalibrationRaw')
+# totemTimingRawToDigiAlCaRecoProducer = _totemTimingRawToDigi.clone(rawDataTag = 'hltPPSCalibrationRaw')
+# ctppsPixelDigisAlCaRecoProducer = _ctppsPixelDigis.clone(inputLabel = 'hltPPSCalibrationRaw')
+ctppsDiamondRawToDigiAlCaRecoProducer  = _ctppsDiamondRawToDigi.clone(rawDataTag = 'rawDataCollector')
+totemTimingRawToDigiAlCaRecoProducer = _totemTimingRawToDigi.clone(rawDataTag = 'rawDataCollector')
+ctppsPixelDigisAlCaRecoProducer = _ctppsPixelDigis.clone(inputLabel = 'rawDataCollector')
 
 ctppsRawToDigiTaskAlCaRecoProducer = cms.Task(
     ctppsDiamondRawToDigiAlCaRecoProducer,
@@ -85,7 +90,8 @@ ctppsLocalTrackLiteProducerAlCaRecoProducer = _ctppsLocalTrackLiteProducer.clone
 )
 
 from RecoPPS.ProtonReconstruction.ctppsProtons_cff import ctppsProtons as _ctppsProtons
-ctppsProtonsAlCaRecoProducer = _ctppsProtons.clone(tagLocalTrackLite = 'ctppsLocalTrackLiteProducerAlCaRecoProducer')
+ctppsProtonsAlCaRecoProducer = _ctppsProtons.clone(tagLocalTrackLite = 'ctppsLocalTrackLiteProducerAlCaRecoProducer',
+verbosity = cms.untracked.uint32(2))
 
 # 5. RECO - final task assembly
 #------------------------------------------------------
@@ -102,4 +108,5 @@ recoPPSSequenceAlCaRecoProducer = cms.Sequence(recoPPSTaskAlCaRecoProducer)
 # 6. master sequence object
 #------------------------------------------------------
 
-seqALCARECOPPSCalMaxTracksReco = cms.Sequence( ALCARECOPPSCalMaxTracksFilter  + ALCARECOPPSCalMaxTracksRaw2Digi + recoPPSSequenceAlCaRecoProducer)
+seqALCARECOPPSCalMaxTracksReco = cms.Sequence( ALCARECOPPSCalMaxTracksFilter 
+ + ALCARECOPPSCalMaxTracksRaw2Digi + recoPPSSequenceAlCaRecoProducer)

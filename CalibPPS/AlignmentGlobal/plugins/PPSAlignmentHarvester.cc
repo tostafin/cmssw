@@ -131,6 +131,7 @@ private:
 
   // other class variables
   std::unique_ptr<TFile> debugFile_;
+  TDirectory* debugRunDir_;
   std::ofstream textResultsFile_;
   int seqPos = 1;  // position in sequence_
 
@@ -228,6 +229,10 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker& iBooker,
                                       DQMStore::IGetter& iGetter,
                                       edm::Run const& iRun,
                                       edm::EventSetup const& iSetup) {
+  if (debug_) {
+    debugRunDir_ = debugFile_->mkdir(std::to_string(iRun.run()).c_str());
+  }
+
   const auto& cfg = iSetup.getData(esTokenTest_);
 
   const auto& cfg_ref = iSetup.getData(esTokenReference_);
@@ -351,7 +356,7 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker& iBooker,
 
   // if debug_, save nice-looking cut plots with the worker data in the debug ROOT file
   if (debug_) {
-    TDirectory* cutsDir = debugFile_->mkdir("cuts");
+    TDirectory* cutsDir = debugRunDir_->mkdir("cuts");
     for (const auto& sc : {cfg.sectorConfig45(), cfg.sectorConfig56()}) {
       TDirectory* sectorDir = cutsDir->mkdir(sc.name_.c_str());
 
@@ -595,7 +600,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker& iBooker,
                                        const PPSAlignmentConfiguration& cfg_ref) {
   TDirectory* xAliDir = nullptr;
   if (debug_)
-    xAliDir = debugFile_->mkdir((std::to_string(seqPos) + ": x alignment").c_str());
+    xAliDir = debugRunDir_->mkdir((std::to_string(seqPos) + ": x alignment").c_str());
 
   for (const auto& [sc, sc_ref] : {std::make_pair(cfg.sectorConfig45(), cfg_ref.sectorConfig45()),
                                    std::make_pair(cfg.sectorConfig56(), cfg_ref.sectorConfig56())}) {
@@ -691,7 +696,7 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IBooker& iBooker,
                                                const PPSAlignmentConfiguration& cfg) {
   TDirectory* xAliRelDir = nullptr;
   if (debug_)
-    xAliRelDir = debugFile_->mkdir((std::to_string(seqPos) + ": x_alignment_relative").c_str());
+    xAliRelDir = debugRunDir_->mkdir((std::to_string(seqPos) + ": x_alignment_relative").c_str());
 
   auto ff = std::make_unique<TF1>("ff", "[0] + [1]*(x - [2])");
   auto ff_sl_fix = std::make_unique<TF1>("ff_sl_fix", "[0] + [1]*(x - [2])");
@@ -906,7 +911,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker& iBooker,
                                        const PPSAlignmentConfiguration& cfg) {
   TDirectory* yAliDir = nullptr;
   if (debug_)
-    yAliDir = debugFile_->mkdir((std::to_string(seqPos) + ": y_alignment").c_str());
+    yAliDir = debugRunDir_->mkdir((std::to_string(seqPos) + ": y_alignment").c_str());
 
   auto ff = std::make_unique<TF1>("ff", "[0] + [1]*(x - [2])");
   auto ff_sl_fix = std::make_unique<TF1>("ff_sl_fix", "[0] + [1]*(x - [2])");

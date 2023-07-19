@@ -692,13 +692,14 @@ void LHCInfoPopConSourceHandler::getNewObjects() {
       startSampleTime = cond::time::to_boost(lastSince);
     } else {
       edm::LogInfo(m_name) << "Searching new fill after " << boost::posix_time::to_simple_string(targetTime);
-      query->filterNotNull("start_stable_beam").filterNotNull("fill_number");
+      query->filterNotNull("fill_number");
       if (targetTime > cond::time::to_boost(m_prevPayload->createTime())) {
         query->filterGE("start_time", targetTime);
       } else {
         query->filterGT("start_time", targetTime);
       }
 
+      query->filterLT("start_time", m_endTime);
       if (m_endFill)
         query->filterNotNull("end_time");
       bool foundFill = query->execute();

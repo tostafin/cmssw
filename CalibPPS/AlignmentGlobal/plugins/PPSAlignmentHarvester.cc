@@ -230,7 +230,7 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker& iBooker,
                                       edm::Run const& iRun,
                                       edm::EventSetup const& iSetup) {
   if (debug_) {
-    debugRunDir_ = debugFile_->mkdir(std::to_string(iRun.run()).c_str());
+    debugRunDir_ = debugFile_->mkdir(("to_" + std::to_string(iRun.run())).c_str());
   }
 
   const auto& cfg = iSetup.getData(esTokenTest_);

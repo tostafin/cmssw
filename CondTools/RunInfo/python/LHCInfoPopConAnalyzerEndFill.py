@@ -14,7 +14,7 @@ if socket.getfqdn().find('.cms') != -1:
 
 options = VarParsing.VarParsing()
 options.register( 'destinationConnection'
-                , 'sqlite_file:lhcinfo_pop_test.db' #default value
+                , 'sqlite_file:lhcinfo_8614_fixed.db' #default value
                 , VarParsing.VarParsing.multiplicity.singleton
                 , VarParsing.VarParsing.varType.string
                 , "Connection string to the DB where payloads will be possibly written."
@@ -28,7 +28,7 @@ options.register( 'targetConnection'
                      it is the DB where payloads should be finally uploaded."""
                   )
 options.register( 'tag'
-                , 'LHCInfo_PopCon_test'
+                , 'LHCInfoEndFill_Run3_validation_v2'
                 , VarParsing.VarParsing.multiplicity.singleton
                 , VarParsing.VarParsing.varType.string
                 , "Tag written in destinationConnection and finally appended in targetConnection."
@@ -70,8 +70,8 @@ process.Test1 = cms.EDAnalyzer("LHCInfoPopConAnalyzer",
                                record = cms.string('LHCInfoRcd'),
                                name = cms.untracked.string('LHCInfo'),
                                Source = cms.PSet(fill = cms.untracked.uint32(6417),
-                                   startTime = cms.untracked.string('2021-09-10 03:10:18.000'),
-                                   #endTime = cms.untracked.string('2018-05-31 20:13:59.000'),
+                                   startTime = cms.untracked.string("2022-06-26 15:43:20.000"),
+                                   endTime = cms.untracked.string(  "2022-07-11 18:07:25.000"),
                                    samplingInterval = cms.untracked.uint32( 600 ),
                                    endFill = cms.untracked.bool(True),
                                    connectionString = cms.untracked.string("oracle://cms_orcon_adg/CMS_RUNTIME_LOGGER"),

@@ -5,19 +5,19 @@ process = cms.Process('test')
 
 options = VarParsing.VarParsing()
 options.register( 'source'
-                , 'sqlite_file:lhcinfoperfill_pop_test.db' #default value
+                , 'sqlite_file:lhcinfo_pop_test.db' #default value
                 , VarParsing.VarParsing.multiplicity.singleton
                 , VarParsing.VarParsing.varType.string
                 , "Connection string to the DB where payloads are going to be read from"
                   )
 options.register( 'tag'
-                , 'LHCInfoPerFill_PopCon_test'
+                , 'LHCInfo_PopCon_test'
                 , VarParsing.VarParsing.multiplicity.singleton
                 , VarParsing.VarParsing.varType.string
                 , "Tag to read from in source"
                   )
 options.register( 'timestamp'
-                , 1
+                , 7133428598295232512
                 , VarParsing.VarParsing.multiplicity.singleton
                 , VarParsing.VarParsing.varType.int
                 , "Timestamp to which payload with relavant IOV will be read"
@@ -31,7 +31,7 @@ process.MessageLogger = cms.Service("MessageLogger",
     ),
     cout = cms.untracked.PSet(
         enable = cms.untracked.bool(True),
-        threshold = cms.untracked.string('INFO')
+        threshold = cms.untracked.string('ERROR')
     )
 )
 
@@ -50,14 +50,14 @@ process.PoolDBESSource = cms.ESSource('PoolDBESSource',
     DumpStats = cms.untracked.bool(True),
     toGet = cms.VPSet(
         cms.PSet(
-            record = cms.string('LHCInfoPerFillRcd'),
+            record = cms.string('LHCInfoPerLSRcd'),
             tag = cms.string(options.tag)
         )
     )
 )
 
-process.LHCInfoPerFillAnalyzer = cms.EDAnalyzer('LHCInfoPerFillAnalyzer')
+process.LHCInfoPerLSCsvAnalyzer = cms.EDAnalyzer('LHCInfoPerLSCsvAnalyzer')
 
 process.path = cms.Path(
-    process.LHCInfoPerFillAnalyzer
+    process.LHCInfoPerLSCsvAnalyzer
 )

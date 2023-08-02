@@ -28,7 +28,7 @@ options.register( 'targetConnection'
                      it is the DB where payloads should be finally uploaded."""
                   )
 options.register( 'tag'
-                , 'LHCInfo_PopCon_test'
+                , 'LHCInfo_endFill_more_ext'
                 , VarParsing.VarParsing.multiplicity.singleton
                 , VarParsing.VarParsing.varType.string
                 , "Tag written in destinationConnection and finally appended in targetConnection."
@@ -70,8 +70,8 @@ process.Test1 = cms.EDAnalyzer("LHCInfoPopConAnalyzer",
                                record = cms.string('LHCInfoRcd'),
                                name = cms.untracked.string('LHCInfo'),
                                Source = cms.PSet(fill = cms.untracked.uint32(6417),
-                                   startTime = cms.untracked.string('2018-05-31 00:00:00.000'),
-                                   #endTime = cms.untracked.string('2018-05-31 20:13:59.000'),
+                                   startTime = cms.untracked.string('2023-07-02 00:06:47'),
+                                  #  endTime = cms.untracked.string('2023-07-02 23:06:47'),
                                    samplingInterval = cms.untracked.uint32( 600 ),
                                    endFill = cms.untracked.bool(True),
                                    connectionString = cms.untracked.string("oracle://cms_orcon_adg/CMS_RUNTIME_LOGGER"),

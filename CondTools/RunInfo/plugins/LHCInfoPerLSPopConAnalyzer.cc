@@ -21,6 +21,7 @@
 #include "RelationalAccess/ISessionProxy.h"
 #include <cmath>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <sstream>
 #include <sstream>
@@ -44,9 +45,16 @@ namespace theLHCInfoPerLSImpl {
     return true;
   }
 
+  int lsId(cond::Time_t run, unsigned int ls) {
+    return run * 10000 + ls;
+  }
+
   size_t transferPayloads(const std::vector<std::pair<cond::Time_t, std::shared_ptr<LHCInfoPerLS>>>& buffer,
                           std::map<cond::Time_t, std::shared_ptr<LHCInfoPerLS>>& iovsToTransfer,
-                          std::shared_ptr<LHCInfoPerLS>& prevPayload) {
+                          std::shared_ptr<LHCInfoPerLS>& prevPayload,
+                          const std::map<int, int>& lsIdMap) {
+    int wrongTransferedLs = 0;
+    int wrongLs = 0;
     size_t niovs = 0;
     std::stringstream condIovs;
     for (auto& iov : buffer) {
@@ -61,13 +69,19 @@ namespace theLHCInfoPerLSImpl {
           add = true;
         }
       }
+      bool wrongId = lsId(payload->runNumber(), payload->lumiSection()) != lsIdMap.at(lsId(payload->runNumber(), payload->lumiSection()));
+      wrongLs += (int) wrongId;
       if (add) {
         niovs++;
+        wrongTransferedLs += (int) wrongId;
         condIovs << since << " ";
         iovsToTransfer.insert(std::make_pair(since, payload));
+
         prevPayload = iov.second;
       }
     }
+    edm::LogInfo("transferPayloads") << "Wrong LS " << wrongLs;
+    edm::LogInfo("transferPayloads") << "Wrong transfered LS " << wrongTransferedLs;
     edm::LogInfo("transferPayloads") << "TRANSFERED COND IOVS: " << condIovs.str();
     return niovs;
   }
@@ -215,6 +229,7 @@ public:
       } else {
         edm::LogInfo(m_name) << "Searching new fill after " << boost::posix_time::to_simple_string(targetTime);
         query->filterNotNull("start_stable_beam").filterNotNull("fill_number");
+        // query->filterNotNull("fill_number");
         if (targetTime > cond::time::to_boost(m_prevStartFillTime)) {
           query->filterGE("start_time", targetTime);
         } else {
@@ -262,13 +277,15 @@ public:
         }
       }
 
-      size_t niovs = theLHCInfoPerLSImpl::transferPayloads(m_tmpBuffer, m_iovs, m_prevPayload);
+      size_t niovs = theLHCInfoPerLSImpl::transferPayloads(m_tmpBuffer, m_iovs, m_prevPayload, m_lsIdMap);
       edm::LogInfo(m_name) << "Added " << niovs << " iovs within the Fill time";
       if (niovs) {
         m_prevEndFillTime = m_endFillTime;
         m_prevStartFillTime = m_startFillTime;
       }
       m_tmpBuffer.clear();
+      
+      m_lsIdMap.clear();
       if (m_prevPayload->fillNumber() and !ongoingFill)
         addEmptyPayload(m_endFillTime);
     }
@@ -278,6 +295,8 @@ public:
   static constexpr unsigned int kLumisectionsQueryLimit = 4000;
 
 private:
+  
+
   void addEmptyPayload(cond::Time_t iov) {
     bool add = false;
     if (m_iovs.empty()) {
@@ -317,6 +336,9 @@ private:
   void addPayloadToBuffer(cond::OMSServiceResultRef& row) {
     auto lumiTime = row.get<boost::posix_time::ptime>("start_time");
     LHCInfoPerLS* thisLumiSectionInfo = new LHCInfoPerLS(*m_fillPayload);
+    thisLumiSectionInfo->setLumiSection(std::stoul(row.get<std::string>("lumisection_number")));
+    thisLumiSectionInfo->setRunNumber(std::stoull(row.get<std::string>("run_number")));
+    m_lsIdMap[theLHCInfoPerLSImpl::lsId(thisLumiSectionInfo->runNumber(), thisLumiSectionInfo->lumiSection())] = -1;
     m_tmpBuffer.emplace_back(std::make_pair(cond::time::from_boost(lumiTime), thisLumiSectionInfo));
   }
 
@@ -461,8 +483,9 @@ private:
             payload.setCrossingAngleY(crossingAngleY);
             payload.setBetaStarX(betaStarX);
             payload.setBetaStarY(betaStarY);
-            payload.setLumiSection(lumiSection);
-            payload.setRunNumber(runNumber);
+            // payload.setLumiSection(lumiSection);
+            // payload.setRunNumber(runNumber);
+            m_lsIdMap[theLHCInfoPerLSImpl::lsId(payload.runNumber(), payload.lumiSection())] = theLHCInfoPerLSImpl::lsId(runNumber, lumiSection);
           }
         }
       }
@@ -491,4 +514,6 @@ private:
   cond::Time_t m_prevStartFillTime;
   std::vector<std::pair<cond::Time_t, std::shared_ptr<LHCInfoPerLS>>> m_tmpBuffer;
   bool m_lastPayloadEmpty = false;
+
+  std::map<int, int> m_lsIdMap;
 };

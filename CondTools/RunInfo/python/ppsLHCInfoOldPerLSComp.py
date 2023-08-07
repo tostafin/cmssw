@@ -43,12 +43,13 @@ def read_split(file) -> Tuple[str, List[str]]:
 
 
 def main():
-    # with open('8614_pps.txt') as f_pps:
-    with open('9019_pps.txt') as f_pps:
+    with open('8614_pps.txt') as f_pps:
+    # with open('9019_pps.txt') as f_pps:
         # with open('9019_content_csv_ext_filter.csv') as f_lhc:
-        with open('9019_fixed_content.csv') as f_lhc:
-            # with open('8614_ls_content_csv.out') as f_perls:
-            with open('9019_ls_content.csv') as f_perls:
+        # with open('9019_fixed_content.csv') as f_lhc:
+        with open('8614_fixed_content.csv') as f_lhc:
+            with open('8614_ls_content_csv.out') as f_perls:
+            # with open('9019_ls_content.csv') as f_perls:
                 print("fill", "pps run", "pps LS", "pps beta*", "pps xangle", "pps dip date", 
                     "record", "LS LHCInfo", "beta* LHCInfo", "xangle LHCInfo", "delivLumi LHCInfo", "IOV LHCInfo", "IOV date LHCInfo",
                     "beta* |pps-LHCInfo| error", "xangle |pps-LHCInfo| error",
@@ -96,14 +97,17 @@ def main():
                         if(abs(pps_timestamp-int(split_lhc[2])) < 10*60 and split_pps[2] == split_lhc[3]):
                             # print(line_lhc, end="")
                             print(split_lhc[1], split_lhc[3], split_lhc[5], split_lhc[4], split_lhc[6],
-                                split_lhc[0], to_date_string(int(split_lhc[2])), sep=";", end=";")
+                                split_lhc[0], to_date_string(int(split_lhc[2])), abs(pps_timestamp-int(split_lhc[2])),  sep=";", end=";")
+                            if abs(pps_timestamp-int(split_lhc[2])) > 20:
+                                print("LHCInfo time misalignment")
+                                # raise ValueError("LHCInfo time misalignment")
                             while(len(split_lhc) > 5 and abs(pps_timestamp-int(split_lhc[2])) < 10*60 and split_pps[2] == split_lhc[3]):
                                 lhc_beta = float(split_lhc[5])
                                 lhc_xangle = float(split_lhc[4])
                                 line_lhc, split_lhc = read_split(f_lhc)
                         else:
                             # print(";;;;;;;", end = "")
-                            print(";;;;;;;                                                            ", end = "")
+                            print(";;;;;;;;                                                            ", end = "")
                             print_lhc = True
                         
                     #                 lhc_beta = lhc_beta
@@ -114,7 +118,7 @@ def main():
                         print(abs(pps_beta-lhc_beta) if lhc_beta is not None else 0,
                             abs(pps_xangle-lhc_xangle) if lhc_xangle is not None else 0, sep = ";", end = ";")
                     else:
-                        print(";;;;;;;;;", end = "")
+                        print(";;;;;;;;;;", end = "")
 
                     time_ix_ls = 2
                     ls_ix_ls = 4
@@ -125,14 +129,17 @@ def main():
                         if(split_pps[1] == split_perls[run_ix_ls] and split_pps[2] == split_perls[ls_ix_ls]):
                             # print(line_perls, end="")
                             print(split_perls[1], split_perls[4], split_perls[7], split_perls[8], split_perls[5], split_perls[6],
-                                split_perls[0], to_date_string(int(split_perls[time_ix_ls])), sep=";", end=";")
+                                split_perls[0], to_date_string(int(split_perls[time_ix_ls])), abs(pps_timestamp-int(split_perls[time_ix_ls])), sep=";", end=";")
+                            if abs(pps_timestamp-int(split_perls[time_ix_ls])) > 20:
+                                print("LHCInfoPerLS time misalignment")
+                                # raise ValueError("LHCInfoPerLS time misalignment")
                             perls_beta = float(split_perls[beta_ix_ls])
                             perls_xangle = float(split_perls[xangle_ix_ls])
 
                             line_perlsm, split_perls = read_split(f_perls)
                         else:
                             # print(";;;;;;;", end = "")
-                            print(";;;;;;;;                                                            ", end = "")
+                            print(";;;;;;;;;                                                            ", end = "")
                             print_perls = True
                         
                     #                 perls_beta = perls_beta
@@ -143,7 +150,7 @@ def main():
                         print(abs(pps_beta-perls_beta) if perls_beta is not None else 0,
                             abs(pps_xangle-perls_xangle) if perls_xangle is not None else 0, sep = ";", end = ";\n")
                     else:
-                        print(";;;;;;;;;;")#, end = "")
+                        print(";;;;;;;;;;;")#, end = "")
                         # print(line_perls)
                     # print(split_perls)
 

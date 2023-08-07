@@ -48,7 +48,7 @@ def main():
         # with open('9019_content_csv_ext_filter.csv') as f_lhc:
         # with open('9019_fixed_content.csv') as f_lhc:
         with open('8614_fixed_content.csv') as f_lhc:
-            with open('8614_ls_content_csv.out') as f_perls:
+            with open('8614_ls_fixed_content.csv') as f_perls:
             # with open('9019_ls_content.csv') as f_perls:
                 print("fill", "pps run", "pps LS", "pps beta*", "pps xangle", "pps dip date", 
                     "record", "LS LHCInfo", "beta* LHCInfo", "xangle LHCInfo", "delivLumi LHCInfo", "IOV LHCInfo", "IOV date LHCInfo",

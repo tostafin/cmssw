@@ -409,14 +409,13 @@ private:
     CTPPSDataQuery->defineOutput(CTPPSDataOutput);
     //execute the query
     coral::ICursor& CTPPSDataCursor = CTPPSDataQuery->execute();
-    cond::Time_t dipTime = 0;
     unsigned int lumiSection = 0;
     cond::Time_t runNumber = 0;
     float crossingAngleX = 0., betaStarX = 0.;
     float crossingAngleY = 0., betaStarY = 0.;
 
     bool ret = false;
-    LumiSectionFilter<LHCInfoPerLS> filter(m_tmpBuffer);
+    std::vector<std::pair<cond::Time_t, std::shared_ptr<LHCInfoPerLS>>>::iterator current = m_tmpBuffer.begin();
     while (CTPPSDataCursor.next()) {
       if (m_debug) {
         std::ostringstream CTPPS;
@@ -424,6 +423,7 @@ private:
       }
       coral::Attribute const& dipTimeAttribute = CTPPSDataCursor.currentRow()[std::string("DIP_UPDATE_TIME")];
       if (!dipTimeAttribute.isNull()) {
+<<<<<<< HEAD
         dipTime = cond::time::from_boost(dipTimeAttribute.data<coral::TimeStamp>().time());
         if (filter.process(dipTime)) {
           ret = true;
@@ -463,6 +463,48 @@ private:
             payload.setLumiSection(lumiSection);
             payload.setRunNumber(runNumber);
           }
+=======
+        ret = true;
+        coral::Attribute const& lumiSectionAttribute = CTPPSDataCursor.currentRow()[std::string("LUMI_SECTION")];
+        if (!lumiSectionAttribute.isNull()) {
+          lumiSection = lumiSectionAttribute.data<int>();
+        }
+        coral::Attribute const& runNumberAttribute = CTPPSDataCursor.currentRow()[std::string("RUN_NUMBER")];
+        if (!runNumberAttribute.isNull()) {
+          runNumber = runNumberAttribute.data<int>();
+        }
+        coral::Attribute const& crossingAngleXAttribute =
+            CTPPSDataCursor.currentRow()[std::string("XING_ANGLE_P5_X_URAD")];
+        if (!crossingAngleXAttribute.isNull()) {
+          crossingAngleX = crossingAngleXAttribute.data<float>();
+        }
+        coral::Attribute const& crossingAngleYAttribute =
+            CTPPSDataCursor.currentRow()[std::string("XING_ANGLE_P5_Y_URAD")];
+        if (!crossingAngleYAttribute.isNull()) {
+          crossingAngleY = crossingAngleYAttribute.data<float>();
+        }
+        coral::Attribute const& betaStarXAttribute = CTPPSDataCursor.currentRow()[std::string("BETA_STAR_P5_X_M")];
+        if (!betaStarXAttribute.isNull()) {
+          betaStarX = betaStarXAttribute.data<float>();
+        }
+        coral::Attribute const& betaStarYAttribute = CTPPSDataCursor.currentRow()[std::string("BETA_STAR_P5_Y_M")];
+        if (!betaStarYAttribute.isNull()) {
+          betaStarY = betaStarYAttribute.data<float>();
+        }
+        // for (auto it = filter.current(); it != m_tmpBuffer.end(); it++) {
+        for (; current != m_tmpBuffer.end() && theLHCInfoPerLSImpl::lsId(current->second->runNumber(), current->second->lumiSection()) <= theLHCInfoPerLSImpl::lsId(runNumber, lumiSection); current++) {
+          LHCInfoPerLS& payload = *(current->second);
+          payload.setCrossingAngleX(crossingAngleX);
+          payload.setCrossingAngleY(crossingAngleY);
+          payload.setBetaStarX(betaStarX);
+          payload.setBetaStarY(betaStarY);
+          payload.setLumiSection(lumiSection);
+          payload.setRunNumber(runNumber);
+          m_lsIdMap[theLHCInfoPerLSImpl::lsId(payload.runNumber(), payload.lumiSection())] = theLHCInfoPerLSImpl::lsId(runNumber, lumiSection);
+          // if (theLHCInfoPerLSImpl::lsId(payload.runNumber(), payload.lumiSection()) == theLHCInfoPerLSImpl::lsId(runNumber, lumiSection)) {
+          //   current++;
+          // }
+>>>>>>> f4234cbbe60 (LHCInfoPerLS PopCon IOV misalignment fix)
         }
       }
     }

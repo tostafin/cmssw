@@ -11,7 +11,7 @@ process.source = cms.Source('EmptyIOVSource',
 
 # output service for database
 process.load('CondCore.CondDB.CondDB_cfi')
-process.CondDB.connect = 'sqlite_file:LHCInfoPerLS.sqlite' # SQLite output
+process.CondDB.connect = 'sqlite_file:LHCInfoPerLS_endFill_Run3_mc_v1.db' # SQLite output
 
 process.PoolDBOutputService = cms.Service('PoolDBOutputService',
     process.CondDB,
@@ -19,7 +19,7 @@ process.PoolDBOutputService = cms.Service('PoolDBOutputService',
     toPut = cms.VPSet(
         cms.PSet(
             record = cms.string('LHCInfoPerLSRcd'),
-            tag = cms.string('LHCInfoPerLSFake'),
+            tag = cms.string('LHCInfoPerLS_endFill_Run3_mc_v1'),
         )
     )
 )

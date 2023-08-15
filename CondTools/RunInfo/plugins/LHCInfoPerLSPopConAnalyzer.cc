@@ -45,18 +45,19 @@ namespace theLHCInfoPerLSImpl {
     return true;
   }
 
-  int lsId(cond::Time_t run, unsigned int ls) {
+  unsigned long long lsId(cond::Time_t run, unsigned int ls) {
     return run * 10000 + ls;
   }
 
   size_t transferPayloads(const std::vector<std::pair<cond::Time_t, std::shared_ptr<LHCInfoPerLS>>>& buffer,
                           std::map<cond::Time_t, std::shared_ptr<LHCInfoPerLS>>& iovsToTransfer,
                           std::shared_ptr<LHCInfoPerLS>& prevPayload,
-                          const std::map<int, int>& lsIdMap) {
+                          const std::map<unsigned long long, unsigned long long>& lsIdMap) {
     int wrongTransferedLs = 0;
     int wrongLs = 0;
     size_t niovs = 0;
     std::stringstream condIovs;
+    std::stringstream wrongMapped;
     for (auto& iov : buffer) {
       bool add = false;
       auto payload = iov.second;
@@ -69,11 +70,15 @@ namespace theLHCInfoPerLSImpl {
           add = true;
         }
       }
-      bool wrongId = lsId(payload->runNumber(), payload->lumiSection()) != lsIdMap.at(lsId(payload->runNumber(), payload->lumiSection()));
-      wrongLs += (int) wrongId;
+      unsigned long long id = lsId(payload->runNumber(), payload->lumiSection());
+      bool wrongId = lsIdMap.find(id) != lsIdMap.end() && id != lsIdMap.at(id);
+      if(wrongId) {
+        wrongMapped << "(m[ " << id << "] = " << lsIdMap.at(id) << " ) ";
+      }
+      wrongLs += (unsigned long long) wrongId;
       if (add) {
         niovs++;
-        wrongTransferedLs += (int) wrongId;
+        wrongTransferedLs += (unsigned long long) wrongId;
         condIovs << since << " ";
         iovsToTransfer.insert(std::make_pair(since, payload));
 
@@ -82,6 +87,7 @@ namespace theLHCInfoPerLSImpl {
     }
     edm::LogInfo("transferPayloads") << "Wrong LS " << wrongLs;
     edm::LogInfo("transferPayloads") << "Wrong transfered LS " << wrongTransferedLs;
+    edm::LogInfo("transferPayloads") << "Wrong mapped LS: " << wrongMapped.str();
     edm::LogInfo("transferPayloads") << "TRANSFERED COND IOVS: " << condIovs.str();
     return niovs;
   }
@@ -337,7 +343,9 @@ private:
     LHCInfoPerLS* thisLumiSectionInfo = new LHCInfoPerLS(*m_fillPayload);
     thisLumiSectionInfo->setLumiSection(std::stoul(row.get<std::string>("lumisection_number")));
     thisLumiSectionInfo->setRunNumber(std::stoull(row.get<std::string>("run_number")));
-    m_lsIdMap[theLHCInfoPerLSImpl::lsId(thisLumiSectionInfo->runNumber(), thisLumiSectionInfo->lumiSection())] = -1;
+    if(row.get<std::string>("beams_stable") == "true") {
+      m_lsIdMap[theLHCInfoPerLSImpl::lsId(thisLumiSectionInfo->runNumber(), thisLumiSectionInfo->lumiSection())] = -1;
+    }
     m_tmpBuffer.emplace_back(std::make_pair(cond::time::from_boost(lumiTime), thisLumiSectionInfo));
   }
 
@@ -481,7 +489,9 @@ private:
           payload.setBetaStarY(betaStarY);
           payload.setLumiSection(lumiSection);
           payload.setRunNumber(runNumber);
-          m_lsIdMap[theLHCInfoPerLSImpl::lsId(payload.runNumber(), payload.lumiSection())] = theLHCInfoPerLSImpl::lsId(runNumber, lumiSection);
+          if(m_lsIdMap.find(theLHCInfoPerLSImpl::lsId(payload.runNumber(), payload.lumiSection())) != m_lsIdMap.end()) {
+            m_lsIdMap[theLHCInfoPerLSImpl::lsId(payload.runNumber(), payload.lumiSection())] = theLHCInfoPerLSImpl::lsId(runNumber, lumiSection);
+          }
           // if (theLHCInfoPerLSImpl::lsId(payload.runNumber(), payload.lumiSection()) == theLHCInfoPerLSImpl::lsId(runNumber, lumiSection)) {
           //   current++;
           // }
@@ -513,5 +523,5 @@ private:
   std::vector<std::pair<cond::Time_t, std::shared_ptr<LHCInfoPerLS>>> m_tmpBuffer;
   bool m_lastPayloadEmpty = false;
 
-  std::map<int, int> m_lsIdMap;
+  std::map<unsigned long long, unsigned long long> m_lsIdMap;
 };

@@ -9,7 +9,7 @@ def to_date_string(unix_timestamp):
     return date_string
 
 timestamp = int(sys.argv[1])
-print(timestamp)
+# print(timestamp)
 unix_timestamp = timestamp >> 32
-print(unix_timestamp)
+# print(unix_timestamp)
 print(to_date_string(unix_timestamp))

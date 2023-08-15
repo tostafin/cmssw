@@ -27,18 +27,18 @@ private:
 
 void LHCInfoPerLSWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   LHCInfoPerLS lhcInfoPerLS;
-  lhcInfoPerLS.setFillNumber(7066);
-  lhcInfoPerLS.setLumiSection(1);
-  lhcInfoPerLS.setCrossingAngleX(170);
-  lhcInfoPerLS.setCrossingAngleY(170);
-  lhcInfoPerLS.setBetaStarX(11);
-  lhcInfoPerLS.setBetaStarY(11);
-  lhcInfoPerLS.setRunNumber(301765);
+  lhcInfoPerLS.setFillNumber(0);
+  lhcInfoPerLS.setLumiSection(0);
+  lhcInfoPerLS.setCrossingAngleX(130);
+  lhcInfoPerLS.setCrossingAngleY(0);
+  lhcInfoPerLS.setBetaStarX(60);
+  lhcInfoPerLS.setBetaStarY(60);
+  lhcInfoPerLS.setRunNumber(0);
 
   // store the info into a DB object
   edm::Service<cond::service::PoolDBOutputService> poolDbService;
   if (poolDbService.isAvailable())
-    poolDbService->writeOneIOV(lhcInfoPerLS, poolDbService->currentTime(), "LHCInfoPerLSRcd");
+    poolDbService->writeOneIOV(lhcInfoPerLS, 1, "LHCInfoPerLSRcd");
   else
     throw cms::Exception("LHCInfoPerLSWriter") << "PoolDBService required.";
 }

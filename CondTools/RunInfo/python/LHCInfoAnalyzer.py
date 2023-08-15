@@ -17,11 +17,17 @@ options.register( 'tag'
                 , VarParsing.VarParsing.varType.string
                 , "Tag to read from in source"
                   )
-options.register( 'timestamp'
+options.register( 'iov'
                 , 7133428598295232512
                 , VarParsing.VarParsing.multiplicity.singleton
                 , VarParsing.VarParsing.varType.int
                 , "Timestamp to which payload with relavant IOV will be read"
+                  )
+options.register( 'timetype'
+                , 'timestamp'
+                , VarParsing.VarParsing.multiplicity.singleton
+                , VarParsing.VarParsing.varType.string
+                , "Time type of the IOV (eg. timestamp, runnumber)"
                   )
 options.parseArguments()
 
@@ -37,9 +43,9 @@ process.MessageLogger = cms.Service("MessageLogger",
 )
 
 process.source = cms.Source('EmptyIOVSource',
-    timetype = cms.string('timestamp'),
-    firstValue = cms.uint64(options.timestamp),
-    lastValue = cms.uint64(options.timestamp),
+    timetype = cms.string(options.timetype),
+    firstValue = cms.uint64(options.iov),
+    lastValue = cms.uint64(options.iov),
     interval = cms.uint64(1)
 )
 

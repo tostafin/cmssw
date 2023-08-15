@@ -36,12 +36,13 @@ void LHCInfoAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
   // get Info
   if (InfoWatcher_.check(iSetup)) {
     auto lhcInfo = iSetup.getData(tokenInfo_);
-    std::cout << "LHCInfo;"
-    << iEvent.time().unixTime() << ";"
-    << lhcInfo.lumiSection() << ";" 
-    << lhcInfo.crossingAngle() << ";"
-    << lhcInfo.betaStar() << ";"
-    << lhcInfo.delivLumi() << ";" << std::endl;
+    std::cout << lhcInfo << std::endl;
+    // std::cout << "LHCInfo;"
+    // << iEvent.time().unixTime() << ";"
+    // << lhcInfo.lumiSection() << ";" 
+    // << lhcInfo.crossingAngle() << ";"
+    // << lhcInfo.betaStar() << ";"
+    // << lhcInfo.delivLumi() << ";" << std::endl;
   }
 }
 

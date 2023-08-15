@@ -30,7 +30,7 @@ private:
 void LHCInfoPerLSCsvAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   if (infoPerLSWatcher_.check(iSetup)) {
     const LHCInfoPerLS& infoPerLS = iSetup.getData(tokenInfoPerLS_);
-    std::cout << "LHCInfo;"
+    std::cout << "LHCInfoPerLS;"
       << iEvent.time().unixTime() << ";"
       << infoPerLS.runNumber() << ";" 
       << infoPerLS.lumiSection() << ";" 

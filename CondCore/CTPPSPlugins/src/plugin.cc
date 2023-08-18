@@ -39,19 +39,12 @@ namespace {
 }  // namespace
 
 REGISTER_PLUGIN(CTPPSBeamParametersRcd, CTPPSBeamParameters);
-REGISTER_PLUGIN(CTPPSOpticsRcd, LHCOpticalFunctionsSetCollection);
-REGISTER_PLUGIN(CTPPSPixelAnalysisMaskRcd, CTPPSPixelAnalysisMask);
 REGISTER_PLUGIN(CTPPSPixelDAQMappingRcd, CTPPSPixelDAQMapping);
+REGISTER_PLUGIN(CTPPSPixelAnalysisMaskRcd, CTPPSPixelAnalysisMask);
 REGISTER_PLUGIN(CTPPSPixelGainCalibrationsRcd, CTPPSPixelGainCalibrations);
 REGISTER_PLUGIN(CTPPSRPAlignmentCorrectionsDataRcd, CTPPSRPAlignmentCorrectionsData);
 REGISTER_PLUGIN(PPSAlignmentConfigRcd, PPSAlignmentConfig);
 REGISTER_PLUGIN(PPSAlignmentConfigurationRcd, PPSAlignmentConfiguration);
-REGISTER_PLUGIN(PPSDirectSimulationDataRcd, PPSDirectSimulationData);
-REGISTER_PLUGIN(PPSPixelTopologyRcd, PPSPixelTopology);
-REGISTER_PLUGIN(PPSTimingCalibrationLUTRcd, PPSTimingCalibrationLUT);
-REGISTER_PLUGIN(PPSTimingCalibrationRcd, PPSTimingCalibration);
-REGISTER_PLUGIN(RPMisalignedAlignmentRecord, CTPPSRPAlignmentCorrectionsData);
-REGISTER_PLUGIN(RPRealAlignmentRecord, CTPPSRPAlignmentCorrectionsData);
 REGISTER_PLUGIN(TotemAnalysisMaskRcd, TotemAnalysisMask);
 REGISTER_PLUGIN(TotemReadoutRcd, TotemDAQMapping);
 

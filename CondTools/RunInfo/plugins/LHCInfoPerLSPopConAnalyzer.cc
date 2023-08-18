@@ -350,11 +350,7 @@ private:
     LHCInfoPerLS* thisLumiSectionInfo = new LHCInfoPerLS(*m_fillPayload);
     thisLumiSectionInfo->setLumiSection(std::stoul(row.get<std::string>("lumisection_number")));
     thisLumiSectionInfo->setRunNumber(std::stoull(row.get<std::string>("run_number")));
-      m_lsIdMap[std::make_pair(thisLumiSectionInfo->runNumber(), thisLumiSectionInfo->lumiSection())] = std::make_pair(-1, -1);
-      m_lsIdMap[std::make_pair(thisLumiSectionInfo->runNumber(), thisLumiSectionInfo->lumiSection())] = std::make_pair(-1, -1);
-    }
     m_lsIdMap[std::make_pair(thisLumiSectionInfo->runNumber(), thisLumiSectionInfo->lumiSection())] = std::make_pair(-1, -1);
-    }
     m_tmpBuffer.emplace_back(std::make_pair(cond::time::from_boost(lumiTime), thisLumiSectionInfo));
   }
 
@@ -488,7 +484,8 @@ private:
         coral::Attribute const& crossingAngleYAttribute =
             CTPPSDataCursor.currentRow()[std::string("XING_ANGLE_P5_Y_URAD")];
         if (!crossingAngleYAttribute.isNull()) {
-          crossingAngleY = crossingAngleYAttribute.data<float>();
+          //TODO revert to original: temporary change for manual fixing of payloads in fills 7916-8136
+          crossingAngleY = 0; //crossingAngleYAttribute.data<float>();
         }
         coral::Attribute const& betaStarXAttribute = CTPPSDataCursor.currentRow()[std::string("BETA_STAR_P5_X_M")];
         if (!betaStarXAttribute.isNull()) {

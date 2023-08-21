@@ -16,6 +16,7 @@
 #include "CondFormats/DataRecord/interface/PPSTimingCalibrationRcd.h"
 #include "CondFormats/DataRecord/interface/TotemAnalysisMaskRcd.h"
 #include "CondFormats/DataRecord/interface/TotemReadoutRcd.h"
+#include "CondFormats/DataRecord/interface/TotemDAQMappingRcd.h"
 #include "CondFormats/PPSObjects/interface/CTPPSBeamParameters.h"
 #include "CondFormats/PPSObjects/interface/CTPPSPixelAnalysisMask.h"
 #include "CondFormats/PPSObjects/interface/CTPPSPixelDAQMapping.h"
@@ -46,6 +47,7 @@ REGISTER_PLUGIN(CTPPSRPAlignmentCorrectionsDataRcd, CTPPSRPAlignmentCorrectionsD
 REGISTER_PLUGIN(PPSAlignmentConfigRcd, PPSAlignmentConfig);
 REGISTER_PLUGIN(PPSAlignmentConfigurationRcd, PPSAlignmentConfiguration);
 REGISTER_PLUGIN(TotemAnalysisMaskRcd, TotemAnalysisMask);
-REGISTER_PLUGIN(TotemReadoutRcd, TotemDAQMapping);
+// REGISTER_PLUGIN(TotemReadoutRcd, TotemDAQMapping);
+REGISTER_PLUGIN(TotemDAQMappingRcd, TotemDAQMapping);
 
 REGISTER_PLUGIN_INIT(PPSAssociationCutsRcd, PPSAssociationCuts, InitAssociationCuts);

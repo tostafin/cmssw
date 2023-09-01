@@ -174,9 +174,14 @@ reco::ForwardProton ProtonReconstructionAlgorithm::reconstructFromMultiRP(const 
   // make sure optics is available for all tracks
   for (const auto &it : tracks) {
     auto oit = m_rp_optics_.find(it->rpId());
-    if (oit == m_rp_optics_.end())
-      throw cms::Exception("ProtonReconstructionAlgorithm")
+    //if chi2 is negative and `valid` is false it means the optics are missing or xangle is invalid
+    if (oit == m_rp_optics_.end()) {
+      edm::LogWarning("ProtonReconstructionAlgorithm")
           << "Optics data not available for RP " << it->rpId() << ", i.e. " << CTPPSDetId(it->rpId()) << ".";
+      reco::ForwardProton invalidProton;
+      invalidProton.setChi2(-std::numeric_limits<float>::max());
+      return invalidProton;
+    }
   }
 
   // initial estimate of xi and th_x
@@ -412,9 +417,14 @@ reco::ForwardProton ProtonReconstructionAlgorithm::reconstructFromSingleRP(const
 
   // make sure optics is available for the track
   auto oit = m_rp_optics_.find(track->rpId());
-  if (oit == m_rp_optics_.end())
-    throw cms::Exception("ProtonReconstructionAlgorithm")
+  if (oit == m_rp_optics_.end()) {
+    //if chi2 is negative and `valid` is false it means the optics are missing or xangle is invalid
+    edm::LogWarning("ProtonReconstructionAlgorithm")
         << "Optics data not available for RP " << track->rpId() << ", i.e. " << rpId << ".";
+    reco::ForwardProton invalidProton;
+    invalidProton.setChi2(-std::numeric_limits<float>::max());
+    return invalidProton;
+  }
 
   // rough estimate of xi and th_y from each track
   const double x_full = track->x() * 1E-1 + oit->second.x0;  // conversion mm --> cm

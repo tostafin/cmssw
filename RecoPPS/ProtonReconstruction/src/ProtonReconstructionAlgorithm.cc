@@ -180,6 +180,7 @@ reco::ForwardProton ProtonReconstructionAlgorithm::reconstructFromMultiRP(const 
           << "Optics data not available for RP " << it->rpId() << ", i.e. " << CTPPSDetId(it->rpId()) << ".";
       reco::ForwardProton invalidProton;
       invalidProton.setChi2(-std::numeric_limits<float>::max());
+      invalidProton.setMethod(reco::ForwardProton::ReconstructionMethod::multiRP);
       return invalidProton;
     }
   }
@@ -423,6 +424,7 @@ reco::ForwardProton ProtonReconstructionAlgorithm::reconstructFromSingleRP(const
         << "Optics data not available for RP " << track->rpId() << ", i.e. " << rpId << ".";
     reco::ForwardProton invalidProton;
     invalidProton.setChi2(-std::numeric_limits<float>::max());
+    invalidProton.setMethod(reco::ForwardProton::ReconstructionMethod::singleRP);
     return invalidProton;
   }
 

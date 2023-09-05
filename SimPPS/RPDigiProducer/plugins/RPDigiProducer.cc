@@ -26,7 +26,7 @@
 #include "FWCore/Utilities/interface/RandomNumberGenerator.h"
 
 #include "CondFormats/PPSObjects/interface/TotemAnalysisMask.h"
-#include "CondFormats/DataRecord/interface/TotemReadoutRcd.h"
+#include "CondFormats/DataRecord/interface/TotemAnalysisMaskRcd.h"
 #include "SimPPS/RPDigiProducer/interface/RPSimTypes.h"
 #include "SimPPS/RPDigiProducer/plugins/RPDetDigitizer.h"
 #include "SimPPS/RPDigiProducer/plugins/DeadChannelsManager.h"
@@ -87,7 +87,7 @@ private:
   bool simulateDeadChannels;
 
   edm::EDGetTokenT<CrossingFrame<PSimHit>> tokenCrossingFrameTotemRP;
-  edm::ESGetToken<TotemAnalysisMask, TotemReadoutRcd> tokenAnalysisMask;
+  edm::ESGetToken<TotemAnalysisMask, TotemAnalysisMaskRcd> tokenAnalysisMask;
   edm::ESGetToken<CTPPSRPAlignmentCorrectionsData, VeryForwardMisalignedGeometryRecord> alignmentToken;
   edm::ESGetToken<CTPPSGeometry, VeryForwardRealGeometryRecord> geomToken;
 };

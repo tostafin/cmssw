@@ -181,6 +181,7 @@ reco::ForwardProton ProtonReconstructionAlgorithm::reconstructFromMultiRP(const 
       reco::ForwardProton invalidProton;
       invalidProton.setChi2(-std::numeric_limits<float>::max());
       invalidProton.setMethod(reco::ForwardProton::ReconstructionMethod::multiRP);
+      invalidProton.setContributingLocalTracks(tracks);
       return invalidProton;
     }
   }
@@ -425,6 +426,9 @@ reco::ForwardProton ProtonReconstructionAlgorithm::reconstructFromSingleRP(const
     reco::ForwardProton invalidProton;
     invalidProton.setChi2(-std::numeric_limits<float>::max());
     invalidProton.setMethod(reco::ForwardProton::ReconstructionMethod::singleRP);
+    CTPPSLocalTrackLiteRefVector trk;
+    trk.push_back(track);
+    invalidProton.setContributingLocalTracks(trk);
     return invalidProton;
   }
 

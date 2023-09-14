@@ -305,7 +305,8 @@ private:
       auto row = *queryResult.begin();
       auto currentFill = row.get<unsigned short>("fill_number");
       m_startFillTime = cond::time::from_boost(row.get<boost::posix_time::ptime>("start_time"));
-      m_endFillTime = cond::time::from_boost(row.get<boost::posix_time::ptime>("end_time"));
+      std::string endTimeStr = row.get<std::string>("end_time");
+      m_endFillTime = (endTimeStr == "null")? 0 : cond::time::from_boost(row.get<boost::posix_time::ptime>("end_time"));
       targetPayload = std::make_unique<LHCInfoPerLS>();
       targetPayload->setFillNumber(currentFill);
       ret = true;

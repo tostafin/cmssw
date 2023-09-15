@@ -114,10 +114,16 @@ std::shared_ptr<LHCInterpolatedOpticalFunctionsSetCollection> CTPPSInterpolatedO
     const auto &it = ofColl.begin();
 
     // does the input xangle correspond to the actual one?
-    if (fabs(currentCrossingAngle_ - it->first) > 1e-6)
-      throw cms::Exception("CTPPSInterpolatedOpticalFunctionsESSource")
+    if (fabs(currentCrossingAngle_ - it->first) > 1e-6) {
+      edm::LogWarning("CTPPSInterpolatedOpticalFunctionsESSource")
           << "Cannot interpolate: input given only for xangle " << it->first << " while interpolation requested for "
           << currentCrossingAngle_ << ".";
+
+      currentDataValid_ = false;
+      currentData_ = std::make_shared<LHCInterpolatedOpticalFunctionsSetCollection>();
+
+      return currentData_;
+    }
 
     currentData_ = std::make_shared<LHCInterpolatedOpticalFunctionsSetCollection>();
     for (const auto &rp_p : it->second) {

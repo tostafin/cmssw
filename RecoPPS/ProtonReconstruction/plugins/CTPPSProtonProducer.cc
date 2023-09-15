@@ -219,7 +219,7 @@ void CTPPSProtonProducer::produce(edm::Event &iEvent, const edm::EventSetup &iSe
     // re-initialise algorithm upon crossing-angle change
     if (opticsWatcher_.check(iSetup)) {
       if (hOpticalFunctions->empty()) {
-        edm::LogInfo("CTPPSProtonProducer") << "No optical functions available, reconstruction disabled.";
+        edm::LogWarning("CTPPSProtonProducer") << "No optical functions available, reconstruction disabled.";
         algorithm_.release();
         opticsValid_ = false;
       } else {

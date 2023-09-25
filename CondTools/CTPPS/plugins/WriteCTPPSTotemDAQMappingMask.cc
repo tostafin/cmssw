@@ -59,7 +59,8 @@ WriteCTPPSTotemDAQMappingMask::WriteCTPPSTotemDAQMappingMask(const edm::Paramete
 void WriteCTPPSTotemDAQMappingMask::analyze(const edm::Event &, edm::EventSetup const &es) {
   edm::Service<cond::service::PoolDBOutputService> poolDbService;
 
-  if (auto mappingHandle = es.getHandle(tokenMapping_)) {
+  auto mappingHandle = es.getHandle(tokenMapping_);
+  if (!recordMap_.empty() && mappingHandle.isValid() && !mappingHandle.failedToGet()) {
     const auto &mapping = es.getData(tokenMapping_);
     std::stringstream output;
     mapping.print(output, label_);
@@ -76,7 +77,8 @@ void WriteCTPPSTotemDAQMappingMask::analyze(const edm::Event &, edm::EventSetup 
     edm::LogError("WriteCTPPSTotemDAQMappingMask mapping") << "WriteCTPPSTotemDAQMappingMask: No mapping found";
   }
 
-  if (auto maskHandle = es.getHandle(tokenAnalysisMask_)) {
+  auto maskHandle = es.getHandle(tokenAnalysisMask_);
+  if (!recordMask_.empty() && maskHandle.isValid() && !maskHandle.failedToGet()) {
     const auto &analysisMask = es.getData(tokenAnalysisMask_);
     edm::LogInfo("WriteCTPPSTotemDAQMappingMask mask") << analysisMask;
 

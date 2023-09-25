@@ -7,7 +7,8 @@ import sys
 # Script which reads data from XML and drops objects to SQLite
 # Run with python3
 
-filesToWrite = [totemTiming, timingDiamond, trackingStrip, totemT2] 
+filesToWrite = [totemTiming, timingDiamond, trackingStrip, totemT2, analysisMask] 
+writeOnlyOneRecord = True
 
 if(len(sys.argv)>1):
   filesToWrite = [filesMap[mapName] for mapName in sys.argv[1:]]
@@ -34,6 +35,18 @@ for fileContent in filesToWrite:
           content = re.sub(r'mappingFileNames =.*', f'mappingFileNames = {fileInfo["mappingFileNames"]},', content)
           content = re.sub(r'maskFileNames =.*', f'maskFileNames = {fileInfo["maskFileNames"]},', content)
           
+          
+          if writeOnlyOneRecord and fileContent != analysisMask:
+            content = re.sub(r'recordMap = cms.string.*', "recordMap = cms.string('TotemReadoutRcd'),", content)
+            content = re.sub(r'recordMask = cms.string.*', "recordMask = cms.string(''),", content)
+          elif writeOnlyOneRecord and fileContent == analysisMask:
+            content = re.sub(r'recordMap = cms.string.*', "recordMap = cms.string(''),", content)
+            content = re.sub(r'recordMask = cms.string.*', "recordMask = cms.string('TotemAnalysisMaskRcd'),", content)
+          else:
+            content = re.sub(r'recordMap = cms.string.*', "recordMap = cms.string('TotemReadoutRcd'),", content)
+            content = re.sub(r'recordMask = cms.string.*', "recordMask = cms.string('TotemAnalysisMaskRcd'),", content)
+            
+            
           f.seek(0)
           f.write(content)
           f.truncate()

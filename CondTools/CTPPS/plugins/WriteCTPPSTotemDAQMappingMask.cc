@@ -30,7 +30,7 @@
 class WriteCTPPSTotemDAQMappingMask : public edm::one::EDAnalyzer<> {
 public:
   WriteCTPPSTotemDAQMappingMask(const edm::ParameterSet &ps);
-  ~WriteCTPPSTotemDAQMappingMask() override {}
+  ~WriteCTPPSTotemDAQMappingMask() override = default;
 
 private:
   const cond::Time_t daqMappingIov_;

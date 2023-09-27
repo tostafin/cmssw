@@ -36,7 +36,7 @@ process.totemDAQMappingESSourceXML.configuration = cms.VPSet(
 
 # load a mapping from DB
 process.load('CondCore.CondDB.CondDB_cfi')
-process.CondDB.connect = "sqlite_file:CTPPS_AnalysisMasks.db"
+process.CondDB.connect = "sqlite_file:CTPPS_AnalysisMask.db"
 process.PoolDBESSource = cms.ESSource('PoolDBESSource',
     process.CondDB,
     toGet = cms.VPSet(
@@ -44,7 +44,7 @@ process.PoolDBESSource = cms.ESSource('PoolDBESSource',
       record = cms.string('TotemAnalysisMaskRcd'),
       tag = cms.string('AnalysisMask'),
       label = cms.untracked.string(subSystemName)),
-  ))
+    ))
 
 
 
@@ -54,12 +54,12 @@ process.PoolDBESSource = cms.ESSource('PoolDBESSource',
 
 
 # prefer to read mapping from DB than from XML or otherwise
-process.es_prefer_totemTimingMapping = cms.ESPrefer("PoolDBESSource", "",                 TotemAnalysisMaskRcd=cms.vstring(f"TotemAnalysisMask/"))
+process.es_prefer_totemTimingMapping = cms.ESPrefer("TotemDAQMappingESSourceXML", "totemDAQMappingESSourceXML",                 TotemReadoutRcd=cms.vstring(f"TotemAnalysisMask/"))
 
 # print the mapping
 process.writeTotemDAQMapping = cms.EDAnalyzer("WriteTotemDAQMapping",
   subSystem = cms.untracked.string(subSystemName),
-  fileName = cms.untracked.string("all__db.txt"),
+  fileName = cms.untracked.string("all__xml.txt"),
   readMap = cms.untracked.bool(False),
   readMask = cms.untracked.bool(True),
 )

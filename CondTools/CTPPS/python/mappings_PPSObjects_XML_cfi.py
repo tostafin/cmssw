@@ -150,7 +150,7 @@ totemT2 = {
 }
 
 analysisMask = {
-  "dbConnect": "sqlite_file:CTPPS_AnalysisMasks.db",
+  "dbConnect": "sqlite_file:CTPPS_AnalysisMask.db",
   "subSystemName": "",
   "multipleChannelsPerPayload": False,
   "configuration": [

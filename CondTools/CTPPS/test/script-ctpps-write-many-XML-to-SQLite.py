@@ -8,10 +8,13 @@ import sys
 # Run with python3
 
 filesToWrite = [totemTiming, timingDiamond, trackingStrip, totemT2, analysisMask] 
-writeOnlyOneRecord = True
+writeBothRecords = False
 
-if(len(sys.argv)>1):
-  filesToWrite = [filesMap[mapName] for mapName in sys.argv[1:]]
+if(len(sys.argv)>1 and sys.argv[1].lower()=='true'):
+  writeBothRecords = True
+
+if(len(sys.argv)>2):
+  filesToWrite = [filesMap[mapName] for mapName in sys.argv[2:]]
 
 
 # For each file change the variable values in the config so that they match the selected XML file and then run the config
@@ -36,15 +39,16 @@ for fileContent in filesToWrite:
           content = re.sub(r'maskFileNames =.*', f'maskFileNames = {fileInfo["maskFileNames"]},', content)
           
           
-          if writeOnlyOneRecord and fileContent != analysisMask:
-            content = re.sub(r'recordMap = cms.string.*', "recordMap = cms.string('TotemReadoutRcd'),", content)
-            content = re.sub(r'recordMask = cms.string.*', "recordMask = cms.string(''),", content)
-          elif writeOnlyOneRecord and fileContent == analysisMask:
-            content = re.sub(r'recordMap = cms.string.*', "recordMap = cms.string(''),", content)
-            content = re.sub(r'recordMask = cms.string.*', "recordMask = cms.string('TotemAnalysisMaskRcd'),", content)
-          else:
-            content = re.sub(r'recordMap = cms.string.*', "recordMap = cms.string('TotemReadoutRcd'),", content)
-            content = re.sub(r'recordMask = cms.string.*', "recordMask = cms.string('TotemAnalysisMaskRcd'),", content)
+          mapRcd = ''
+          maskRcd = ''
+          if writeBothRecords or fileContent != analysisMask:
+            mapRcd = 'TotemReadoutRcd'
+          if writeBothRecords or fileContent == analysisMask:
+            maskRcd = 'TotemAnalysisMaskRcd'
+            
+            
+          content = re.sub(r'recordMap = cms.string.*', f"recordMap = cms.string('{mapRcd}'),", content)
+          content = re.sub(r'recordMask = cms.string.*', f"recordMask = cms.string('{maskRcd}'),", content)
             
             
           f.seek(0)

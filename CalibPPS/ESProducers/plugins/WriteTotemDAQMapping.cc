@@ -36,21 +36,20 @@ WriteTotemDAQMapping::WriteTotemDAQMapping(const edm::ParameterSet &ps)
     : subSystemName_(ps.getUntrackedParameter<std::string>("subSystem")),
       outStream_(ps.getUntrackedParameter<std::string>("fileName"), std::ios_base::app),
       readMap_(ps.getUntrackedParameter<bool>("readMap")),
-      readMask_(ps.getUntrackedParameter<bool>("readMask"))
-      {
-        if(readMap_==true){
-          mappingToken_ = esConsumes(edm::ESInputTag("", subSystemName_));
-        }
-        if(readMask_==true){
-          maskToken_ = esConsumes(edm::ESInputTag("", subSystemName_));
-        }
-      }
+      readMask_(ps.getUntrackedParameter<bool>("readMask")) {
+  if (readMap_ == true) {
+    mappingToken_ = esConsumes(edm::ESInputTag("", subSystemName_));
+  }
+  if (readMask_ == true) {
+    maskToken_ = esConsumes(edm::ESInputTag("", subSystemName_));
+  }
+}
 
 //----------------------------------------------------------------------------------------------------
 
 void WriteTotemDAQMapping::analyze(const edm::Event &, edm::EventSetup const &es) {
   // get mapping
-  if (readMap_==true){
+  if (readMap_ == true) {
     auto mappingHandle = es.getHandle(mappingToken_);
     if (mappingHandle.isValid() && !mappingHandle.failedToGet()) {
       auto const &mapping = *mappingHandle;
@@ -61,7 +60,7 @@ void WriteTotemDAQMapping::analyze(const edm::Event &, edm::EventSetup const &es
   }
 
   // get analysis mask to mask channels
-  if (readMask_==true) {
+  if (readMask_ == true) {
     auto analysisMaskHandle = es.getHandle(maskToken_);
     if (analysisMaskHandle.isValid() && !analysisMaskHandle.failedToGet()) {
       auto const &analysisMask = *analysisMaskHandle;

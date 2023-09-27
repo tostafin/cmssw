@@ -13,14 +13,17 @@ fromDb = True
 if(len(sys.argv)>1 and sys.argv[1].lower()=='false'):
   fromDb = False
   
-# filesToRead = [totemTiming, timingDiamond, trackingStrip, totemT2] 
-filesToRead = [totemTiming, analysisMask] 
-if(len(sys.argv)>2):
-  filesToRead = [filesMap[mapName] for mapName in sys.argv[2:]]
   
 # If True Mask and Mapping records will be read and wrote to file; If False only one of them will be processed
 writeBothRecords = False
-
+if(len(sys.argv)>2 and sys.argv[2].lower()=='true'):
+  writeBothRecords = True
+  
+  
+filesToRead = [totemTiming, timingDiamond, trackingStrip, totemT2] 
+if(len(sys.argv)>3):
+  filesToRead = [filesMap[mapName] for mapName in sys.argv[3:]]
+  
 
 # For each file change the variable values in the config so that they match the selected XML file and then run the config
 for fileContent in filesToRead:
@@ -60,7 +63,7 @@ for fileContent in filesToRead:
             if writeBothRecords or fileContent == analysisMask:
               dbRecords += "cms.PSet(\nrecord = cms.string('TotemAnalysisMaskRcd'),\n tag = cms.string('AnalysisMask'),\n label = cms.untracked.string(subSystemName)),\n"
               replacement = f'process.es_prefer_totemTimingMapping = cms.ESPrefer("{sourceClass}", "{obj}", \
-                TotemAnalysisMaskRcd=cms.vstring(f"TotemAnalysisMask/{fileContent["subSystemName"]}"))'
+                {"TotemAnalysisMaskRcd" if fromDb else "TotemReadoutRcd"}=cms.vstring(f"TotemAnalysisMask/{fileContent["subSystemName"]}"))'
             
             if writeBothRecords or fileContent != analysisMask:
               dbRecords += "cms.PSet(\nrecord = cms.string('TotemReadoutRcd'),\n tag = cms.string('DiamondDAQMapping'),\n label = cms.untracked.string(subSystemName))\n"

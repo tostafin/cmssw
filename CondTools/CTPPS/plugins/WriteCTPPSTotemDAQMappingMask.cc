@@ -74,7 +74,7 @@ void WriteCTPPSTotemDAQMappingMask::analyze(const edm::Event &, edm::EventSetup 
     }
 
   } else {
-    edm::LogError("WriteCTPPSTotemDAQMappingMask mapping") << "WriteCTPPSTotemDAQMappingMask: No mapping found";
+    edm::LogWarning("WriteCTPPSTotemDAQMappingMask mapping") << "WriteCTPPSTotemDAQMappingMask: No mapping found";
   }
 
   auto maskHandle = es.getHandle(tokenAnalysisMask_);
@@ -89,7 +89,7 @@ void WriteCTPPSTotemDAQMappingMask::analyze(const edm::Event &, edm::EventSetup 
           << "WriteCTPPSTotemDAQMappingMask: PoolDBService not availible. Data not written.";
     }
   } else {
-    edm::LogError("WriteCTPPSTotemDAQMappingMask mask") << "WriteCTPPSTotemDAQMappingMask: No analysis mask found";
+    edm::LogWarning("WriteCTPPSTotemDAQMappingMask mask") << "WriteCTPPSTotemDAQMappingMask: No analysis mask found";
   }
 }
 

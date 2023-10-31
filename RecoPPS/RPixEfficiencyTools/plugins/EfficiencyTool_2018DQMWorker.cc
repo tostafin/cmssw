@@ -23,12 +23,14 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/Utilities/interface/RegexMatch.h"
 
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "DQMServices/Core/interface/DQMStore.h"
 
 #include "CondFormats/RunInfo/interface/LHCInfo.h"
 #include "CondFormats/DataRecord/interface/LHCInfoRcd.h"
+#include "HLTrigger/HLTcore/interface/HLTPrescaleProvider.h"
 
 #include "DataFormats/Common/interface/DetSetVector.h"
 
@@ -176,6 +178,10 @@ private:
   std::map<CTPPSPixelDetId, std::map<std::pair<int, int>, MonitorElement *>>
       h1TySigma;  
 
+  // Prescale plots
+  MonitorElement *h1L1Prescale_;
+  MonitorElement *h1HLTPrescale_;
+
   std::vector<CTPPSPixelDetId> detectorIdVector_;
 
   double detectorTiltAngle_;
@@ -288,11 +294,16 @@ private:
 
   edm::EDGetTokenT<reco::ForwardProtonCollection> protonsToken_;
   edm::EDGetTokenT<reco::ForwardProtonCollection> multiRP_protonsToken_;
+
+  // Prescale parameters
+  std::string processName_, triggerPattern_, hltName_;
+  HLTPrescaleProvider hltPrescaleProvider_;
 };
 
 EfficiencyTool_2018DQMWorker::EfficiencyTool_2018DQMWorker(const edm::ParameterSet &iConfig)
     : geomEsToken_(esConsumes<edm::Transition::BeginRun>()),
-      lhcInfoToken_(esConsumes(edm::ESInputTag("", "")))
+      lhcInfoToken_(esConsumes(edm::ESInputTag("", ""))),
+      hltPrescaleProvider_(iConfig, consumesCollector(), *this)
  {
   pixelLocalTrackToken_ = consumes<edm::DetSetVector<CTPPSPixelLocalTrack>>(iConfig.getUntrackedParameter<edm::InputTag>("tagPixelLocalTracks"));
   minNumberOfPlanesForEfficiency_ = iConfig.getParameter<int>("minNumberOfPlanesForEfficiency");
@@ -346,6 +357,7 @@ EfficiencyTool_2018DQMWorker::EfficiencyTool_2018DQMWorker(const edm::ParameterS
   binGroupingX_ = iConfig.getUntrackedParameter<int>("binGroupingX");  // UNUSED!
   binGroupingY_ = iConfig.getUntrackedParameter<int>("binGroupingY");  // UNUSED!
   recoInfoCut_ = iConfig.getUntrackedParameter<int>("recoInfo");
+  
   // Compute binning arrays
   for (auto detID_and_coordinate : mapXbin_changeCoordinate) {
     CTPPSPixelDetId detId = detID_and_coordinate.first;
@@ -360,6 +372,11 @@ EfficiencyTool_2018DQMWorker::EfficiencyTool_2018DQMWorker(const edm::ParameterS
         xBinEdges[detId].push_back(nBinsX_small * mapXbinSize_small + (i - nBinsX_small) * mapXbinSize_large);
     }
   }
+  debug_ = iConfig.getUntrackedParameter<bool>("debug");
+
+  // Prescale parameters
+  processName_ = iConfig.getParameter<std::string>("processName");
+  triggerPattern_ = iConfig.getParameter<std::string>("triggerPattern");
 }
 
 EfficiencyTool_2018DQMWorker::~EfficiencyTool_2018DQMWorker() {}
@@ -371,6 +388,11 @@ void EfficiencyTool_2018DQMWorker::bookHistograms(DQMStore::IBooker &ibooker,
   h1BunchCrossing_ =
       ibooker.book1DD("h1BunchCrossing", "h1BunchCrossing", totalNumberOfBunches_, 0., totalNumberOfBunches_);
   h1CrossingAngle_ = ibooker.book1DD("h1CrossingAngle", "h1CrossingAngle", 70, 100., 170);
+  // Assume max. 1000 LSs
+  h1L1Prescale_ =
+      ibooker.bookProfile("h1L1Prescale", "h1L1Prescale;LS;Prescale", 3000, 0., 3000, 1, 1E4, "");
+  h1HLTPrescale_ =
+      ibooker.bookProfile("h1HLTPrescale", "h1HLTPrescale;LS;Prescale", 3000, 0., 3000, 1, 1E4, "");
 
   const auto &geom = eventSetup.getData(geomEsToken_);
 
@@ -877,15 +899,85 @@ void EfficiencyTool_2018DQMWorker::setGlobalBinSizes(CTPPSPixelDetId &rpId) {
 }
 
 
-void EfficiencyTool_2018DQMWorker::dqmBeginRun(edm::Run const &, edm::EventSetup const &) {}
+void EfficiencyTool_2018DQMWorker::dqmBeginRun(edm::Run const & iRun, edm::EventSetup const & iSetup) {
+  bool changed(true);
+  if (hltPrescaleProvider_.init(iRun, iSetup, processName_, changed)) {
+    HLTConfigProvider const& hltConfig = hltPrescaleProvider_.hltConfigProvider();
+    const std::vector<std::string> triggerNames(hltConfig.triggerNames());
+
+    // Do the matching to find out the HLT name
+    if (edm::is_glob(triggerPattern_)) {  // handle triggerPattern_ with wildcards (*,?)
+      std::vector<std::vector<std::string>::const_iterator> matches = edm::regexMatch(triggerNames, triggerPattern_);
+      if (matches.empty()) {
+        throw cms::Exception("PPS") 
+          << "requested trigger pattern [" << triggerPattern_ << "] does not match any HLT paths";
+      }
+      if (matches.size() > 1) {
+        throw cms::Exception("PPS") 
+          << "requested trigger pattern [" << triggerPattern_ << "] matches more than one HLT path";
+      }
+      hltName_ = *matches[0];
+      if(debug_)
+        std::cout << "Matched HLT path name: " << hltName_ << std::endl;
+      
+    } else {  // take full HLT path name given
+      hltName_ = triggerPattern_;
+    }
+
+    if (changed) {
+      edm::LogInfo("PPS") << "HLT configuration changed between runs";
+      const unsigned int n(hltConfig.size());
+      const unsigned int triggerIndex(hltConfig.triggerIndex(triggerPattern_));
+      if (triggerIndex >= n) {
+        edm::LogInfo("PPS") << "EfficiencyTool_2018DQMWorker::dqmBeginRun:"
+                       << " TriggerName " << triggerPattern_ << " not available in (new) config!" << endl;
+        edm::LogInfo("PPS") << "Available TriggerNames are: " << endl;
+        hltConfig.dump("Triggers");
+      }
+    }
+  } else {
+    edm::LogError("PPS") << " HLT config extraction failure with process name " << processName_;
+  }
+}
 
 
 void EfficiencyTool_2018DQMWorker::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup) {
   using namespace edm;
 
-  double weight = 1;
   Handle<edm::DetSetVector<CTPPSPixelLocalTrack>> pixelLocalTracks;
   iEvent.getByToken(pixelLocalTrackToken_, pixelLocalTracks);
+
+  const auto prescales(hltPrescaleProvider_.prescaleValuesInDetail<double,double>(iEvent, iSetup, hltName_));
+
+  int ls = iEvent.getLuminosityBlock().id().luminosityBlock();
+
+  // Print prescales
+  if (debug_){
+    std::cout << "LS: " << ls << std::endl;
+    std::cout << "\tHLT prescale: " << prescales.second << std::endl;
+    std::cout << "\tL1 prescales: " << std::endl;
+
+  }
+
+  double weight = 1.;
+
+  bool l1Prescale_found = false;
+  for (const auto &l1Prescale : prescales.first){
+    if (debug_)
+      std::cout << "\t\t" << l1Prescale.first << ": " << l1Prescale.second << std::endl;
+    if (l1Prescale.first == "L1_ZeroBias"){
+      h1L1Prescale_->Fill(ls, l1Prescale.second);
+      weight *= l1Prescale.second; // Correct for the L1 prescale value
+      l1Prescale_found = true;
+    }
+  }
+  if (!l1Prescale_found){
+    std::cout << "L1_ZeroBias prescale not found!" << std::endl;
+    return;
+  }
+
+  h1HLTPrescale_->Fill(ls,prescales.second);
+  // weight *= prescales.second; // Correct for the HLT prescale value
 
   if (!validBunchArray_[iEvent.eventAuxiliary().bunchCrossing()])
     return;

@@ -31,6 +31,7 @@
 #include "TMatrixT.h"
 #include "TH2.h"
 #include "TText.h"
+#include <TStyle.h>
 
 class CTPPSOptics {
 public:
@@ -316,9 +317,8 @@ public:
     auto iov = tag.iovs.back();
     auto m_payload = this->fetchPayload(std::get<1>(iov));
 
-    TCanvas canvas("LHCOpticalFunctions payload information", "LHCOpticalFunctions payload information", 1000, 600);
-    TH2D* hist = new TH2D("unitary_matrix_hist", "Unitary Matrix", 4, 0, 4, 4, 0, 4);
-    canvas.cd(1);
+    TCanvas* canvas = new TCanvas("LHCOpticalFunctions payload information", "LHCOpticalFunctions payload information", 600, 1800);
+    canvas->Divide(1, 3);
     TLatex t;
     t.SetTextSize(0.018);
 
@@ -332,6 +332,7 @@ public:
         file.open("try.txt", std::ios::app);
         
         file<<"RP: "<<rp;    
+        int no_Xi = 0;
         
         for(auto& map_item: *m_payload){
             ss<<"\nangle: "<<map_item.first<<" ";
@@ -339,50 +340,48 @@ public:
             for(auto& pot: map_item.second){
                 if(CTPPSOptics::decodeRP(pot.first) == rp){
                     for(auto item: Xi){
-                        ss<<"\nXi: "<<item<<"\n";
-                        file<<"\nXi: "<<std::fixed<<std::setprecision(2)<<item<<"\n";
                         int fun = CTPPSOptics::Function::evx;
-                        while(fun != CTPPSOptics::Function::nFunctions){
-                            for(int i=0; i<4; i++){
-
-                                ss<<" | ";
-                                file<< "|";
-                                for(int j=0; j<4; j++){
-
-                                    hist->SetBinContent(i + 1, j + 1, pot.second.getFcnValues()[fun][item]);
-                                    TText* text = new TText(hist->GetXaxis()->GetBinCenter(i + 1), hist->GetYaxis()->GetBinCenter(j + 1), Form("%.2f", pot.second.getFcnValues()[fun][item]));
-                                    text->SetTextSize(0.03);
-                                    text->SetTextAlign(22);
-                                    text->Draw();
-
-                                    ss<<std::fixed<<std::setprecision(10)<<pot.second.getFcnValues()[fun][item]<<"\t\t";
-                                    file<<std::fixed<<std::setprecision(10)<<pot.second.getFcnValues()[fun][item]<<"\t\t\t";
-                                    fun++;
-                                    
-                                }
-                                ss<<" | \n";
-                                file<<"|\n";
+                        TH2F *histogram = new TH2F("histogram", Form("Angle: %.2f, Xi: %.2f", map_item.first, item), 4, 0.5, 4.5, 4.5, 0.5, 4.5);
+                        for (int i = 0; i < 4; i++) {
+                            for (int j = 0; j < 4; j++) {
+                                double z = pot.second.getFcnValues()[fun][item];
+                                histogram->Fill(j+1, 4-i, (z==float(0.))? 0.0 : z);
+                                histogram->SetStats(false);
+                                histogram->GetXaxis()->SetLabelSize(0);
+                                histogram->GetYaxis()->SetLabelSize(0);
+                                gStyle->SetTextSize(0.5);
+                                // TText* text = new TText(j + 1, 4 - i, (z==float(0.)) ? Form("0.0") : Form("%.2f", z));
+                                // text->SetTextSize(0.075);
+                                // text->SetTextAlign(22);
+                                // text->Draw();
+                                fun++;
                             }
                         }
+                        canvas->cd(no_Xi+1);
+                        histogram->Draw("TEXT");
+                        canvas->Update();
+                        //delete histogram;
+                        //delete text;
+                        no_Xi++;
                     }
                 }
             }
         }    
-        while (getline(ss, line)) {
-             lines.push_back(line);
-         }
+        // while (getline(ss, line)) {
+        //      lines.push_back(line);
+        //  }
 
-
+        file.close();
         // int index = 0;
         // for (float y = 0.98; index < int(lines.size()); y -= 0.02) {
         //      if (index < int(lines.size()))
         //      t.DrawLatex(0.02, y, lines[index++].c_str());
         // }
         //t.Draw();
-        hist->Draw("TEXT");
-        canvas.Update();
+        canvas->Draw();
         std::string fileName(this->m_imageFileName);
-        canvas.SaveAs(fileName.c_str());
+        canvas->SaveAs(fileName.c_str());
+        //delete histogram;
 
         return true;
     } else {

@@ -37,6 +37,8 @@ class CTPPSProtonReconstructionSimulationValidator : public edm::one::EDAnalyzer
 public:
   explicit CTPPSProtonReconstructionSimulationValidator(const edm::ParameterSet &);
 
+  static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
+
 private:
   void analyze(const edm::Event &, const edm::EventSetup &) override;
   void endJob() override;
@@ -208,6 +210,23 @@ CTPPSProtonReconstructionSimulationValidator::CTPPSProtonReconstructionSimulatio
       lhcInfoPerFillToken_(esConsumes(ESInputTag("", iConfig.getParameter<std::string>("lhcInfoPerFillLabel")))),
       useNewLHCInfo_(iConfig.getParameter<bool>("useNewLHCInfo")),
       outputFile_(iConfig.getParameter<string>("outputFile")) {}
+
+//----------------------------------------------------------------------------------------------------
+
+void CTPPSProtonReconstructionSimulationValidator::fillDescriptions(edm::ConfigurationDescriptions &descriptions) {
+  edm::ParameterSetDescription desc;
+
+  desc.add<std::string>("lhcInfoLabel", "")->setComment("label of the LHCInfo record");
+  desc.add<std::string>("lhcInfoPerLSLabel", "")->setComment("label of the LHCInfoPerLS record");
+  desc.add<std::string>("lhcInfoPerFillLabel", "")->setComment("label of the LHCInfoPerFill record");
+  desc.add<bool>("useNewLHCInfo", false)->setComment("flag whether to use new LHCInfoPer* records or old LHCInfo");
+
+  desc.add<std::string>("outputFile", "output.root")->setComment("output file name");
+
+  desc.addUntracked<unsigned int>("verbosity", 0)->setComment("verbosity level");
+
+  descriptions.add("ctppsProtonReconstructionSimulationValidatorDefault", desc);
+}
 
 //----------------------------------------------------------------------------------------------------
 

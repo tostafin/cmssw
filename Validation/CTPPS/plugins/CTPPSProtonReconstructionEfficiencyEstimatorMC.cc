@@ -134,6 +134,8 @@ CTPPSProtonReconstructionEfficiencyEstimatorMC::CTPPSProtonReconstructionEfficie
   }
 }
 
+//----------------------------------------------------------------------------------------------------
+
 void CTPPSProtonReconstructionEfficiencyEstimatorMC::fillDescriptions(edm::ConfigurationDescriptions &descriptions) {
   edm::ParameterSetDescription desc;
 

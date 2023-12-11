@@ -1,5 +1,5 @@
-from Validation.CTPPS.CTPPSHepMCDistributionPlotter_cfi import *
-
+from Validation.CTPPS.CTPPSHepMCDistributionPlotterDefault_cfi import CTPPSHepMCDistributionPlotterDefault as _CTPPSHepMCDistributionPlotterDefault
+CTPPSHepMCDistributionPlotter = _CTPPSHepMCDistributionPlotterDefault.clone()
 
 from Configuration.Eras.Modifier_run3_common_cff import run3_common
 run3_common.toModify(CTPPSHepMCDistributionPlotter, useNewLHCInfo = True)

@@ -4,7 +4,7 @@ from $ERA_MOD_PATH.Era_$ERA_cff import *
 process = cms.Process('CTPPSTest', $ERA)
 
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
-process.load('Validation.CTPPS.ctppsLHCInfoPlotter_cff')
+process.load('Validation.CTPPS.ctppsLHCInfoPlotter_cfi')
 process.load('Configuration.Generator.randomXiThetaGunProducer_cfi')
 process.load("CondCore.CondDB.CondDB_cfi")
 

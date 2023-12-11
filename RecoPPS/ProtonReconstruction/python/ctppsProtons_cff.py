@@ -7,8 +7,8 @@ from CalibPPS.ESProducers.ctppsAlignment_cff import *
 from CalibPPS.ESProducers.ctppsOpticalFunctions_cff import *
 
 # import and adjust proton-reconstructions settings
-from RecoPPS.ProtonReconstruction.ctppsProtons_cfi import *
-
+from RecoPPS.ProtonReconstruction.ctppsProtonsDefault_cfi import ctppsProtonsDefault as _ctppsProtonsDefault
+ctppsProtons = _ctppsProtonsDefault.clone()
 
 ctppsProtons.pixelDiscardBXShiftedTracks = True
 ctppsProtons.default_time = -999.

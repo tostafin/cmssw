@@ -125,7 +125,7 @@ void CTPPSBeamParametersFromLHCInfoESSource::fillDescriptions(edm::Configuration
   desc.add<double>("vtxStddevY", 2.e-2);
   desc.add<double>("vtxStddevZ", 2.e-2);
 
-  descriptions.add("ctppsBeamParametersFromLHCInfoESSource", desc);
+  descriptions.add("ctppsBeamParametersFromLHCInfoESSourceDefault", desc);
 }
 
 //----------------------------------------------------------------------------------------------------

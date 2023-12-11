@@ -1,4 +1,5 @@
-from CalibPPS.ESProducers.ctppsBeamParametersFromLHCInfoESSource_cfi import *
+from CalibPPS.ESProducers.ctppsBeamParametersFromLHCInfoESSourceDefault_cfi import ctppsBeamParametersFromLHCInfoESSourceDefault as _ctppsBeamParametersFromLHCInfoESSourceDefault
+ctppsBeamParametersFromLHCInfoESSource = _ctppsBeamParametersFromLHCInfoESSourceDefault.clone()
 
 from Configuration.Eras.Modifier_run3_common_cff import run3_common
 run3_common.toModify(ctppsBeamParametersFromLHCInfoESSource, useNewLHCInfo = True)

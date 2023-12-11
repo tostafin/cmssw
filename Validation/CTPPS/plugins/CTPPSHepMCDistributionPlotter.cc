@@ -86,7 +86,7 @@ void CTPPSHepMCDistributionPlotter::fillDescriptions(edm::ConfigurationDescripti
 
   desc.add<std::string>("outputFile", "")->setComment("output file");
 
-  descriptions.add("ctppsHepMCDistributionPlotter", desc);
+  descriptions.add("ctppsHepMCDistributionPlotterDefault", desc);
 }
 
 void CTPPSHepMCDistributionPlotter::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup) {

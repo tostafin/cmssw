@@ -3,7 +3,7 @@ from Configuration.Eras.Era_Run3_cff import Run3
 
 process = cms.Process('RECODQM', Run3)
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
 process.verbosity = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 # minimum of logs

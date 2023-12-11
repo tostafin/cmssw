@@ -320,7 +320,7 @@ void CTPPSProtonReconstructionEfficiencyEstimatorData::fillDescriptions(edm::Con
 
   desc.addUntracked<unsigned int>("verbosity", 0)->setComment("verbosity level");
 
-  descriptions.add("ctppsProtonReconstructionEfficiencyEstimatorData", desc);
+  descriptions.add("ctppsProtonReconstructionEfficiencyEstimatorDataDefault", desc);
 }
 
 //----------------------------------------------------------------------------------------------------

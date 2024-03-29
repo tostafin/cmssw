@@ -262,7 +262,6 @@ public:
           edm::LogError(m_name) << "Could not find fill #" << m_prevPayload->fillNumber();
           break;
         }
-        startSampleTime = cond::time::to_boost(lastSince);
       } else {
         edm::LogInfo(m_name) << "Searching new fill after " << boost::posix_time::to_simple_string(nextFillSearchTime);
         query->filterNotNull("start_stable_beam").filterNotNull("fill_number");
@@ -282,8 +281,8 @@ public:
           edm::LogInfo(m_name) << "No fill found - END of job.";
           break;
         }
-        startSampleTime = cond::time::to_boost(m_startFillTime);
       }
+      startSampleTime = cond::time::to_boost(m_startFillTime);
 
       unsigned short lhcFill = m_fillPayload->fillNumber();
       bool ongoingFill = m_endFillTime == 0ULL;

@@ -251,6 +251,9 @@ public:
       oms.connect(m_omsBaseUrl);
       auto query = oms.query("fills");
 
+      if (m_debugLogic)
+        m_prevEndFillTime = 0ULL;
+
       if (!m_endFillMode and m_prevPayload->fillNumber() and m_prevEndFillTime == 0ULL) {
         // continue processing unfinished fill with some payloads already in the tag
         edm::LogInfo(m_name) << "Searching started fill #" << m_prevPayload->fillNumber();
@@ -364,8 +367,13 @@ private:
       auto currentFill = row.get<unsigned short>("fill_number");
       m_startFillTime = cond::time::from_boost(row.get<boost::posix_time::ptime>("start_time"));
       std::string endTimeStr = row.get<std::string>("end_time");
-      m_endFillTime =
-          (endTimeStr == "null") ? 0 : cond::time::from_boost(row.get<boost::posix_time::ptime>("end_time"));
+      if (m_debugLogic) {
+        m_endFillTime = 0;
+      } 
+      else {
+        m_endFillTime = 
+            (endTimeStr == "null") ? 0 : cond::time::from_boost(row.get<boost::posix_time::ptime>("end_time"));
+      }
       m_startStableBeamTime = cond::time::from_boost(row.get<boost::posix_time::ptime>("start_stable_beam"));
       m_endStableBeamTime = cond::time::from_boost(row.get<boost::posix_time::ptime>("end_stable_beam"));
       targetPayload = std::make_unique<LHCInfoPerLS>();
@@ -397,19 +405,6 @@ private:
     return queryResult.size();
   }
 
-  size_t bufferFirstStableBeamLS(const cond::OMSServiceResult& queryResult) {
-    for (auto r : queryResult) {
-      if (r.get<std::string>("beams_stable") == "true") {
-        addPayloadToBuffer(r);
-        edm::LogInfo(m_name) << "Buffered first lumisection of stable beam: LS: "
-                             << r.get<std::string>("lumisection_number")
-                             << " run: " << r.get<std::string>("run_number");
-        return 1;
-      }
-    }
-    return 0;
-  }
-
   size_t getLumiData(const cond::OMSService& oms,
                      unsigned short fillId,
                      const boost::posix_time::ptime& beginFillTime,
@@ -426,7 +421,7 @@ private:
         nlumi = bufferAllLS(queryResult);
       } else if (!queryResult.empty()) {
         auto newestPayload = queryResult.back();
-        if (newestPayload.get<std::string>("beams_stable") == "true") {
+        if (newestPayload.get<std::string>("beams_stable") == "true" || m_debugLogic) {
           addPayloadToBuffer(newestPayload);
           nlumi = 1;
           edm::LogInfo(m_name) << "Buffered most recent lumisection:"
@@ -582,6 +577,7 @@ private:
   cond::Time_t m_endStableBeamTime;
   std::vector<pair<cond::Time_t, std::shared_ptr<LHCInfoPerLS>>> m_tmpBuffer;
   bool m_lastPayloadEmpty = false;
+  const bool m_debugLogic = false;
   //mapping of lumisections IDs (pairs of runnumber an LS number) found in OMS to the IDs they've been assignd from PPS DB
   //value pair(-1, -1) means lumisection corresponding to the key exists in OMS but no lumisection was matched from PPS
   std::map<pair<cond::Time_t, unsigned int>, pair<cond::Time_t, unsigned int>> m_lsIdMap;

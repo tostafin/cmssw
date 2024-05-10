@@ -146,7 +146,7 @@ public:
         m_endTime = now;
     }
     if (m_debugLogic && m_endFillMode) {
-      throw std::invalid_argument("m_debugLogic == true not supported for m_endFillMode == true");
+      throw cms::Exception("invalid argument") << "debugLogic == true not supported for endFillMode == true";
     }
   }
 
@@ -281,6 +281,9 @@ public:
         query->filterLT("start_time", m_endTime);
         if (m_endFillMode)
           query->filterNotNull("end_time");
+        else 
+          query->filterEQ("end_time", cond::OMSServiceQuery::SNULL);
+
         bool foundFill = query->execute();
         if (foundFill)
           foundFill = makeFillPayload(m_fillPayload, query->result());
@@ -319,9 +322,31 @@ public:
         }
       }
 
+      if(!m_endFillMode) {
+        if(m_tmpBuffer.size() > 1) {
+          throw cms::Exception("LHCInfoPerFillPopConSourceHandler")
+            << "More than 1 payload buffered for writing in duringFill mode.\
+           In this mode only up to 1 payload can be written";
+        }
+      }
+
       size_t niovs = theLHCInfoPerLSImpl::transferPayloads(
           m_tmpBuffer, m_iovs, m_prevPayload, m_lsIdMap, m_startStableBeamTime, m_endStableBeamTime);
       edm::LogInfo(m_name) << "Added " << niovs << " iovs within the Fill time";
+      
+      if (!m_endFillMode) {
+        if(m_iovs.empty()) {
+          addEmptyPayload(cond::lhcInfoHelper::getFillLastLumiIOV(oms, lhcFill)); //the IOV doesn't matter when using OnlinePopCon
+        }
+        if(theLHCInfoPerLSImpl::comparePayloads(*(m_iovs.begin()->second), *m_prevPayload)) {
+          m_iovs.clear();
+          edm::LogInfo(m_name) << "The buffered payload has the same data as the previous payload in the tag. It will not be written.";
+        }
+        
+        return;
+      }
+      
+      // endFill mode only:
       if (niovs) {
         m_prevEndFillTime = m_endFillTime;
         m_prevStartFillTime = m_startFillTime;
@@ -331,8 +356,6 @@ public:
       if (m_prevPayload->fillNumber() and !ongoingFill) {
         if (m_endFillMode) {
           addEmptyPayload(m_endFillTime);
-        } else {
-          addEmptyPayload(cond::lhcInfoHelper::getFillLastLumiIOV(oms, lhcFill));
         }
       }
     }

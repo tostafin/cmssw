@@ -14,6 +14,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
@@ -42,13 +43,11 @@ private:
   const std::string dqmDir_;
   const std::string formula_;
   const unsigned int min_entries_;
-  const double threshold_fraction_of_max_;
   static constexpr double upper_limit_max_search_ = 20;
   static constexpr double upper_limit_range_search_ = 20;
   static constexpr double lower_limit_range_search_ = 8;
   static constexpr double resolution_ = 0.1;
   static constexpr double offset_ = 0.;
-  TF1 interp_;
 };
 
 //------------------------------------------------------------------------------
@@ -57,17 +56,13 @@ PPSTimingCalibrationPCLHarvester::PPSTimingCalibrationPCLHarvester(const edm::Pa
     : geomEsToken_(esConsumes<edm::Transition::BeginRun>()),
       dqmDir_(iConfig.getParameter<std::string>("dqmDir")),
       formula_(iConfig.getParameter<std::string>("formula")),
-      min_entries_(iConfig.getParameter<unsigned int>("minEntries")),
-      threshold_fraction_of_max_(iConfig.getParameter<double>("thresholdFractionOfMax")),
-      interp_("interp", formula_.c_str(), 10.5, 25.) {
+      min_entries_(iConfig.getParameter<unsigned int>("minEntries")){
   // first ensure DB output service is available
   edm::Service<cond::service::PoolDBOutputService> poolDbService;
   if (!poolDbService.isAvailable())
     throw cms::Exception("PPSTimingCalibrationPCLHarvester") << "PoolDBService required";
 
   // constrain the min/max fit values
-  interp_.SetParLimits(1, 9., 15.);
-  interp_.SetParLimits(2, 0.2, 2.5);
 }
 
 //------------------------------------------------------------------------------
@@ -139,50 +134,90 @@ void PPSTimingCalibrationPCLHarvester::dqmEndJob(DQMStore::IBooker& iBooker, DQM
       if (bin_value > hists.toT[chid]->getBinContent(max_bin_pos))
         max_bin_pos = i;
     }
-    //find ranges
-    int upper_limit_pos = max_bin_pos;
-    int lower_limit_pos = max_bin_pos;
-    double threshold = threshold_fraction_of_max_ * hists.toT[chid]->getBinContent(max_bin_pos);
-    while (hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(upper_limit_pos) < upper_limit_range_search_) {
-      upper_limit_pos++;
-      if (hists.toT[chid]->getBinContent(upper_limit_pos) < threshold)
-        break;
+
+    std::string ch_name;
+    detid.channelName(ch_name);
+    auto profile = iBooker.bookProfile(ch_name + "_prof_x", ch_name + "_prof_x", 240, 0., 60., 450, -20., 25.);
+
+    std::unique_ptr<TProfile> prof(hists.leadingTimeVsToT[chid]->getTH2F()->ProfileX("_prof_x", 1, -1));
+    *(profile->getTProfile()) = *((TProfile*)prof->Clone());
+    profile->getTProfile()->SetTitle(ch_name.c_str());
+    profile->getTProfile()->SetName(ch_name.c_str());
+
+    // find best thresholds
+    double best_chi_sq_div_ndf = DBL_MAX;
+    double best_upper_threshold = -1;
+    double best_lower_threshold = -1;
+    double best_upper_tot_range = -1;
+    double best_lower_tot_range = -1;
+    constexpr std::array<double, 14> thresholds{{
+      0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.02, 0.03, 0.04, 0.05
+    }};
+
+    for (const double upper_threshold_fraction_of_max : thresholds) {
+      for (const double lower_threshold_fraction_of_max : thresholds) {
+        //find ranges
+        int upper_limit_pos = max_bin_pos;
+        int lower_limit_pos = max_bin_pos;
+        double upper_threshold = upper_threshold_fraction_of_max * hists.toT[chid]->getBinContent(max_bin_pos);
+        double lower_threshold = lower_threshold_fraction_of_max * hists.toT[chid]->getBinContent(max_bin_pos);
+        while (hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(upper_limit_pos) < upper_limit_range_search_) {
+          upper_limit_pos++;
+          if (hists.toT[chid]->getBinContent(upper_limit_pos) < upper_threshold)
+            break;
+        }
+        while (hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(lower_limit_pos) > lower_limit_range_search_) {
+          lower_limit_pos--;
+          if (hists.toT[chid]->getBinContent(lower_limit_pos) < lower_threshold)
+            break;
+        }
+        double upper_tot_range = hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(upper_limit_pos);
+        double lower_tot_range = hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(lower_limit_pos);
+
+        {  // scope for x-profile
+          TF1 interp_{"interp", formula_.c_str(), 10.5, 25.};
+          interp_.SetParLimits(1, 8., 15.);
+          interp_.SetParLimits(2, 0, 4);
+
+          interp_.SetParameters(hists.leadingTime[chid]->getRMS(),
+                                hists.toT[chid]->getMean(),
+                                0.8,
+                                hists.leadingTime[chid]->getMean() - hists.leadingTime[chid]->getRMS());
+          const auto& res = profile->getTProfile()->Fit(&interp_, "BN", "", lower_tot_range, upper_tot_range);
+          const double chi_sq_div_ndf = interp_.GetChisquare() / interp_.GetNDF();
+          if (!(bool)res && chi_sq_div_ndf <= best_chi_sq_div_ndf) {
+            edm::LogWarning("PPSTimingCalibrationPCLHarvester:dqmEndJob")
+                << "Best ChiSq " << chi_sq_div_ndf << " for channel " << detid
+                << " for " << upper_threshold_fraction_of_max << ", " << lower_threshold_fraction_of_max
+                << " and bounds " << upper_tot_range << ", " << lower_tot_range;
+            calib_params[key] = {
+                interp_.GetParameter(0), interp_.GetParameter(1), interp_.GetParameter(2), interp_.GetParameter(3)};
+            calib_time[key] =
+                std::make_pair(offset_, resolution_);  // hardcoded offset/resolution placeholder for the time being
+            best_chi_sq_div_ndf = chi_sq_div_ndf;
+            best_upper_threshold = upper_threshold_fraction_of_max;
+            best_lower_threshold = lower_threshold_fraction_of_max;
+            best_upper_tot_range = upper_tot_range;
+            best_lower_tot_range = lower_tot_range;
+            if (chi_sq_div_ndf <= 30) {
+              goto good_chi_sq_div_ndf;
+            }
+          } else
+            edm::LogWarning("PPSTimingCalibrationPCLHarvester:dqmEndJob")
+                << "Fit did not converge for channel (" << detid << "). "
+                << "Params: " << interp_.GetParameter(0) << ", " << interp_.GetParameter(1)
+                << ", " << interp_.GetParameter(2) << ", " << interp_.GetParameter(3);
+        }
+      }
     }
-    while (hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(lower_limit_pos) > lower_limit_range_search_) {
-      lower_limit_pos--;
-      if (hists.toT[chid]->getBinContent(lower_limit_pos) < threshold)
-        break;
+    good_chi_sq_div_ndf:
+    TF1 interp_{"interp", formula_.c_str(), 10.5, 25.};
+    for (int i = 0; i < 4; ++i) {
+      interp_.FixParameter(i, calib_params[key][i]);
     }
-    double upper_tot_range = hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(upper_limit_pos);
-    double lower_tot_range = hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(lower_limit_pos);
-
-    {  // scope for x-profile
-
-      std::string ch_name;
-      detid.channelName(ch_name);
-      auto profile = iBooker.bookProfile(ch_name + "_prof_x", ch_name + "_prof_x", 240, 0., 60., 450, -20., 25.);
-
-      std::unique_ptr<TProfile> prof(hists.leadingTimeVsToT[chid]->getTH2F()->ProfileX("_prof_x", 1, -1));
-      *(profile->getTProfile()) = *((TProfile*)prof->Clone());
-      profile->getTProfile()->SetTitle(ch_name.c_str());
-      profile->getTProfile()->SetName(ch_name.c_str());
-
-      interp_.SetParameters(hists.leadingTime[chid]->getRMS(),
-                            hists.toT[chid]->getMean(),
-                            0.8,
-                            hists.leadingTime[chid]->getMean() - hists.leadingTime[chid]->getRMS());
-      const auto& res = profile->getTProfile()->Fit(&interp_, "B+", "", lower_tot_range, upper_tot_range);
-      if (!(bool)res) {
-        calib_params[key] = {
-            interp_.GetParameter(0), interp_.GetParameter(1), interp_.GetParameter(2), interp_.GetParameter(3)};
-        calib_time[key] =
-            std::make_pair(offset_, resolution_);  // hardcoded offset/resolution placeholder for the time being
-        // can possibly do something with interp_.GetChiSquare() in the near future
-
-      } else
-        edm::LogWarning("PPSTimingCalibrationPCLHarvester:dqmEndJob")
-            << "Fit did not converge for channel (" << detid << ").";
-    }
+    profile->getTProfile()->Fit(&interp_, "B", "", best_lower_tot_range, best_upper_tot_range);
+    edm::LogWarning("PPSTimingCalibrationPCLHarvester:dqmEndJob")
+        << "For channel " << detid << " best upper threshold: " << best_upper_threshold << ", best lower threshold: " << best_lower_threshold;
   }
 
   // fill the DB object record
@@ -202,8 +237,6 @@ void PPSTimingCalibrationPCLHarvester::fillDescriptions(edm::ConfigurationDescri
   desc.add<std::string>("formula", "[0]/(exp((x-[1])/[2])+1)+[3]")
       ->setComment("interpolation formula for the time walk component");
   desc.add<unsigned int>("minEntries", 100)->setComment("minimal number of hits to extract calibration");
-  desc.add<double>("thresholdFractionOfMax", 0.05)
-      ->setComment("threshold for TOT fit, defined as percent of max count in 1D TOT");
   descriptions.addWithDefaultLabel(desc);
 }
 

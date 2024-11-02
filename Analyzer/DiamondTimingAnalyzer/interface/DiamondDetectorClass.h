@@ -72,6 +72,9 @@ public:
 	inline double GetPadPrecision(const ChannelKey& key)
 	{return SPC_map_[key].precision;}
 
+	inline double GetPadOffset(const ChannelKey& key)
+	{return SPC_map_[key].offset;}
+
 	inline double GetPadWeight(const ChannelKey& key)
 	{return (pow(SPC_map_[key].precision, -2));}
 

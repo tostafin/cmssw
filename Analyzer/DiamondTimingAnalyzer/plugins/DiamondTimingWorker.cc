@@ -210,25 +210,47 @@ void DiamondTimingWorker::analyze(const edm::Event& iEvent, const edm::EventSetu
     for (const auto& _recHits : *recHits) {  //rechits = array of hits in one channel
         const CTPPSDiamondDetId detid(_recHits.detId());
         const ChannelKey key(detid);
+        double time_offset = DiamondDet.GetPadOffset(key);
+        unsigned int double_peak_ls = time_offset / 100'000;
+        double double_peak_time_shift = time_offset - (double_peak_ls * 100'000);
         if (!(Sector_TBA[detid.arm()]))
             continue;
 
         // Perform channel histogram
-        for (const auto& recHit : _recHits) {  //rechit
-            if (((recHit.ootIndex() != 0) && validOOT != -1) || recHit.multipleHits())
-                continue;
+        if (iEvent.luminosityBlock() >= double_peak_ls) {
+            for (const auto& recHit : _recHits) {  //rechit
+                if (((recHit.ootIndex() != 0) && validOOT != -1) || recHit.multipleHits())
+                    continue;
 
-            //T,TOT and OOT for all hits, important for monitoring the calibration
-            histos.t[key]->Fill(recHit.time());
-            histos.tot[key]->Fill(recHit.toT());
+                //T,TOT and OOT for all hits, important for monitoring the calibration
+                histos.t[key]->Fill(recHit.time() - double_peak_time_shift);
+                histos.tot[key]->Fill(recHit.toT());
 
-            // T,TOT and OOT complete hits (T and TOT available), important for monitoring the calibration
-            if (DiamondDet.PadActive(key)) {
-                histos.valid_tot[key]->Fill(DiamondDet.GetToT(key));
-                histos.t_vs_tot[key]->Fill(DiamondDet.GetToT(key), DiamondDet.GetTime(key));
-                histos.valid_t[key]->Fill(DiamondDet.GetTime(key));
+                // T,TOT and OOT complete hits (T and TOT available), important for monitoring the calibration
+                if (DiamondDet.PadActive(key)) {
+                    histos.valid_tot[key]->Fill(DiamondDet.GetToT(key));
+                    histos.t_vs_tot[key]->Fill(DiamondDet.GetToT(key), DiamondDet.GetTime(key) - double_peak_time_shift);
+                    histos.valid_t[key]->Fill(DiamondDet.GetTime(key) - double_peak_time_shift);
+                }
+        }
+        } else {
+            for (const auto& recHit : _recHits) {  //rechit
+                if (((recHit.ootIndex() != 0) && validOOT != -1) || recHit.multipleHits())
+                    continue;
+
+                //T,TOT and OOT for all hits, important for monitoring the calibration
+                histos.t[key]->Fill(recHit.time());
+                histos.tot[key]->Fill(recHit.toT());
+
+                // T,TOT and OOT complete hits (T and TOT available), important for monitoring the calibration
+                if (DiamondDet.PadActive(key)) {
+                    histos.valid_tot[key]->Fill(DiamondDet.GetToT(key));
+                    histos.t_vs_tot[key]->Fill(DiamondDet.GetToT(key), DiamondDet.GetTime(key));
+                    histos.valid_t[key]->Fill(DiamondDet.GetTime(key));
+                }
             }
         }
+
     }
 
     ////////////////////////////////////////////////////////////////

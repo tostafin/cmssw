@@ -33,6 +33,7 @@ class PPSTimingCalibrationPCLHarvester : public DQMEDHarvester {
 public:
   PPSTimingCalibrationPCLHarvester(const edm::ParameterSet&);
   void beginRun(const edm::Run&, const edm::EventSetup&) override;
+  // void dqmAnalyze(DQMStore::IBooker&, DQMStore::IGetter&, const edm::Event&, const edm::EventSetup&) override;
 
   static void fillDescriptions(edm::ConfigurationDescriptions&);
 
@@ -63,6 +64,7 @@ private:
   static constexpr double lower_limit_range_search_ = 8;
   static constexpr double resolution_ = 0.1;
   static constexpr double offset_ = 0.;
+  static constexpr double double_peak_t_max_diff_ = 3.;
   TF1 interp_;
 };
 
@@ -116,113 +118,174 @@ void PPSTimingCalibrationPCLHarvester::dqmEndJob(DQMStore::IBooker& iBooker, DQM
   std::string ch_name;
   for (const auto& detid : detids_) {
     detid.channelName(ch_name);
-    const auto chid = detid.rawId();
+    // const auto chid = detid.rawId();
     const PPSTimingCalibration::Key key{
         (int)detid.arm(), (int)detid.station(), (int)detid.plane(), (int)detid.channel()};
 
     calib_params[key] = {0, 0, 0, 0};
     calib_time[key] = std::make_pair(offset_, resolution_);
 
-    hists.leadingTime[chid] = iGetter.get(dqmDir_ + "/t_" + ch_name);
-    if (hists.leadingTime[chid] == nullptr) {
+    // hists.leadingTime[chid] = iGetter.get(dqmDir_ + "/t_" + ch_name);
+    // if (hists.leadingTime[chid] == nullptr) {
+    //   edm::LogInfo("PPSTimingCalibrationPCLHarvester:dqmEndJob")
+    //       << "Failed to retrieve leading time monitor for channel (" << detid << ").";
+    //   continue;
+    // }
+    // hists.toT[chid] = iGetter.get(dqmDir_ + "/tot_" + ch_name);
+    // if (hists.toT[chid] == nullptr) {
+    //   edm::LogInfo("PPSTimingCalibrationPCLHarvester:dqmEndJob")
+    //       << "Failed to retrieve time over threshold monitor for channel (" << detid << ").";
+    //   continue;
+    // }
+    // hists.leadingTimeVsToT[chid] = iGetter.get(dqmDir_ + "/tvstot_" + ch_name);
+    // if (hists.leadingTimeVsToT[chid] == nullptr) {
+    //   edm::LogInfo("PPSTimingCalibrationPCLHarvester:dqmEndJob")
+    //       << "Failed to retrieve leading time vs. time over threshold monitor for channel (" << detid << ").";
+    //   continue;
+    // }
+    // if (min_entries_ > 0 && hists.leadingTimeVsToT[chid]->getEntries() < min_entries_) {
+    //   edm::LogWarning("PPSTimingCalibrationPCLHarvester:dqmEndJob")
+    //       << "Not enough entries for channel (" << detid << "): " << hists.leadingTimeVsToT[chid]->getEntries() << " < "
+    //       << min_entries_ << ". Skipping calibration.";
+    //   continue;
+    // }
+    auto ls_key = std::tuple{(uint8_t)detid.arm(), (uint8_t)detid.station(), (uint8_t)detid.plane()};
+    hists.leadingTimeVsLs[ls_key] = iGetter.get(dqmDir_ + "/tvsls_" + ch_name);
+    if (hists.leadingTimeVsLs[ls_key] == nullptr) {
+      std::cout << "1 " << detid << '\n';
       edm::LogInfo("PPSTimingCalibrationPCLHarvester:dqmEndJob")
-          << "Failed to retrieve leading time monitor for channel (" << detid << ").";
+          << "Failed to retrieve leading time vs. LS monitor for channel (" << detid << ").";
       continue;
     }
-    hists.toT[chid] = iGetter.get(dqmDir_ + "/tot_" + ch_name);
-    if (hists.toT[chid] == nullptr) {
-      edm::LogInfo("PPSTimingCalibrationPCLHarvester:dqmEndJob")
-          << "Failed to retrieve time over threshold monitor for channel (" << detid << ").";
-      continue;
-    }
-    hists.leadingTimeVsToT[chid] = iGetter.get(dqmDir_ + "/tvstot_" + ch_name);
-    if (hists.leadingTimeVsToT[chid] == nullptr) {
-      edm::LogInfo("PPSTimingCalibrationPCLHarvester:dqmEndJob")
-          << "Failed to retrieve leading time vs. time over threshold monitor for channel (" << detid << ").";
-      continue;
-    }
-    if (min_entries_ > 0 && hists.leadingTimeVsToT[chid]->getEntries() < min_entries_) {
+    if (min_entries_ > 0 && hists.leadingTimeVsLs[ls_key]->getEntries() < min_entries_) {
+      std::cout << "2 " << detid << '\n';
       edm::LogWarning("PPSTimingCalibrationPCLHarvester:dqmEndJob")
-          << "Not enough entries for channel (" << detid << "): " << hists.leadingTimeVsToT[chid]->getEntries() << " < "
+          << "Not enough entries for channel (" << detid << "): " << hists.leadingTimeVsLs[ls_key]->getEntries() << " < "
           << min_entries_ << ". Skipping calibration.";
       continue;
     }
+    // int double_peak_ls = 1;
+    // int n_bins_x = hists.leadingTimeVsLs[chid]->getNbinsX();
+    // int n_bins_y = hists.leadingTimeVsLs[chid]->getNbinsY();
+    // double prev_t_with_max_count = -1.;
+    // // double time_shift = 0.;
+    // for (int bin_x = 1; bin_x <= n_bins_x; ++bin_x) {
+    //   double t_with_max_count = 1;
+    //   double max_t_count = 0;
+    //   for (int bin_y = 1; bin_y <= n_bins_y; ++bin_y) {
+    //     double t_count = hists.leadingTimeVsLs[chid]->getBinContent(bin_x, bin_y);
+    //     if (t_count > max_t_count) {
+    //       max_t_count = t_count;
+    //       t_with_max_count = hists.leadingTimeVsLs[chid]->getTH2F()->GetYaxis()->GetBinCenter(bin_y);
+    //     }
+    //   }
+    //   std::cout << "Max count for LS = " << bin_x << " and t = " << t_with_max_count << ": " << max_t_count << ". Prev max t: " << prev_t_with_max_count << '\n';
+    //   if (max_t_count != 0.) {
+    //     double time_diff = t_with_max_count - prev_t_with_max_count;
+    //     if (prev_t_with_max_count != -1. && abs(time_diff) > double_peak_t_max_diff_) {
+    //       double_peak_ls = bin_x;
+    //       // time_shift = time_diff;
+    //       break;
+    //     }
+    //     prev_t_with_max_count = t_with_max_count;
+    //   }
+    // }
+    // std::cout << "Double peak LS: " << double_peak_ls << " for channel " << detid << '\n';
+    // auto* double_peak_hist = iBooker.book1D("double_peak_ls_" + ch_name, "Double peak LS;LS;Entries", 3000, 1, 3000);
+    // double_peak_hist->Fill(double_peak_ls);
 
-    //find max
-    int max_bin_pos = 1;
-    for (int i = 0; i < hists.toT[chid]->getNbinsX(); i++) {
-      double bin_value = hists.toT[chid]->getBinContent(i);
-      int bin_x_pos = hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(i);
-      if (bin_x_pos > upper_limit_max_search_)
-        break;
-      if (bin_value > hists.toT[chid]->getBinContent(max_bin_pos))
-        max_bin_pos = i;
-    }
+    // auto validLeadingTime = iBooker.book1D("validt_" + ch_name, ch_name + ";t (ns);Entries", 1200, -60., 60.);
+    // for (int bin_x = 1; bin_x <= n_bins_x; ++bin_x) {
+    //   for (int bin_y = 1; bin_y <= n_bins_y; ++bin_y) {
+    //     double t = hists.leadingTimeVsLs[chid]->getTH2F()->GetYaxis()->GetBinCenter(bin_y);
+    //     double t_count = hists.leadingTimeVsLs[chid]->getBinContent(bin_x, bin_y);
+    //     if (t_count > 0) {
+    //       double t_value = t;
+    //       if (bin_x >= double_peak_ls) {
+    //         t_value -= time_shift;
+    //       }
+    //       for (int i = 0; i < t_count; ++i) {
+    //         validLeadingTime->Fill(t_value);
+    //       }
+    //     }
+    //   }
+    // }
 
-    std::string ch_name;
-    detid.channelName(ch_name);
-    auto profile = iBooker.bookProfile(ch_name + "_prof_x", ch_name + "_prof_x", 240, 0., 60., 450, -20., 25.);
+  //   //find max
+  //   int max_bin_pos = 1;
+  //   for (int i = 0; i < hists.toT[chid]->getNbinsX(); i++) {
+  //     double bin_value = hists.toT[chid]->getBinContent(i);
+  //     int bin_x_pos = hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(i);
+  //     if (bin_x_pos > upper_limit_max_search_)
+  //       break;
+  //     if (bin_value > hists.toT[chid]->getBinContent(max_bin_pos))
+  //       max_bin_pos = i;
+  //   }
 
-    std::unique_ptr<TProfile> prof(hists.leadingTimeVsToT[chid]->getTH2F()->ProfileX("_prof_x", 1, -1));
-    *(profile->getTProfile()) = *((TProfile*)prof->Clone());
-    profile->getTProfile()->SetTitle(ch_name.c_str());
-    profile->getTProfile()->SetName(ch_name.c_str());
+  //   std::string ch_name;
+  //   detid.channelName(ch_name);
+  //   auto profile = iBooker.bookProfile(ch_name + "_prof_x", ch_name + "_prof_x", 240, 0., 60., 450, -20., 25.);
 
-    double best_chi_sq_div_ndf = std::numeric_limits<double>::max();
-    double best_upper_tot_range = 0.0;
-    double best_lower_tot_range = 0.0;
-    for (const double upper_threshold_fraction_of_max : thresholds_) {
-      for (const double lower_threshold_fraction_of_max : thresholds_) {
-        //find ranges if required
-        double upper_tot_range = 15;
-        if (upper_threshold_fraction_of_max != -1) {
-          int upper_limit_pos = max_bin_pos;
-          const double upper_threshold = upper_threshold_fraction_of_max * hists.toT[chid]->getBinContent(max_bin_pos);
-          while (hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(upper_limit_pos) < upper_limit_range_search_) {
-            upper_limit_pos++;
-            if (hists.toT[chid]->getBinContent(upper_limit_pos) < upper_threshold)
-              break;
-          }
-          upper_tot_range = hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(upper_limit_pos);
-        }
-        double lower_tot_range = 8;
-        if (lower_threshold_fraction_of_max != -1) {
-          int lower_limit_pos = max_bin_pos;
-          const double lower_threshold = lower_threshold_fraction_of_max * hists.toT[chid]->getBinContent(max_bin_pos);
-          while (hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(lower_limit_pos) > lower_limit_range_search_) {
-            lower_limit_pos--;
-            if (hists.toT[chid]->getBinContent(lower_limit_pos) < lower_threshold)
-              break;
-          }
-          lower_tot_range = hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(lower_limit_pos);
-        }
+  //   std::unique_ptr<TProfile> prof(hists.leadingTimeVsToT[chid]->getTH2F()->ProfileX("_prof_x", 1, -1));
+  //   *(profile->getTProfile()) = *((TProfile*)prof->Clone());
+  //   profile->getTProfile()->SetTitle(ch_name.c_str());
+  //   profile->getTProfile()->SetName(ch_name.c_str());
 
-        interp_.SetParameters(hists.leadingTime[chid]->getRMS(),
-                              hists.toT[chid]->getMean(),
-                              0.8,
-                              hists.leadingTime[chid]->getMean() - hists.leadingTime[chid]->getRMS());
-        const auto& res = profile->getTProfile()->Fit(&interp_, "BNS", "", lower_tot_range, upper_tot_range);
-        if (res->IsValid()) {
-          double chi_sq_div_ndf = res->Chi2() / res->Ndf();
-          if (chi_sq_div_ndf < best_chi_sq_div_ndf) {
-            best_chi_sq_div_ndf = chi_sq_div_ndf;
-            best_upper_tot_range = upper_tot_range;
-            best_lower_tot_range = lower_tot_range;
-          }
-        }
-      }
-    }
+  //   double best_chi_sq_div_ndf = std::numeric_limits<double>::max();
+  //   double best_upper_tot_range = 0.0;
+  //   double best_lower_tot_range = 0.0;
+  //   for (const double upper_threshold_fraction_of_max : thresholds_) {
+  //     for (const double lower_threshold_fraction_of_max : thresholds_) {
+  //       //find ranges if required
+  //       double upper_tot_range = 15;
+  //       if (upper_threshold_fraction_of_max != -1) {
+  //         int upper_limit_pos = max_bin_pos;
+  //         const double upper_threshold = upper_threshold_fraction_of_max * hists.toT[chid]->getBinContent(max_bin_pos);
+  //         while (hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(upper_limit_pos) < upper_limit_range_search_) {
+  //           upper_limit_pos++;
+  //           if (hists.toT[chid]->getBinContent(upper_limit_pos) < upper_threshold)
+  //             break;
+  //         }
+  //         upper_tot_range = hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(upper_limit_pos);
+  //       }
+  //       double lower_tot_range = 8;
+  //       if (lower_threshold_fraction_of_max != -1) {
+  //         int lower_limit_pos = max_bin_pos;
+  //         const double lower_threshold = lower_threshold_fraction_of_max * hists.toT[chid]->getBinContent(max_bin_pos);
+  //         while (hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(lower_limit_pos) > lower_limit_range_search_) {
+  //           lower_limit_pos--;
+  //           if (hists.toT[chid]->getBinContent(lower_limit_pos) < lower_threshold)
+  //             break;
+  //         }
+  //         lower_tot_range = hists.toT[chid]->getTH1()->GetXaxis()->GetBinCenter(lower_limit_pos);
+  //       }
 
-    if (best_upper_tot_range != 0.0) {
-      profile->getTProfile()->Fit(&interp_, "B", "", best_lower_tot_range, best_upper_tot_range);
-      calib_params[key] = {
-          interp_.GetParameter(0), interp_.GetParameter(1), interp_.GetParameter(2), interp_.GetParameter(3)};
-      calib_time[key] =
-          std::make_pair(offset_, resolution_);  // hardcoded offset/resolution placeholder for the time being
-    } else {
-        edm::LogWarning("PPSTimingCalibrationPCLHarvester:dqmEndJob")
-            << "Fit did not converge for channel (" << detid << ").";
-    }
+  //       interp_.SetParameters(hists.leadingTime[chid]->getRMS(),
+  //                             hists.toT[chid]->getMean(),
+  //                             0.8,
+  //                             hists.leadingTime[chid]->getMean() - hists.leadingTime[chid]->getRMS());
+  //       const auto& res = profile->getTProfile()->Fit(&interp_, "BNS", "", lower_tot_range, upper_tot_range);
+  //       if (res->IsValid()) {
+  //         double chi_sq_div_ndf = res->Chi2() / res->Ndf();
+  //         if (chi_sq_div_ndf < best_chi_sq_div_ndf) {
+  //           best_chi_sq_div_ndf = chi_sq_div_ndf;
+  //           best_upper_tot_range = upper_tot_range;
+  //           best_lower_tot_range = lower_tot_range;
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   if (best_upper_tot_range != 0.0) {
+  //     profile->getTProfile()->Fit(&interp_, "B", "", best_lower_tot_range, best_upper_tot_range);
+  //     calib_params[key] = {
+  //         interp_.GetParameter(0), interp_.GetParameter(1), interp_.GetParameter(2), interp_.GetParameter(3)};
+  //     calib_time[key] =
+  //         std::make_pair(offset_, resolution_);  // hardcoded offset/resolution placeholder for the time being
+  //   } else {
+  //       edm::LogWarning("PPSTimingCalibrationPCLHarvester:dqmEndJob")
+  //           << "Fit did not converge for channel (" << detid << ").";
+  //   }
   }
 
   // fill the DB object record

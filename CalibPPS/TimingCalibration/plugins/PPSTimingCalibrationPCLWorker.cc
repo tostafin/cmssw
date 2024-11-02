@@ -74,7 +74,6 @@ void PPSTimingCalibrationPCLWorker::bookHistograms(DQMStore::IBooker& iBooker,
   iBooker.setCurrentFolder(dqmDir_);
   std::string plane_name;
   std::string ch_name;
-  std::string leadingTimeVsLsName;
 
   const auto& geom = iSetup.getData(geomEsToken_);
   for (auto it = geom.beginSensor(); it != geom.endSensor(); ++it) {
@@ -83,15 +82,15 @@ void PPSTimingCalibrationPCLWorker::bookHistograms(DQMStore::IBooker& iBooker,
     const CTPPSDiamondDetId detid(it->first);
 
     detid.channelName(ch_name);
-    iHists.leadingTime[detid.rawId()] = iBooker.book1D("t_" + ch_name, ch_name + ";t (ns);Entries", 1200, -60., 60.);
-    iHists.toT[detid.rawId()] = iBooker.book1D("tot_" + ch_name, ch_name + ";ToT (ns);Entries", 160, -20., 20.);
-    iHists.leadingTimeVsToT[detid.rawId()] =
-        iBooker.book2D("tvstot_" + ch_name, ch_name + ";ToT (ns);t (ns)", 240, 0., 60., 450, -20., 25.);
+    // iHists.leadingTime[detid.rawId()] = iBooker.book1D("t_" + ch_name, ch_name + ";t (ns);Entries", 1200, -60., 60.);
+    // iHists.toT[detid.rawId()] = iBooker.book1D("tot_" + ch_name, ch_name + ";ToT (ns);Entries", 160, -20., 20.);
+    // iHists.leadingTimeVsToT[detid.rawId()] =
+    //     iBooker.book2D("tvstot_" + ch_name, ch_name + ";ToT (ns);t (ns)", 240, 0., 60., 450, -20., 25.);
+    // iHists.leadingTimeVsLs[detid.rawId()] = iBooker.book2D("tvsls_" + ch_name, ch_name + ";LS;t (ns)", 3000, 1, 3000, 500, 0, 20);
 
     if (iHists.leadingTimeVsLs.count({detid.arm(), detid.station(), detid.plane()}) == 0) {
       detid.planeName(plane_name);
-      leadingTimeVsLsName = "tvsls_" + plane_name;
-      iHists.leadingTimeVsLs[std::tuple{detid.arm(), detid.station(), detid.plane()}] = iBooker.book2D(leadingTimeVsLsName.c_str(), (leadingTimeVsLsName + ";LS;t (ns)").c_str(), 3000, 0, 3000, 500, 0, 20);
+      iHists.leadingTimeVsLs[{detid.arm(), detid.station(), detid.plane()}] = iBooker.book2D("tvsls_" + plane_name, plane_name + ";LS;t (ns)", 3000, 1, 3000, 500, 0, 20);
     }
   }
 }
@@ -112,7 +111,7 @@ void PPSTimingCalibrationPCLWorker::dqmAnalyze(const edm::Event& iEvent,
   }
   for (const auto& ds_rechits : *dsv_rechits) {
     const CTPPSDiamondDetId detid(ds_rechits.detId());
-    if (iHists.leadingTimeVsToT.count(detid.rawId()) == 0) {
+    if (iHists.leadingTimeVsLs.count({detid.arm(), detid.station(), detid.plane()}) == 0) {
       edm::LogWarning("PPSTimingCalibrationPCLWorker:dqmAnalyze")
           << "Pad with detId=" << detid << " is not set to be monitored.";
       continue;
@@ -121,9 +120,10 @@ void PPSTimingCalibrationPCLWorker::dqmAnalyze(const edm::Event& iEvent,
       // skip invalid rechits
       if (rechit.time() == 0. || rechit.toT() < 0.)
         continue;
-      iHists.leadingTime.at(detid.rawId())->Fill(rechit.time());
-      iHists.toT.at(detid.rawId())->Fill(rechit.toT());
-      iHists.leadingTimeVsToT.at(detid.rawId())->Fill(rechit.toT(), rechit.time());
+      // iHists.leadingTime.at(detid.rawId())->Fill(rechit.time());
+      // iHists.toT.at(detid.rawId())->Fill(rechit.toT());
+      // iHists.leadingTimeVsToT.at(detid.rawId())->Fill(rechit.toT(), rechit.time());
+      // iHists.leadingTimeVsLs.at(detid.rawId())->Fill(iEvent.luminosityBlock(), rechit.time());
       iHists.leadingTimeVsLs.at({detid.arm(), detid.station(), detid.plane()})->Fill(iEvent.luminosityBlock(), rechit.time());
     }
   }

@@ -6,10 +6,12 @@
 #include <tuple>
 #include <unordered_map>
 
+using PlaneKey = std::tuple<uint8_t, uint8_t, uint8_t>;
+
 namespace std {
 
 template<>
-struct hash<std::tuple<uint8_t, uint8_t, uint8_t>> {
+struct hash<PlaneKey> {
     size_t operator()(const std::tuple<uint8_t, uint8_t, uint8_t>& t) const {
         return std::hash<uint8_t>()(std::get<0>(t)) ^ std::hash<uint8_t>()(std::get<1>(t)) ^ std::hash<uint8_t>()(std::get<2>(t));
     }
@@ -25,7 +27,9 @@ public:
 
   MonitorMap leadingTime, toT;
   MonitorMap leadingTimeVsToT;
-  std::unordered_map<std::tuple<uint8_t, uint8_t, uint8_t>, dqm::reco::MonitorElement*> leadingTimeVsLs;
+  // MonitorMap leadingTimeVsLs;
+  // MonitorMap shiftedLeadingTimeVsToT;
+  std::unordered_map<PlaneKey, dqm::reco::MonitorElement*> leadingTimeVsLs;
 };
 
 #endif

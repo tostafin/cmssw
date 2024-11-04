@@ -9,25 +9,33 @@
  *
  ****************************************************************************/
 
+// #include "CalibPPS/TimingCalibration/interface/DoublePeakCorrection.h"
+#include "../interface/DoublePeakCorrection.h"
+// #include "CalibPPS/TimingCalibration/interface/PlaneMap.h"
+#include "../interface/PlaneMap.h"
+// #include "CalibPPS/TimingCalibration/interface/TimingCalibrationData.h"
+#include "../interface/TimingCalibrationData.h"
+
+#include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
+
+#include "CondFormats/PPSObjects/interface/PPSTimingCalibration.h"
+
+#include "DataFormats/CTPPSDetId/interface/CTPPSDiamondDetId.h"
+
 #include "DQMServices/Core/interface/DQMEDHarvester.h"
 
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
-#include "Geometry/VeryForwardGeometryBuilder/interface/CTPPSGeometry.h"
 #include "Geometry/Records/interface/VeryForwardRealGeometryRecord.h"
+#include "Geometry/VeryForwardGeometryBuilder/interface/CTPPSGeometry.h"
 
-#include "CalibPPS/TimingCalibration/interface/TimingCalibrationStruct.h"
-#include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
+#include "Math/MinimizerOptions.h"
+#include "TFitResult.h"
 
-#include "DataFormats/CTPPSDetId/interface/CTPPSDiamondDetId.h"
-#include "CondFormats/PPSObjects/interface/PPSTimingCalibration.h"
-
-#include <Math/MinimizerOptions.h>
-#include <TFitResult.h>
 //------------------------------------------------------------------------------
 
 class PPSTimingCalibrationPCLHarvester : public DQMEDHarvester {
@@ -40,19 +48,15 @@ public:
 
 private:
   void dqmEndJob(DQMStore::IBooker&, DQMStore::IGetter&) override;
-  bool fetchWorkerHistograms(DQMStore::IGetter&,
-                             TimingCalibrationHistograms&,
-                             const CTPPSDiamondDetId&,
-                             const uint32_t,
-                             const std::string&) const;
-  std::pair<double, double> findFitRange(const TimingCalibrationHistograms&,
-                                         const uint32_t,
-                                         const double,
-                                         const double) const;
+  bool fetchWorkerHistograms(
+      DQMStore::IGetter&, TimingCalibrationData&, const CTPPSDiamondDetId&, const uint32_t, const std::string&) const;
+  std::pair<double, double> findFitRange(const TimingCalibrationData&, const uint32_t, const double, const double) const;
 
   TF1 interp_;
+  DoublePeakCorrection doublePeakCorrection_;
   const std::string dqmDir_;
   const std::string formula_;
+  const std::string tVsLsFilename_;
   std::vector<CTPPSDiamondDetId> detIds_;
   const edm::ESGetToken<CTPPSGeometry, VeryForwardRealGeometryRecord> geomEsToken_;
   const unsigned int minEntries_;
@@ -71,6 +75,7 @@ PPSTimingCalibrationPCLHarvester::PPSTimingCalibrationPCLHarvester(const edm::Pa
     : interp_{"interp", iConfig.getParameter<std::string>("formula").c_str()},
       dqmDir_{iConfig.getParameter<std::string>("dqmDir")},
       formula_{iConfig.getParameter<std::string>("formula")},
+      tVsLsFilename_{iConfig.getParameter<std::string>("tVsLsFilename")},
       geomEsToken_{esConsumes<edm::Transition::BeginRun>()},
       minEntries_{iConfig.getParameter<unsigned int>("minEntries")} {
   // first ensure DB output service is available
@@ -95,9 +100,10 @@ void PPSTimingCalibrationPCLHarvester::beginRun(const edm::Run& iRun, const edm:
   for (auto it = geom.beginSensor(); it != geom.endSensor(); ++it) {
     if (CTPPSDiamondDetId::check(it->first)) {
       const CTPPSDiamondDetId detId{it->first};
-      detIds_.emplace_back(detId);
+      detIds_.push_back(detId);
     }
   }
+  doublePeakCorrection_.extractLsAndTimeOffset(tVsLsFilename_, iRun.run(), detIds_);
 }
 
 //------------------------------------------------------------------------------
@@ -116,28 +122,28 @@ void PPSTimingCalibrationPCLHarvester::dqmEndJob(DQMStore::IBooker& iBooker, DQM
   constexpr std::array<double, 13> thresholds{
       {FixedFitBound_, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07}};
   // compute the fit parameters for all monitored channels
-  TimingCalibrationHistograms hists;
+  TimingCalibrationData iData;
   std::string channelName;
   for (const auto& detId : detIds_) {
     const uint32_t channelId{detId.rawId()};
     detId.channelName(channelName);
-    if (fetchWorkerHistograms(iGetter, hists, detId, channelId, channelName)) {
+    if (fetchWorkerHistograms(iGetter, iData, detId, channelId, channelName)) {
       const PPSTimingCalibration::Key armKey{static_cast<int>(detId.arm()),
                                              static_cast<int>(detId.station()),
                                              static_cast<int>(detId.plane()),
                                              static_cast<int>(detId.channel())};
 
       MonitorElement* profileHist{iBooker.bookProfile(channelName, channelName, 240, 0.0, 60.0, 450, -20.0, 25.0)};
-      std::unique_ptr<TProfile> tProfile{hists.leadingTimeVsToT[channelId]->getTH2F()->ProfileX()};
+      std::unique_ptr<TProfile> tProfile{iData.leadingTimeVsToT[channelId]->getTH2F()->ProfileX()};
       *(profileHist->getTProfile()) = *(static_cast<TProfile*>(tProfile->Clone()));
-      const char* profileName = channelName.c_str();
+      const char* profileName{channelName.c_str()};
       profileHist->getTProfile()->SetTitle(profileName);
       profileHist->getTProfile()->SetName(profileName);
       profileHist->getTProfile()->SetYTitle("Average t (ns)");
 
-      const double defaultUpperLowerAsymptotesDiff = hists.leadingTime[channelId]->getRMS();
-      const double defaultCenterOfDistribution = hists.toT[channelId]->getMean();
-      const double defaultLowerAsymptote = hists.leadingTime[channelId]->getMean() - defaultUpperLowerAsymptotesDiff;
+      const double defaultUpperLowerAsymptotesDiff = iData.leadingTime[channelId]->getRMS();
+      const double defaultCenterOfDistribution = iData.toT[channelId]->getMean();
+      const double defaultLowerAsymptote = iData.leadingTime[channelId]->getMean() - defaultUpperLowerAsymptotesDiff;
 
       double bestChiSqDivNdf{std::numeric_limits<double>::max()};
       double bestLowerTotRange{0.0};
@@ -147,7 +153,7 @@ void PPSTimingCalibrationPCLHarvester::dqmEndJob(DQMStore::IBooker& iBooker, DQM
           interp_.SetParameters(
               defaultUpperLowerAsymptotesDiff, defaultCenterOfDistribution, defaultFitSlope, defaultLowerAsymptote);
           const auto [lowerTotRange, upperTotRange] =
-              findFitRange(hists, channelId, lowerThresholdFractionOfMax, upperThresholdFractionOfMax);
+              findFitRange(iData, channelId, lowerThresholdFractionOfMax, upperThresholdFractionOfMax);
 
           const TFitResultPtr& fitResult{
               profileHist->getTProfile()->Fit(&interp_, "BNS", "", lowerTotRange, upperTotRange)};
@@ -168,8 +174,8 @@ void PPSTimingCalibrationPCLHarvester::dqmEndJob(DQMStore::IBooker& iBooker, DQM
         profileHist->getTProfile()->Fit(&interp_, "B", "", bestLowerTotRange, bestUpperTotRange);
         calibParams[armKey] = {
             interp_.GetParameter(0), interp_.GetParameter(1), interp_.GetParameter(2), interp_.GetParameter(3)};
-        calibTime[armKey] = {defaultOffset,
-                             defaultResolution};  // hardcoded offset/resolution placeholder for the time being
+        const PlaneKey planeKey{detId.arm(), detId.station(), detId.plane()};
+        calibTime[armKey] = {doublePeakCorrection_.getEncodedLsAndTimeOffset(planeKey), defaultResolution};
       } else {
         edm::LogWarning("PPSTimingCalibrationPCLHarvester:dqmEndJob")
             << "Fit did not converge for channel (" << detId << ").";
@@ -188,35 +194,35 @@ void PPSTimingCalibrationPCLHarvester::dqmEndJob(DQMStore::IBooker& iBooker, DQM
 //------------------------------------------------------------------------------
 
 bool PPSTimingCalibrationPCLHarvester::fetchWorkerHistograms(DQMStore::IGetter& iGetter,
-                                                             TimingCalibrationHistograms& hists,
+                                                             TimingCalibrationData& iData,
                                                              const CTPPSDiamondDetId& detId,
                                                              const uint32_t channelId,
                                                              const std::string& channelName) const {
-  hists.leadingTime[channelId] = iGetter.get(dqmDir_ + "/t_" + channelName);
-  if (!hists.leadingTime[channelId]) {
+  iData.leadingTime[channelId] = iGetter.get(dqmDir_ + "/t_" + channelName);
+  if (!iData.leadingTime[channelId]) {
     edm::LogWarning("PPSTimingCalibrationPCLHarvester:fetchWorkerHistograms")
         << "Failed to retrieve leading time monitor for channel (" << detId << "). Skipping calibration.";
     return false;
   }
 
-  hists.toT[channelId] = iGetter.get(dqmDir_ + "/tot_" + channelName);
-  if (!hists.toT[channelId]) {
+  iData.toT[channelId] = iGetter.get(dqmDir_ + "/tot_" + channelName);
+  if (!iData.toT[channelId]) {
     edm::LogWarning("PPSTimingCalibrationPCLHarvester:fetchWorkerHistograms")
         << "Failed to retrieve time over threshold monitor for channel (" << detId << "). Skipping calibration.";
     return false;
   }
 
-  hists.leadingTimeVsToT[channelId] = iGetter.get(dqmDir_ + "/tvstot_" + channelName);
-  if (!hists.leadingTimeVsToT[channelId]) {
+  iData.leadingTimeVsToT[channelId] = iGetter.get(dqmDir_ + "/tvstot_" + channelName);
+  if (!iData.leadingTimeVsToT[channelId]) {
     edm::LogWarning("PPSTimingCalibrationPCLHarvester:fetchWorkerHistograms")
         << "Failed to retrieve leading time vs. time over threshold monitor for channel (" << detId
         << "). Skipping calibration.";
     return false;
   }
 
-  if (hists.leadingTimeVsToT[channelId]->getEntries() < minEntries_) {
+  if (iData.leadingTimeVsToT[channelId]->getEntries() < minEntries_) {
     edm::LogWarning("PPSTimingCalibrationPCLHarvester:fetchWorkerHistograms")
-        << "Not enough entries for channel (" << detId << "): " << hists.leadingTimeVsToT[channelId]->getEntries()
+        << "Not enough entries for channel (" << detId << "): " << iData.leadingTimeVsToT[channelId]->getEntries()
         << " < " << minEntries_ << ". Skipping calibration.";
     return false;
   }
@@ -227,17 +233,17 @@ bool PPSTimingCalibrationPCLHarvester::fetchWorkerHistograms(DQMStore::IGetter& 
 //------------------------------------------------------------------------------
 
 std::pair<double, double> PPSTimingCalibrationPCLHarvester::findFitRange(
-    const TimingCalibrationHistograms& hists,
+    const TimingCalibrationData& iData,
     const uint32_t channelId,
     const double lowerThresholdFractionOfMax,
     const double upperThresholdFractionOfMax) const {
   int maxTotBin{1};
-  const int numOfToTBins{hists.toT.at(channelId)->getNbinsX()};
+  const int numOfToTBins{iData.toT.at(channelId)->getNbinsX()};
   for (int i{2}; i <= numOfToTBins; ++i) {
-    if (hists.toT.at(channelId)->getTH1()->GetXaxis()->GetBinCenter(i) > UpperLimitMaxSearch_) {
+    if (iData.toT.at(channelId)->getTH1()->GetXaxis()->GetBinCenter(i) > UpperLimitMaxSearch_) {
       break;
     }
-    if (hists.toT.at(channelId)->getBinContent(i) > hists.toT.at(channelId)->getBinContent(maxTotBin)) {
+    if (iData.toT.at(channelId)->getBinContent(i) > iData.toT.at(channelId)->getBinContent(maxTotBin)) {
       maxTotBin = i;
     }
   }
@@ -245,25 +251,25 @@ std::pair<double, double> PPSTimingCalibrationPCLHarvester::findFitRange(
   double lowerTotRange{DefaultLowerTotRange_};
   if (lowerThresholdFractionOfMax != FixedFitBound_) {
     int lowerLimitPos{maxTotBin};
-    const double lower_threshold{lowerThresholdFractionOfMax * hists.toT.at(channelId)->getBinContent(maxTotBin)};
-    while (hists.toT.at(channelId)->getTH1()->GetXaxis()->GetBinCenter(lowerLimitPos) > LowerLimitRangeSearch_) {
+    const double lowerThreshold{lowerThresholdFractionOfMax * iData.toT.at(channelId)->getBinContent(maxTotBin)};
+    while (iData.toT.at(channelId)->getTH1()->GetXaxis()->GetBinCenter(lowerLimitPos) > LowerLimitRangeSearch_) {
       --lowerLimitPos;
-      if (hists.toT.at(channelId)->getBinContent(lowerLimitPos) < lower_threshold)
+      if (iData.toT.at(channelId)->getBinContent(lowerLimitPos) < lowerThreshold)
         break;
     }
-    lowerTotRange = hists.toT.at(channelId)->getTH1()->GetXaxis()->GetBinCenter(lowerLimitPos);
+    lowerTotRange = iData.toT.at(channelId)->getTH1()->GetXaxis()->GetBinCenter(lowerLimitPos);
   }
 
   double upperTotRange{DefaultUpperTotRange_};
   if (upperThresholdFractionOfMax != FixedFitBound_) {
     int upperLimitPos{maxTotBin};
-    const double upper_threshold{upperThresholdFractionOfMax * hists.toT.at(channelId)->getBinContent(maxTotBin)};
-    while (hists.toT.at(channelId)->getTH1()->GetXaxis()->GetBinCenter(upperLimitPos) < UpperLimitRangeSearch_) {
+    const double upperThreshold{upperThresholdFractionOfMax * iData.toT.at(channelId)->getBinContent(maxTotBin)};
+    while (iData.toT.at(channelId)->getTH1()->GetXaxis()->GetBinCenter(upperLimitPos) < UpperLimitRangeSearch_) {
       ++upperLimitPos;
-      if (hists.toT.at(channelId)->getBinContent(upperLimitPos) < upper_threshold)
+      if (iData.toT.at(channelId)->getBinContent(upperLimitPos) < upperThreshold)
         break;
     }
-    upperTotRange = hists.toT.at(channelId)->getTH1()->GetXaxis()->GetBinCenter(upperLimitPos);
+    upperTotRange = iData.toT.at(channelId)->getTH1()->GetXaxis()->GetBinCenter(upperLimitPos);
   }
 
   return {lowerTotRange, upperTotRange};
@@ -277,6 +283,8 @@ void PPSTimingCalibrationPCLHarvester::fillDescriptions(edm::ConfigurationDescri
       ->setComment("input path for the various DQM plots");
   desc.add<std::string>("formula", "[0]/(exp((x-[1])/[2])+1)+[3]")
       ->setComment("interpolation formula for the time walk component");
+  desc.add<std::string>("tVsLsFilename", "")
+      ->setComment("ROOT filename with t vs LS histogram for double peak correction");
   desc.add<unsigned int>("minEntries", 100)->setComment("minimal number of hits to extract calibration");
   descriptions.addWithDefaultLabel(desc);
 }

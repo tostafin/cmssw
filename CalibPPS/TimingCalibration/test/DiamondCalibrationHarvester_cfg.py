@@ -18,6 +18,12 @@ options.register("inputFiles",
     "",
     VarParsing.VarParsing.multiplicity.list,
     VarParsing.VarParsing.varType.string)
+options.register("tVsLsFilename",
+    "",
+    VarParsing.VarParsing.multiplicity.singleton,
+    VarParsing.VarParsing.varType.string,
+    "ROOT filename with t vs LS histogram for double peak correction"
+)
 
 options.parseArguments()
 
@@ -53,13 +59,14 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
 )
 
 process.load("CalibPPS.TimingCalibration.ppsTimingCalibrationPCLHarvester_cfi")
+process.ppsTimingCalibrationPCLHarvester.tVsLsFilename = options.tVsLsFilename
 
 # load DQM framework
 process.load("DQMServices.Core.DQMStore_cfi")
 process.load("DQMServices.Components.DQMEnvironment_cfi")
 process.dqmEnv.subSystemFolder = "CalibPPS"
 process.dqmSaver.convention = "Offline"
-process.dqmSaver.workflow = "/CalibPPS/TimingCalibration/CMSSW_14_0_14"
+process.dqmSaver.workflow = "/CalibPPS/DoublePeakCorrectedTimingCalibration/CMSSW_14_0_14" if options.tVsLsFilename else "/CalibPPS/TimingCalibration/CMSSW_14_0_14"
 process.dqmSaver.saveByRun = -1
 process.dqmSaver.saveAtJobEnd = True
 

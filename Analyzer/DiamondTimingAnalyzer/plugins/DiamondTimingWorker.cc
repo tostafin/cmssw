@@ -64,7 +64,7 @@ private:
     void analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) override;
 
     // ---------- objects to retrieve ---------------------------
-    edm::EDGetTokenT<edm::DetSetVector<CTPPSDiamondDigi>> tokenDigi_;
+    // edm::EDGetTokenT<edm::DetSetVector<CTPPSDiamondDigi>> tokenDigi_;
     edm::EDGetTokenT<edm::DetSetVector<CTPPSDiamondRecHit>> tokenRecHit_;
     edm::EDGetTokenT<edm::DetSetVector<CTPPSDiamondLocalTrack>> tokenLocalTrack_;
     edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelLocalTrack>> tokenPixelLocalTrack_;
@@ -123,8 +123,8 @@ const int PLANES_X_DETECTOR = 4;
 //
 DiamondTimingWorker::DiamondTimingWorker(const edm::ParameterSet& iConfig)
     :
-    tokenDigi_(
-        consumes<edm::DetSetVector<CTPPSDiamondDigi>>(iConfig.getParameter<edm::InputTag>("tagDigi"))),
+    // tokenDigi_(
+    //     consumes<edm::DetSetVector<CTPPSDiamondDigi>>(iConfig.getParameter<edm::InputTag>("tagDigi"))),
     tokenRecHit_(
         consumes<edm::DetSetVector<CTPPSDiamondRecHit>>(iConfig.getParameter<edm::InputTag>("tagRecHit"))),
     tokenLocalTrack_(
@@ -176,9 +176,6 @@ void DiamondTimingWorker::dqmBeginRun(const edm::Run& iRun, const edm::EventSetu
                 std::string track_time_box_vs_cyl_path{"DQMData/Run " + runNumber + "/CTPPS/Run summary/TimingDiamond/sector " + sector_two_digits + "/Track time box vs cyl sector " + std::to_string(sector_one_digit)};
                 const auto* track_time_box_vs_cyl = tracks_plot_file.Get<TH2F>(track_time_box_vs_cyl_path.c_str());
                 if (track_dt_vs_dx_plot) {
-                    const std::unique_ptr<TH1D> track_x{track_dt_vs_dx_plot->ProjectionX("_py1")};
-                    const TFitResultPtr& track_x_fit{track_x->Fit("gaus", "SN", "", -3, 3)};
-
                     const std::unique_ptr<TH1D> track_time{track_dt_vs_dx_plot->ProjectionY("_py2")};
                     const std::unique_ptr<TH1D> track_time_box{track_time_box_vs_cyl->ProjectionX("_py3")};
                     const std::unique_ptr<TH1D> track_time_cyl{track_time_box_vs_cyl->ProjectionY("_py4")};
@@ -197,6 +194,8 @@ void DiamondTimingWorker::dqmBeginRun(const edm::Run& iRun, const edm::EventSetu
                             track_time_cyl_fit_parameters[2]
                         );
                         const TFitResultPtr& track_time_fit{track_time->Fit(&track_time_fit_function, "SNR")};
+                        const std::unique_ptr<TH1D> track_x{track_dt_vs_dx_plot->ProjectionX("_py1")};
+                        const TFitResultPtr& track_x_fit{track_x->Fit("gaus", "SN", "", -3, 3)};
                         if (track_x_fit->IsValid() && track_time_fit->IsValid()) {
                             track_x_max_dev[sector_one_digit] = 3 * track_x_fit->Parameter(2);
                             const double track_time_const1{track_time_fit->Parameter(0)};
@@ -205,10 +204,10 @@ void DiamondTimingWorker::dqmBeginRun(const edm::Run& iRun, const edm::EventSetu
                             const double track_time_sigma2{track_time_fit->Parameter(5)};
                             track_time_max_dev[sector_one_digit] = 3 * ((track_time_const1 * track_time_sigma1 + track_time_const2 * track_time_sigma2) / (track_time_const1 + track_time_const2));
                         } else {
-                            throw edm::Exception{edm::errors::FatalRootError} << "Can't fit the track dt vs dx projections.";
+                            edm::LogWarning("TrackDtVsDxProjectionsFit") << "Can't fit the track dt vs dx projections in sector " << sector_two_digits;
                         }
                     } else {
-                        throw edm::Exception{edm::errors::FatalRootError} << "Can't fit the track time projections.";
+                        edm::LogWarning("TrackTimeProjectionsFit") << "Can't fit the track time projections in sector " << sector_two_digits;
                     }
                 }
             }

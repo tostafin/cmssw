@@ -225,8 +225,12 @@ use_sqlite_file = True
 if (use_sqlite_file):
     process.ctppsDiamondRecHits.timingCalibrationTag=""
 
-process.ctppsDiamondRecHits.digiTag="ctppsDiamondRawToDigiAlCaRecoProducer:TimingDiamond"
 # ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+process.load("Calibration.PPSAlCaRecoProducer.ALCARECOPPSCalMaxTracks_cff")
+process.ctppsPixelDigis.inputLabel = "hltPPSCalibrationRaw"
+process.ctppsDiamondRawToDigi.rawDataTag = "hltPPSCalibrationRaw"
+process.ctppsPixelClustersAlCaRecoProducer.tag='ctppsPixelDigis'
 
 tagLocalTrack_ = cms.InputTag("ctppsDiamondLocalTracks","" ,"TIMINGSTUDY")
 tagRecHit_ =  cms.InputTag("ctppsDiamondRecHits","" ,"TIMINGSTUDY")
@@ -236,7 +240,7 @@ if(options.calibInput != ''):
     process.diamondTimingWorker = DQMEDAnalyzer("DiamondTimingWorker",
         tagDigi = cms.InputTag("ctppsDiamondRawToDigiAlCaRecoProducer", "TimingDiamond"),
         tagRecHit = tagRecHit_, # changed
-        tagPixelLocalTrack = cms.InputTag("ctppsPixelLocalTracksAlCaRecoProducer", "", "RECO"),
+        tagPixelLocalTrack = cms.InputTag("ctppsPixelLocalTracksAlCaRecoProducer", ""),
         tagLocalTrack = tagLocalTrack_, #changed
         timingCalibrationTag=cms.string(":"),
         tagValidOOT = cms.int32(-1), #TODO: remove parameter from options or don't hardcode it.
@@ -281,6 +285,8 @@ else:
     # assert "need to provide timing calibration tag from json, slq file or db"
 process.content = cms.EDAnalyzer("EventContentAnalyzer")
 process.ALL = cms.Path(
+    process.ctppsRawToDigi *
+    process.recoPPSSequenceAlCaRecoProducer *
     process.ctppsDiamondLocalReconstruction *
     #process.content*
     process.diamondTimingWorker

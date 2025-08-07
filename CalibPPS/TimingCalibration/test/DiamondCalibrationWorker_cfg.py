@@ -49,6 +49,7 @@ process.load("Configuration.StandardSequences.Services_cff")
 process.load("Configuration.EventContent.EventContent_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag, "")
+process.load("EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff")
 process.load("RecoPPS.Configuration.recoCTPPS_cff")
 
 process.source = cms.Source("PoolSource",
@@ -74,7 +75,11 @@ process.dqmOutput = cms.OutputModule("PoolOutputModule",
 
 process.load("CalibPPS.TimingCalibration.ALCARECOPromptCalibProdPPSTimingCalib_cff")
 
+process.ctppsDiamondRawToDigi.rawDataTag = "hltPPSCalibrationRaw"
+
 process.path = cms.Path(
+    process.ctppsRawToDigi *
+    process.recoCTPPS *
     process.ppsTimingCalibrationPCLWorker *
     process.MEtoEDMConvertPPSTimingCalib
 )
